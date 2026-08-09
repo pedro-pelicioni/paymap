@@ -8,3 +8,5 @@ dist/
 .vite/
 coverage/
 _probe_tmp.mjs
+
+.claude/
