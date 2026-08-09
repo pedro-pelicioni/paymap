@@ -4,6 +4,8 @@ import { AssetImg } from '../components/AssetImg'
 import { PaymapMark, StarGlyph } from '../components/Marks'
 import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
+import { DottedGlobe } from '../components/DottedGlobe'
+import { Swirl } from '../components/Swirl'
 import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
 import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
@@ -192,6 +194,7 @@ export default function Landing() {
       <main id="main">
         {/* ---------------------------------------------------------- hero */}
         <section className="hero">
+          <Swirl />
           <div className="shell hero__in">
             <div className="hero__grid">
               <div>
@@ -283,7 +286,11 @@ export default function Landing() {
             </RevealGroup>
 
             <RevealGroup className="bento">
-              <article className="bento__card bento__card--3 rise" style={{ ['--i' as string]: 0 }}>
+              <article
+                className="bento__card bento__card--3 globe-host rise"
+                style={{ ['--i' as string]: 0 }}
+              >
+                <DottedGlobe className="globe--bleed" />
                 <span className="bento__kicker">
                   <StarGlyph size={9} /> Bazaar discovery
                 </span>

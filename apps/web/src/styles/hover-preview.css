@@ -1,0 +1,253 @@
+/* ============================================================
+   PAYMAP — HoverPreview
+   A floating detail card that tracks the cursor.
+
+   Only `transform` and `opacity` are ever animated. The outer
+   .hp-card carries the position (written by rAF as one
+   translate3d); the inner .hp-card__in carries the entrance, so
+   the two never fight over the same property.
+   ============================================================ */
+
+/* ---------------------------------------------------------------- trigger */
+
+.hp {
+  display: inline-flex;
+  align-items: baseline;
+  cursor: default;
+}
+
+/* The trigger is a real tab stop. The ring is INSET on purpose: triggers live
+   inside `overflow: hidden` rails (the ticker is exactly one row tall), and an
+   outset ring gets its top and bottom edges sheared off there. */
+.hp:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 3px;
+}
+
+/* a quiet acknowledgement that the row is the one being previewed.
+   Never colour alone: the card itself is the primary signal. */
+.hp[data-open='1'] {
+  color: var(--fg);
+}
+
+/* ---------------------------------------------------------------- card */
+
+.hp-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* above the topbar (40) and the grain (90), below the skip link (100) */
+  z-index: 95;
+  width: max-content;
+  max-width: min(21.25rem, calc(100vw - 1.5rem));
+  /* it is a preview, not a surface: it must never eat the hover that opened
+     it, and never sit between the reader and a link underneath */
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hp-card__in {
+  background: var(--plate);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  padding: 0.8rem 0.9rem 0.7rem;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--cream) 4.5%, transparent),
+    0 22px 54px -26px rgba(0, 0, 0, 0.92);
+  /* set from the flip flags below, so the card always grows out of the cursor */
+  transform-origin: var(--hp-ox, 0%) var(--hp-oy, 0%);
+  animation: hp-in 170ms var(--ease) both;
+}
+
+/* flipped past a viewport edge — the origin follows the anchor */
+.hp-card[data-fx='left'] .hp-card__in {
+  --hp-ox: 100%;
+}
+.hp-card[data-fy='up'] .hp-card__in {
+  --hp-oy: 100%;
+}
+
+@keyframes hp-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- payload */
+
+.hp-rec {
+  display: grid;
+  gap: 0.5rem;
+  font-family: 'DM Mono', ui-monospace, Menlo, monospace;
+}
+
+.hp-rec__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule-2);
+}
+
+.hp-rec__name {
+  font-family: 'Bricolage Grotesque', 'Avenir Next', sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+  /* long service names wrap rather than widening the card past its max */
+  min-width: 0;
+}
+
+/* the type pill is inherited from base.css (.pill / .pill--http / .pill--mcp);
+   only the size is tightened for this context */
+.hp-rec__head .pill {
+  flex: none;
+  margin-left: auto;
+  padding: 0.16rem 0.45rem;
+  font-size: 0.5625rem;
+}
+
+.hp-rec__desc {
+  font-family: 'Bricolage Grotesque', 'Avenir Next', sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--fg-2);
+  /* three lines, then stop — a preview, not the record */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* --- price ---------------------------------------------------------- */
+
+.hp-rec__price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-rec__price-l {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+.hp-rec__amt {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.hp-rec__asset {
+  color: var(--fg-2);
+  letter-spacing: 0.04em;
+}
+
+.hp-rec__scheme {
+  margin-left: auto;
+  font-size: 0.625rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+/* --- tags ----------------------------------------------------------- */
+
+.hp-rec__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.hp-rec__tags li {
+  padding: 0.14rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  color: var(--fg-2);
+  background: color-mix(in srgb, var(--cream) 2.5%, transparent);
+}
+
+/* --- endpoint ------------------------------------------------------- */
+
+.hp-rec__url {
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--fg-3);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* --- footer --------------------------------------------------------- */
+
+.hp-rec__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--rule-2);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--fg-3);
+}
+
+.hp-rec__sep {
+  color: var(--rule);
+}
+
+/* ============================================================
+   Integration — additive rules for the ticker tape.
+   The tape already pauses on :hover (base.css); a keyboard user
+   gets the same courtesy, otherwise the trigger walks out from
+   under its own preview.
+   ============================================================ */
+
+.ticker:focus-within .ticker__track {
+  animation-play-state: paused;
+}
+
+/* The tape is two identical runs; only the first is real content. This wraps
+   the duplicate so it can carry `aria-hidden` without becoming a flex item and
+   collapsing the seam. */
+.ticker__run {
+  display: contents;
+}
+
+/* ============================================================
+   Reduced motion.
+   The card is functional, so it still appears — it just appears,
+   with no entrance and no cursor chase. (The component switches
+   itself to element-anchored placement under this query too;
+   this block is the belt to that braces.)
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-card__in {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .hp-card {
+    will-change: auto;
+  }
+}

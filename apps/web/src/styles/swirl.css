@@ -1,0 +1,89 @@
+/* ============================================================
+   SWIRL — ambient flow field behind the hero.
+
+   Layering, and why it works without touching pages.css:
+   `.hero` is the positioned ancestor and `.hero__in` already sits at
+   z-index 2, so hero copy is untouched. Mounted as the first child of
+   `.hero`, this canvas paints after `.hero::before` (the blueprint grid)
+   and before `.hero::after` (the accent ember) — both are z-index 0 and
+   pseudo-elements order as first/last child. Result, bottom to top:
+
+       blueprint grid  ->  flow field  ->  accent ember  ->  content
+
+   The flow therefore sits *inside* the existing atmosphere rather than
+   on top of it. Stroke alpha is tuned in Swirl.tsx so a lit hairline
+   lands at roughly the weight of `--rule`; the mask below then removes
+   most of it from the headline column.
+   ============================================================ */
+
+.swirl {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+.swirl__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.15s var(--ease);
+
+  /* Weighted toward the terminal side and faded out well before every edge,
+     so density falls off across the headline column and nothing collides with
+     the hero's bottom rule. */
+  -webkit-mask-image: radial-gradient(
+    82% 118% at 68% 46%,
+    #000 0%,
+    #000 32%,
+    rgba(0, 0, 0, 0.5) 62%,
+    transparent 86%
+  );
+  mask-image: radial-gradient(
+    82% 118% at 68% 46%,
+    #000 0%,
+    #000 32%,
+    rgba(0, 0, 0, 0.5) 62%,
+    transparent 86%
+  );
+}
+
+/* set by the component after the first painted frame — the field arrives,
+   it does not pop in */
+.swirl__canvas[data-lit] {
+  opacity: 0.72;
+}
+
+/* Single column below 1020px: the copy runs the full width, so the field
+   steps further back. */
+@media (max-width: 1020px) {
+  .swirl__canvas[data-lit] {
+    opacity: 0.55;
+  }
+}
+@media (max-width: 640px) {
+  .swirl__canvas[data-lit] {
+    opacity: 0.42;
+  }
+}
+
+/* The component renders a single composed still under reduced motion — it
+   never starts the rAF loop. All that is left for CSS is to land it without
+   a fade. (base.css also neutralises transitions globally; this is explicit
+   so the rule survives that block being refactored.) */
+@media (prefers-reduced-motion: reduce) {
+  .swirl__canvas {
+    transition: none;
+  }
+}
+
+@media print {
+  .swirl {
+    display: none;
+  }
+}

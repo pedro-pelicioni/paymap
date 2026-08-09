@@ -1,0 +1,124 @@
+/* ============================================================
+   DOTTED GLOBE — the Bazaar is a public index
+   A canvas-drawn point sphere (components/DottedGlobe.tsx).
+
+   The component does not name a single colour. It reads the three
+   custom properties below off the host element and lets the browser
+   resolve them, so the design tokens remain the only place pigment
+   is decided. Retint a placement by overriding them, not by editing
+   the component.
+   ============================================================ */
+
+.globe {
+  /* what the canvas paints with — tokens only */
+  --globe-dot: var(--g-400);
+  --globe-node: var(--accent);
+  /* raise to var(--rule) if the silhouette needs to carry more weight */
+  --globe-rim: var(--rule-2);
+
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  /* Decorative. It is aria-hidden in the markup; this is the other half —
+     it must never intercept a click meant for the content it sits behind. */
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* A low ember behind the sphere, so the dot field sits in something rather
+   than floating on flat ink — and so the block still reads if a browser
+   hands back no 2D context at all. */
+.globe::before {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 44%,
+    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+    transparent 66%
+  );
+  pointer-events: none;
+}
+
+/* The ember above is a positioned pseudo-element; the canvas is in normal flow,
+   and positioned boxes paint over in-flow content regardless of source order.
+   Without this the "backdrop" would be painted ON TOP of the dot field and tint
+   it. Positioning the canvas puts it back where the comment says it is. */
+.globe__canvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- placement: backdrop --------------------------------------------------
+   Anchored off the right edge of a positioned parent and masked away toward
+   the text column, so the copy never has to compete with it. The parent needs
+   `position: relative` (most plates and cards already have it) plus the
+   `.globe-host` class below, which supplies the clip and the stacking order. */
+.globe--bleed {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: -13%;
+  width: min(76%, 27rem);
+  transform: translateY(-50%);
+  opacity: 0.6;
+  -webkit-mask-image: linear-gradient(to left, #000 32%, transparent 90%);
+  mask-image: linear-gradient(to left, #000 32%, transparent 90%);
+}
+
+.globe-host {
+  overflow: hidden;
+  isolation: isolate;
+}
+/* Everything that is not the globe outranks it, without either side needing
+   to know the other's z-index. */
+.globe-host > *:not(.globe) {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- placement: standalone ------------------------------------------------
+   A plain square block, for sitting beside content in its own column. */
+.globe--fit {
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+/* Narrow viewports stack the cards full width, which would blow the backdrop
+   up to fill them. Pull it back and quiet it further — on a phone the text is
+   the whole screen. */
+@media (max-width: 640px) {
+  .globe--bleed {
+    right: -20%;
+    width: min(58%, 15rem);
+    opacity: 0.42;
+  }
+}
+
+/* Below this the backdrop has nowhere to go without sitting under the copy, so
+   it goes entirely. (A width query, not a pointer one — the constraint here is
+   space. Cheap hardware is handled by the loop pausing off-screen, not by CSS.) */
+@media (max-width: 380px) {
+  .globe--bleed {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The rotation is stopped in DottedGlobe.tsx — the canvas holds one static,
+     fully legible frame and the rAF loop never starts. This block exists so
+     nothing added here can quietly put motion back. */
+  .globe,
+  .globe::before,
+  .globe__canvas {
+    animation: none !important;
+    transition: none !important;
+  }
+}
