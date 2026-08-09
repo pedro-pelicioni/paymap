@@ -1,8 +1,17 @@
 import { RevealGroup } from '../lib/reveal'
+import { CopyButton } from './CopyButton'
 import { StarGlyph } from './Marks'
 
 const QUICKSTART =
   'https://github.com/pedro-pelicioni/paymap/blob/main/docs/QUICKSTART-SELLER.md'
+
+/** Every shell command on this page is declared exactly once, here, and used
+ *  twice below — in the rendered row and in the step's copy payload — so the
+ *  thing a developer reads and the thing they paste cannot drift apart. */
+const CMD_BOOTSTRAP = 'npm install && npm run setup'
+const CMD_DEV = 'npm run dev:all'
+const CMD_SEARCH = "curl -s 'localhost:4022/discovery/search?query=weather'"
+const CMD_CONFORMANCE = 'npm run verify:conformance'
 
 type Step = {
   n: string
@@ -10,6 +19,8 @@ type Step = {
   title: string
   body: React.ReactNode
   code: React.ReactNode
+  /** Literal handed to the clipboard. Omitted on the step that has no command. */
+  copy?: string
 }
 
 const STEPS: Step[] = [
@@ -28,15 +39,16 @@ const STEPS: Step[] = [
       <>
         <div className="row">
           <span className="t-p">$ </span>
-          <span className="path">npm install &amp;&amp; npm run setup</span>
+          <span className="path">{CMD_BOOTSTRAP}</span>
         </div>
         <div className="row">
           <span className="t-p">$ </span>
-          <span className="path">npm run dev:all</span>
+          <span className="path">{CMD_DEV}</span>
           <span className="note">:4021 · :4022 · :4023</span>
         </div>
       </>
     ),
+    copy: `${CMD_BOOTSTRAP}\n${CMD_DEV}`,
   },
   {
     n: '02',
@@ -90,7 +102,7 @@ const STEPS: Step[] = [
       <>
         <div className="row">
           <span className="t-p">$ </span>
-          <span className="path">curl .../discovery/search?query=weather</span>
+          <span className="path">{CMD_SEARCH}</span>
         </div>
         <div className="row">
           <span className="t-good">0.8412</span>
@@ -100,6 +112,7 @@ const STEPS: Step[] = [
         </div>
       </>
     ),
+    copy: CMD_SEARCH,
   },
   {
     n: '04',
@@ -116,7 +129,7 @@ const STEPS: Step[] = [
       <>
         <div className="row">
           <span className="t-p">$ </span>
-          <span className="path">npm run verify:conformance</span>
+          <span className="path">{CMD_CONFORMANCE}</span>
         </div>
         <div className="row">
           <span className="t-good">PASS</span>
@@ -125,6 +138,7 @@ const STEPS: Step[] = [
         </div>
       </>
     ),
+    copy: CMD_CONFORMANCE,
   },
 ]
 
@@ -160,7 +174,19 @@ export function SellerPath() {
                 </div>
                 <p>{s.body}</p>
               </div>
-              <div className="ship__code">{s.code}</div>
+              <div
+                className={`ship__code${s.copy ? ' copy-host copy-host--pad' : ''}`}
+                style={s.copy ? { ['--copy-gutter' as string]: '2.4rem' } : undefined}
+              >
+                {s.code}
+                {s.copy && (
+                  <CopyButton
+                    text={s.copy}
+                    label=""
+                    what={`step ${s.n} command${s.copy.includes('\n') ? 's' : ''}`}
+                  />
+                )}
+              </div>
             </article>
           ))}
         </RevealGroup>

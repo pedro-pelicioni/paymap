@@ -1,0 +1,203 @@
+/* ============================================================
+   PAYMAP — copy affordance
+   A quiet utility parked on top of a code surface. Hairline
+   border, mono micro-label, muted until you reach for it.
+
+   Load order note: this file is imported from components/CopyButton.tsx,
+   so Vite injects it *before* styles/pages.css (main.tsx imports the
+   route modules above the stylesheets). Anything that has to beat a
+   pages.css rule is written at two-class specificity on purpose.
+   ============================================================ */
+
+/* --- the host ---------------------------------------------------------- */
+/* Any code surface that carries a floating copy button gets .copy-host, which
+   makes it the positioning context. Add .copy-host--pad as well to reserve a
+   right-hand gutter so the button never lands on top of the first line.
+
+   ⚠ Do NOT put .copy-host on an element that scrolls horizontally.
+   `.ship__code`, `.verify__cmd` and `.terminal__body` all carry
+   `overflow-x: auto` around long nowrap one-liners, and there an absolutely
+   positioned child fails twice over:
+     · it scrolls WITH the content — at 375px, dragging a long command 172px
+       to the left moves the button 172px left too, right across the code
+       (measured, not theorised);
+     · `padding-right` reserves space at the END of the scrollable line, not
+       under the button's corner, so a line longer than the box still runs
+       underneath it at scrollLeft: 0.
+   For those surfaces use variant="bar" in the chrome strip above the code, or
+   hang .copy-host on a non-scrolling wrapper so the button parks in a reserved
+   gutter *beside* the box rather than on it:
+
+       <div className="copy-host copy-host--pad">
+         <pre className="ship__code">…</pre>
+         <CopyButton text={…} />
+       </div>
+
+   .copy-host + variant="float" is for surfaces whose content wraps or is
+   comfortably shorter than the box — there the gutter genuinely clears it. */
+
+.copy-host {
+  position: relative;
+}
+
+/* Two classes = specificity 0,2,0 — it has to beat `.ship__code { padding: … }`
+   and `.verify__cmd { padding: … }`, which land later in the bundle.
+
+   Default gutter is sized from the widest state the button actually reaches:
+   the label is min-width'd so COPY / COPIED / CTRL+C all measure ~77px, plus
+   the 0.42rem offset = ~84px. 5.4rem (86.4px) clears it. Override per host
+   with --copy-gutter — 2.6rem suits an icon-only button (label=''), which now
+   stays icon-width in every state. */
+.copy-host.copy-host--pad {
+  padding-right: var(--copy-gutter, 5.4rem);
+}
+
+/* --- the button -------------------------------------------------------- */
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.26rem 0.46rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg-3);
+  font-family: 'DM Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    opacity 0.18s var(--ease),
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease);
+}
+
+.copy:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--fg-3) 55%, transparent);
+  background: var(--plate);
+}
+
+.copy:active {
+  transform: translateY(0.5px);
+}
+
+.copy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--fg-3) 55%, transparent);
+}
+
+.copy__glyph {
+  flex: none;
+  opacity: 0.9;
+}
+
+/* The label swaps between "Copy" / "Copied" / "⌘C" | "Ctrl+C". The button is
+   right-anchored in both variants, so it grows leftwards and nothing below it
+   reflows. The min-width is what keeps the three states within ~4px of each
+   other: without it the button twitches on every copy, and the reserved gutter
+   would have to be sized for the widest one. */
+.copy__label {
+  display: inline-block;
+  min-width: 3.9em;
+  text-align: center;
+}
+
+/* --- result states ----------------------------------------------------- */
+
+.copy[data-state='copied'],
+.copy[data-state='copied']:hover {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: color-mix(in srgb, var(--good) 9%, var(--bg-2));
+}
+
+.copy[data-state='failed'],
+.copy[data-state='failed']:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-2));
+}
+
+/* --- float: parked top-right of its .copy-host ------------------------- */
+
+.copy--float {
+  position: absolute;
+  top: 0.42rem;
+  right: 0.42rem;
+  z-index: 2;
+  opacity: 0;
+}
+
+/* Reveal on reach. focus-within covers the button's own keyboard focus, and
+   the explicit :focus-visible is belt-and-braces for browsers that scope
+   :focus-within oddly inside scroll containers. A result state pins it open
+   so the confirmation is never invisible. */
+.copy-host:hover .copy--float,
+.copy-host:focus-within .copy--float,
+.copy--float:focus,
+.copy--float:focus-visible,
+.copy--float[data-state='copied'],
+.copy--float[data-state='failed'] {
+  opacity: 1;
+}
+
+/* No hover pointer (touch): there is nothing to reveal it, so never hide it. */
+@media (hover: none) {
+  .copy--float {
+    opacity: 1;
+  }
+}
+
+/* Narrow screens: a permanently visible 77px pill costs a quarter of a 375px
+   line, and "⌘C" is advice a phone cannot take. Drop to the glyph alone and
+   claw the gutter back to icon width — the accessible name, the title and the
+   spoken confirmation are all unchanged, and the check/alert glyph still
+   carries the result. Override with --copy-gutter-sm if a host needs more. */
+@media (max-width: 560px) {
+  .copy--float .copy__label {
+    display: none;
+  }
+  .copy-host.copy-host--pad {
+    padding-right: var(--copy-gutter-sm, 2.6rem);
+  }
+}
+
+/* --- bar: in normal flow, for a terminal chrome strip ------------------ */
+/* Nothing sits underneath it there, so it is permanently visible. */
+
+.copy--bar {
+  position: relative;
+  margin: -0.22rem -0.2rem -0.22rem 0;
+  padding: 0.24rem 0.42rem;
+  background: transparent;
+  border-color: var(--rule-2);
+}
+.copy--bar:hover,
+.copy--bar:focus-visible {
+  background: var(--bg-2);
+  border-color: color-mix(in srgb, var(--fg-3) 55%, transparent);
+}
+
+/* --- motion ------------------------------------------------------------ */
+/* base.css already flattens durations globally; this states the intent
+   locally so the rule survives a refactor of that block. */
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    transition: none;
+  }
+  .copy:active {
+    transform: none;
+  }
+}

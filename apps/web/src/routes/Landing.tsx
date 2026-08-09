@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AssetImg } from '../components/AssetImg'
+import { CodeSpans, CopyButton, copyText } from '../components/CopyButton'
+import type { CodeSpan } from '../components/CopyButton'
 import { PaymapMark, StarGlyph } from '../components/Marks'
 import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
@@ -33,6 +35,29 @@ const miniLedger = (() => {
   return [...rejected, ...distinct].slice(0, 3)
 })()
 
+/**
+ * The hero command, declared once. `CodeSpans` paints it and `copyText` folds the
+ * same array into the literal the copy button puts on the clipboard, so the two
+ * cannot drift. The `$ ` prompt is rendered but marked `copy: false` — it is
+ * chrome, and pasting it into a shell is an error.
+ */
+const HERO_CMD: CodeSpan[] = [
+  { text: '$ ', className: 't-p', copy: false },
+  {
+    text: "curl 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3'",
+    className: 't-cmd',
+  },
+]
+
+/** The three verification commands, declared once: the block renders them aligned
+ *  with their comments, the copy button ships the bare commands. */
+const VERIFY_CMDS = [
+  { cmd: 'npm test', note: '129 tests, 0 failing' },
+  { cmd: 'npm run verify:api', note: '46 stock-client checks' },
+  { cmd: 'npm run demo', note: 'discover → 402 → sign → settle → 200' },
+] as const
+const VERIFY_COL = Math.max(...VERIFY_CMDS.map((c) => c.cmd.length)) + 1
+
 /* ------------------------------------------------------------ terminal */
 
 function Terminal() {
@@ -48,13 +73,11 @@ function Terminal() {
         <span className="terminal__title" style={{ marginLeft: 'auto' }}>
           x402 v2
         </span>
+        <CopyButton variant="bar" text={copyText(HERO_CMD)} what="search command" />
       </div>
       <div className="terminal__body">
         <pre>
-          <span className="t-p">$ </span>
-          <span className="t-cmd">
-            {"curl 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3'"}
-          </span>
+          <CodeSpans spans={HERO_CMD} />
           {'\n'}
           <span className="t-dim">{'{'}</span>
           {'\n  '}
@@ -528,10 +551,16 @@ export default function Landing() {
                 </code>{' '}
                 off the ledger.
               </p>
-              <pre className="verify__cmd rise" style={{ ['--i' as string]: 3 }}>
-                {'$ npm test          # 84 tests, 0 failing\n'}
-                {'$ npm run verify:api # 46 stock-client checks\n'}
-                {'$ npm run demo       # discover → 402 → sign → settle → 200'}
+              <pre
+                className="verify__cmd rise copy-host copy-host--pad"
+                style={{ ['--i' as string]: 3 }}
+              >
+                {VERIFY_CMDS.map((c) => `$ ${c.cmd.padEnd(VERIFY_COL)}# ${c.note}`).join('\n')}
+                <CopyButton
+                  text={VERIFY_CMDS.map((c) => c.cmd).join('\n')}
+                  what="verification commands"
+                  label="Copy all"
+                />
               </pre>
             </RevealGroup>
             <RevealGroup>
