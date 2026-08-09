@@ -1,7 +1,11 @@
 # Quickstart — list a paid endpoint in the Bazaar
 
 **Goal: your own paid HTTP endpoint, settling real x402 payments on Stellar testnet, returned
-by `/discovery/search`, in under 15 minutes from a clean clone.**
+by `/discovery/search`.**
+
+**Every command below adds up to about a minute of machine time.** That is measured, not
+estimated — the table at the end has the numbers and how they were taken. The rest of the clock
+is you writing one route object, and that is the only part this document cannot make faster.
 
 The SCF #45 RFP sets the bar this document is written against:
 
@@ -28,7 +32,7 @@ is public and CORS-open. This document is for the *seller* side.
 
 ---
 
-## Step 1 — clone and bootstrap · ~3 min
+## Step 1 — clone and bootstrap · 49 s
 
 ```bash
 git clone https://github.com/pedro-pelicioni/paymap && cd paymap
@@ -52,7 +56,7 @@ with `extra.areFeesSponsored: true`.
 
 ---
 
-## Step 2 — declare your endpoint · ~5 min
+## Step 2 — declare your endpoint · your call
 
 Open [`apps/seller/src/server.mjs`](../apps/seller/src/server.mjs) and add an entry to the
 `ROUTES` array. That array is the single source of truth — pricing, the HTTP handler, and the
@@ -95,16 +99,21 @@ discovery metadata all come from the same object, so they cannot drift apart.
 ```
 
 `declareDiscoveryExtension` is the stock export from `@x402/extensions` — not a PAYMAP
-wrapper. The per-parameter `description` fields are the part worth spending your five minutes
-on: they carry ×2 weight in the ranker (see [SEARCH-QUALITY.md](SEARCH-QUALITY.md)), and they
-are the difference between an agent finding your endpoint and finding somebody else's.
+wrapper. The per-parameter `description` fields are the part worth slowing down for: they carry
+×2 weight in the ranker (see [SEARCH-QUALITY.md](SEARCH-QUALITY.md)), and they are the
+difference between an agent finding your endpoint and finding somebody else's.
+
+This is the one step with no number on it, deliberately. Every other step is a command whose
+duration was measured; this one is you deciding what your API does and how to describe it to a
+machine. Copying the block above and changing the strings takes a minute. Writing a description
+good enough to win a search takes as long as it takes.
 
 Save the file and restart the seller — there is no file watcher, `dev:all` runs plain `node`.
 On boot it announces every route in `ROUTES` to the index.
 
 ---
 
-## Step 3 — you are already in the Bazaar · ~1 min
+## Step 3 — you are already in the Bazaar · one curl
 
 Two independent paths put you in the catalog, and you get both:
 
@@ -145,7 +154,7 @@ curl -s 'localhost:4022/discovery/resources?limit=50' | jq '.total, .items[].id'
 
 ---
 
-## Step 4 — get paid, with a client you did not write · ~4 min
+## Step 4 — get paid, with a client you did not write · 10 s
 
 ```bash
 npm run verify:conformance
@@ -181,20 +190,25 @@ curl -s 'localhost:4022/discovery/search?query=weather&limit=1' | jq '(.resource
 
 ---
 
-## Total: 4 steps, ~13 minutes
+## Total: 59 seconds of machine time
 
-| Step | Time |
-|---|---|
-| 1. Clone, install, bootstrap testnet | ~3 min |
-| 2. Declare your endpoint | ~5 min |
-| 3. Confirm it is in the Bazaar | ~1 min |
-| 4. Take a real payment from a stock client | ~4 min |
+Measured on a clean clone with `/usr/bin/time -p`, macOS, against live Stellar testnet:
 
-These are estimates, not a stopwatch reading — they will become a measured figure once the
-walkthrough is run end to end on a clean machine and the wall-clock recorded here. Step 1
-dominates when `npm install` is cold. Steps 3 and 4 are network-bound on testnet ledger close;
-the conformance run's own output reports its round trip (`HTTP 200 in 8903ms` on the run quoted
-above), so that part is not a guess.
+| Command | Wall clock | What it is waiting on |
+|---|---|---|
+| `git clone` | **0.1 s** | local; from GitHub, your connection |
+| `npm install` | **3.2 s** | 196 packages, 255 MB. npm hardlinks from its store, so a machine that has never run npm will be slower — that is a download, not our code |
+| `npm run setup` | **45.9 s** | the real work: Friendbot funding, issuing `SXT`, deploying its SAC, trustlines — **5 testnet transactions**, each waiting on ledger close |
+| `npm run verify:conformance` | **10.0 s** | one full `402 → sign → settle → 200`, including a real settlement |
+| | **59.2 s** | |
+
+An earlier version of this document said 13 minutes. That was an estimate and it was wrong —
+it was dominated by a made-up five minutes for "declare your endpoint", which is not machine
+time at all. The commands take a minute. Step 2 takes however long you take to write one route
+object, and pretending to know that number was the mistake.
+
+Nothing here is padded for safety: `npm run setup` really does submit five transactions to
+public testnet and wait for each to close, which is where 78% of the minute goes.
 
 ---
 

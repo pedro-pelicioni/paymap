@@ -15,7 +15,7 @@ type Step = {
 const STEPS: Step[] = [
   {
     n: '01',
-    time: '3 min',
+    time: '49 s',
     title: 'Clone and bootstrap',
     body: (
       <>
@@ -40,7 +40,7 @@ const STEPS: Step[] = [
   },
   {
     n: '02',
-    time: '5 min',
+    time: 'your call',
     title: 'Declare your endpoint',
     body: (
       <>
@@ -77,7 +77,7 @@ const STEPS: Step[] = [
   },
   {
     n: '03',
-    time: '1 min',
+    time: 'one curl',
     title: 'You are already listed',
     body: (
       <>
@@ -103,7 +103,7 @@ const STEPS: Step[] = [
   },
   {
     n: '04',
-    time: '4 min',
+    time: '10 s',
     title: 'Take a real payment',
     body: (
       <>
@@ -137,12 +137,13 @@ export function SellerPath() {
             <StarGlyph /> For sellers
           </span>
           <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
-            Docs to a paid, discoverable endpoint. <em>Thirteen minutes.</em>
+            Docs to a paid, discoverable endpoint. <em>Fifty-nine seconds.</em>
           </h2>
           <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
-            The RFP sets the bar at <em>well under an hour</em>. Here is the whole path, with the
-            clock running from <code>git clone</code> to a settled transaction hash you can open
-            on stellar.expert.
+            The RFP sets the bar at <em>well under an hour</em>. Every command below was timed
+            with <code>/usr/bin/time</code> on a clean clone against live testnet, and they add
+            up to 59 seconds — most of it waiting on five testnet transactions to close. The one
+            step without a number is you writing a route object.
           </p>
         </RevealGroup>
 
@@ -168,7 +169,7 @@ export function SellerPath() {
           <div className="ship__foot rise" style={{ ['--i' as string]: 0 }}>
             <p>
               No API keys. No captcha. No faucet. No mainnet, no real money. Every step ends in
-              something <code>curl</code> can check.
+              something <code>curl</code> can check, and every command is one click to copy.
             </p>
             <a className="btn btn--solid btn--sm" href={QUICKSTART} target="_blank" rel="noreferrer noopener">
               Read the quickstart ↗

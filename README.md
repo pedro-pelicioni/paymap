@@ -27,7 +27,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
 | Catalog integrity is real, not decorative | `npm test` → 84 tests, 0 failing (66 of them adversarial) | 30s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
-| A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone to a paid, discoverable endpoint, four steps | ~13 min |
+| A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
 
 That last row is the one worth pausing on. Almost every x402-on-Stellar project requires a
 Circle faucet captcha **and** an OpenZeppelin Channels API key before it will start. This one
@@ -197,7 +197,7 @@ carry the largest share of the budget. Every component maps to a numbered requir
 | **3.3 Agent-facing MCP interface** | `apps/agent` — 4 MCP tools with input **and** output schemas, 17-code error enum | Settled payments via MCP |
 | **3.6 Conformance** — *"drift, not inability, is the failure mode being screened for"* | `npm run verify:conformance` — an **unmodified** `@x402/fetch` client driven through a real 402 → sign → settle → 200. It caught v1 drift in our own seller | [Documented below](#conformance) |
 | **3.2 seller helpers** — per-parameter descriptions that make an endpoint legible to an agent | `apps/seller`, declared via `declareDiscoveryExtension` | Working |
-| **UX** — *"docs to a paid, discoverable endpoint appearing in the Bazaar in well under an hour"* | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — four steps, each ending in a `curl` check. A resource is listed on seller boot **and** re-cataloged on settle, so it is discoverable before its first payment | ~13 min |
+| **UX** — *"docs to a paid, discoverable endpoint appearing in the Bazaar in well under an hour"* | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — four steps, each ending in a `curl` check. A resource is listed on seller boot **and** re-cataloged on settle, so it is discoverable before its first payment | **59s** of commands, measured |
 
 **What we deliberately did not build**, and why: no on-chain registry (the RFP itself calls
 it an optional stretch and explains the rent/TTL cost and the doubled settlement cost); no

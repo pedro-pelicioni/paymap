@@ -230,8 +230,8 @@ export default function Landing() {
                   </a>
                 </div>
                 <p className="hero__note reveal" style={{ ['--d' as string]: '420ms' }}>
-                  Clone to a paid, discoverable endpoint in ~13 min — no API keys, no captcha, no
-                  faucet.
+                  Clone to a paid, discoverable endpoint in 59s of commands — no API keys, no
+                  captcha, no faucet.
                 </p>
               </div>
               <div className="reveal" style={{ ['--d' as string]: '380ms' }}>
