@@ -22,7 +22,7 @@
  * Never fails the build: on any error it leaves the existing file alone and exits 0.
  */
 import { execFileSync } from 'node:child_process'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -206,11 +206,19 @@ try {
   const { createCatalog } = await import(resolve(ROOT, 'packages/index/src/index.mjs'))
   const V = await import(resolve(ROOT, 'packages/index/src/integrity.mjs'))
 
+  // Stamp the commit that last touched the VALIDATOR, not HEAD. HEAD would change on
+  // every unrelated commit, so this file would be rewritten by the next `npm run dev`
+  // and dirty the tree forever. The validator's own commit is also the provenance that
+  // actually matters: it identifies the code that produced these verdicts.
   let commit = null
   try {
-    commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT })
+    commit = execFileSync(
+      'git',
+      ['log', '-1', '--format=%h', '--', 'packages/index/src/integrity.mjs', 'packages/index/src/index.mjs'],
+      { cwd: ROOT },
+    )
       .toString()
-      .trim()
+      .trim() || null
   } catch {
     /* not a git checkout — provenance is optional, the verdicts are not */
   }
@@ -269,21 +277,40 @@ try {
   // Spread the rows over a plausible window so the console reads as a log rather than
   // a table. These are display offsets for a REPLAY of the corpus, not observations —
   // src/lib/api.ts turns them into wall-clock times, and the panel says so.
-  const payload = {
-    generatedAt: new Date().toISOString(),
+  const entries = rows.map((r, i) => ({ ...r, minutesAgo: 3 + i * 7 }))
+  const body = {
     generator: 'apps/web/scripts/gen-integrity.mjs',
     validator: 'packages/index/src/integrity.mjs (via createCatalog().upsert)',
     commit,
     note: 'Replay of a fixed hostile corpus through the shipped validator. Every rule, verdict and reason below is the validator&apos;s own output. Not a live feed.',
-    entries: rows.map((r, i) => ({ ...r, minutesAgo: 3 + i * 7 })),
+    entries,
   }
 
-  mkdirSync(dirname(out), { recursive: true })
-  writeFileSync(out, `${JSON.stringify(payload, null, 2)}\n`)
+  // `generatedAt` means "when these verdicts last changed", not "when this script last
+  // ran". Stamping the wall clock on every run would rewrite the file on every
+  // `npm run dev` and leave the tree permanently dirty, so carry the old timestamp
+  // forward whenever the substance is identical — and skip the write entirely.
+  let previous = null
+  try {
+    previous = JSON.parse(readFileSync(out, 'utf8'))
+  } catch {
+    /* first run, or the file is unreadable — write a fresh one */
+  }
+  const unchanged =
+    previous && JSON.stringify({ ...previous, generatedAt: undefined }) === JSON.stringify({ ...body, generatedAt: undefined })
+
   const n = rows.filter((r) => r.verdict === 'rejected').length
-  console.log(
-    `[gen-integrity] wrote ${rows.length} verdicts from the real validator (${n} rejected, ${rows.length - n} soft-drop)${commit ? ` @ ${commit}` : ''}`,
-  )
+  if (unchanged) {
+    console.log(
+      `[gen-integrity] ${rows.length} verdicts unchanged (${n} rejected, ${rows.length - n} soft-drop)${commit ? ` @ ${commit}` : ''} — file left alone`,
+    )
+  } else {
+    mkdirSync(dirname(out), { recursive: true })
+    writeFileSync(out, `${JSON.stringify({ generatedAt: new Date().toISOString(), ...body }, null, 2)}\n`)
+    console.log(
+      `[gen-integrity] wrote ${rows.length} verdicts from the real validator (${n} rejected, ${rows.length - n} soft-drop)${commit ? ` @ ${commit}` : ''}`,
+    )
+  }
 } catch (e) {
   console.log(`[gen-integrity] could not regenerate (${e.message}) — keeping current data`)
   process.exit(0)
