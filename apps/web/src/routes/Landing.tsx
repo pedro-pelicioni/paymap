@@ -2,13 +2,33 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AssetImg } from '../components/AssetImg'
 import { PaymapMark, StarGlyph } from '../components/Marks'
+import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
-import { demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
+import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
 import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
 import type { Catalog } from '../lib/types'
 
 const GITHUB = 'https://github.com/pedro-pelicioni/paymap'
+
+/**
+ * Three representative verdicts for the bento card — one rejection, then the two most
+ * distinct soft-drops. Taken from the generated ledger so the card cannot drift from
+ * the validator the way its hand-written predecessor did.
+ */
+const miniLedger = (() => {
+  const all = bakedIntegrity().entries
+  const rejected = all.filter((e) => e.verdict === 'rejected').slice(0, 1)
+  const soft = all.filter((e) => e.verdict === 'soft-drop')
+  const seen = new Set<string>()
+  const distinct = soft.filter((e) => {
+    const head = e.rule.split(/[[:]/)[0]
+    if (seen.has(head)) return false
+    seen.add(head)
+    return true
+  })
+  return [...rejected, ...distinct].slice(0, 3)
+})()
 
 /* ------------------------------------------------------------ terminal */
 
@@ -146,6 +166,7 @@ export default function Landing() {
             <span>PAYMAP</span>
           </Link>
           <nav className="topbar__nav" aria-label="Site">
+            <a href="#ship">Sell an API</a>
             <Link to="/console">Console</Link>
             <a href={GITHUB} target="_blank" rel="noreferrer noopener">
               GitHub
@@ -192,6 +213,9 @@ export default function Landing() {
                   <Link className="btn btn--solid" to="/console">
                     Open console
                   </Link>
+                  <a className="btn btn--ghost" href="#ship">
+                    List your API ↓
+                  </a>
                   <a
                     className="btn btn--ghost"
                     href={GITHUB}
@@ -202,7 +226,8 @@ export default function Landing() {
                   </a>
                 </div>
                 <p className="hero__note reveal" style={{ ['--d' as string]: '420ms' }}>
-                  npm install && npm run setup — no API keys, no captcha, no faucet.
+                  Clone to a paid, discoverable endpoint in ~13 min — no API keys, no captcha, no
+                  faucet.
                 </p>
               </div>
               <div className="reveal" style={{ ['--d' as string]: '380ms' }}>
@@ -341,19 +366,18 @@ export default function Landing() {
                   Every discovery field is attacker-controlled. Hostile routes are refused; hostile
                   fields are dropped and the record survives.
                 </p>
+                {/* Driven by the generated ledger, not typed out here. The hand-written
+                    version of these three rows named rules the validator does not have
+                    and called a traversal "rejected" when the code soft-drops it. */}
                 <div className="miniledger">
-                  <div className="miniledger__row">
-                    <span className="verdict verdict--rejected">rejected</span>
-                    <span className="miniledger__rule">route-template/traversal</span>
-                  </div>
-                  <div className="miniledger__row">
-                    <span className="verdict verdict--soft-drop">soft-drop</span>
-                    <span className="miniledger__rule">resource/icon-url-origin</span>
-                  </div>
-                  <div className="miniledger__row">
-                    <span className="verdict verdict--soft-drop">soft-drop</span>
-                    <span className="miniledger__rule">resource/tags-cardinality</span>
-                  </div>
+                  {miniLedger.map((e) => (
+                    <div className="miniledger__row" key={`${e.verdict}-${e.rule}`}>
+                      <span className={`verdict verdict--${e.verdict}`}>
+                        {e.verdict === 'rejected' ? 'rejected' : 'soft-drop'}
+                      </span>
+                      <span className="miniledger__rule">{e.rule}</span>
+                    </div>
+                  ))}
                 </div>
               </article>
 
@@ -454,6 +478,9 @@ export default function Landing() {
             </RevealGroup>
           </div>
         </section>
+
+        {/* --------------------------------------------------- seller path */}
+        <SellerPath />
 
         {/* -------------------------------------------------------- verify */}
         <section className="section" id="verify">

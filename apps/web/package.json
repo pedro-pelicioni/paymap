@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "predev": "node scripts/sync-txs.mjs",
+    "predev": "node scripts/sync-txs.mjs && node scripts/gen-integrity.mjs",
     "dev": "vite --port 5173 --strictPort",
-    "prebuild": "node scripts/sync-txs.mjs",
+    "prebuild": "node scripts/sync-txs.mjs && node scripts/gen-integrity.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview --port 5173"
   },

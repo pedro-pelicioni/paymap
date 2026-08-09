@@ -116,13 +116,27 @@ export type IntegrityEntry = {
   reason: string
 }
 
+/**
+ * Where an integrity ledger came from. `live: true` means these verdicts were observed
+ * by a running index; `live: false` means they are a replay of the hostile corpus in
+ * apps/web/scripts/gen-integrity.mjs through the same validator, generated at
+ * `generatedAt` off `commit`. The panel renders the difference — a replay must never
+ * be presented as observed traffic.
+ */
+export type IntegrityProvenance = {
+  entries: IntegrityEntry[]
+  live: boolean
+  generatedAt?: string
+  commit?: string
+}
+
 export type TxEntry = { hash: string; label: string; source?: 'live' | 'demo' }
 
 export type Source = 'live' | 'demo'
 
 export type Catalog = {
   items: PaymapRecord[]
-  integrity: IntegrityEntry[]
+  integrity: IntegrityProvenance
   source: Source
   asset: string
   total: number

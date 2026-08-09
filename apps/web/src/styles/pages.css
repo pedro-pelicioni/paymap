@@ -503,6 +503,161 @@
   justify-items: start;
 }
 
+/* ------------------------------------------------------------ seller path */
+/* Four bands, each [rail | prose | code]. The rail's connecting hairline is what
+   reads as a clock running: it joins the numerals into one continuous descent. */
+.ship {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  background: var(--plate);
+  overflow: hidden;
+}
+.ship__step {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: start;
+  padding: clamp(1.1rem, 2.6vw, 1.6rem) clamp(1rem, 2.5vw, 1.6rem);
+  border-bottom: 1px solid var(--rule-2);
+}
+.ship__step:last-child {
+  border-bottom: 0;
+}
+
+/* the numeral, and the hairline that threads it to the next one */
+.ship__rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-self: stretch;
+}
+.ship__rail::after {
+  content: '';
+  position: absolute;
+  top: 2.4rem;
+  bottom: -2.6rem;
+  width: 1px;
+  background: var(--rule);
+}
+.ship__step:last-child .ship__rail::after {
+  display: none;
+}
+.ship__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.ship__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.ship__body h3 {
+  margin: 0;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.ship__time {
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.ship__body p {
+  margin: 0.55rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+.ship__body p em {
+  font-style: normal;
+  color: var(--fg);
+}
+.ship__body code {
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.85em;
+  color: var(--fg);
+}
+
+.ship__code {
+  border: 1px solid var(--rule-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  padding: 0.7rem 0.85rem;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.7188rem;
+  line-height: 1.8;
+  color: var(--fg-2);
+  overflow-x: auto;
+}
+.ship__code .row {
+  display: flex;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.ship__code .path {
+  color: var(--fg);
+}
+.ship__code .note {
+  color: var(--fg-3);
+  margin-left: auto;
+  padding-left: 1rem;
+}
+
+.ship__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1.1rem;
+}
+.ship__foot p {
+  margin: 0;
+  max-width: 62ch;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  color: var(--fg-3);
+}
+.ship__foot code {
+  color: var(--fg-2);
+}
+
+@media (max-width: 900px) {
+  .ship__step {
+    grid-template-columns: 3rem minmax(0, 1fr);
+  }
+  .ship__code {
+    grid-column: 2;
+  }
+  .ship__rail::after {
+    bottom: -3.2rem;
+  }
+}
+@media (max-width: 520px) {
+  .ship__code .note {
+    display: none;
+  }
+}
+
 /* ---------------------------------------------------------------- verify */
 .verify {
   display: grid;

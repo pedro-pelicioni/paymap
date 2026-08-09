@@ -1,14 +1,27 @@
-import type { IntegrityEntry } from '../lib/types'
+import type { IntegrityProvenance } from '../lib/types'
 
 const clock = (t: number) =>
   new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
+const day = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : null
+
 /**
  * The facilitator is a trust boundary, not a mailbox. This is the ledger of what
  * the index refused or stripped on the way in.
+ *
+ * Two sources feed it and the panel distinguishes them, because they are not worth
+ * the same thing to a reader. `live` verdicts were reported by a running index.
+ * Otherwise these are a REPLAY: a fixed hostile corpus pushed through the same
+ * validator by apps/web/scripts/gen-integrity.mjs, with every rule, verdict and reason
+ * captured verbatim from its output. The replay is real evidence that the validator
+ * works; it is not evidence that anyone attacked the catalog today, and labelling it
+ * as though it were is the failure this component is written to avoid.
  */
-export function IntegrityLedger({ entries }: { entries: IntegrityEntry[] }) {
+export function IntegrityLedger({ ledger }: { ledger: IntegrityProvenance }) {
+  const { entries, live, generatedAt, commit } = ledger
   const rejected = entries.filter((e) => e.verdict === 'rejected').length
+
   return (
     <section className="plate" aria-labelledby="integrity-h">
       <header className="plate__cap">
@@ -19,6 +32,22 @@ export function IntegrityLedger({ entries }: { entries: IntegrityEntry[] }) {
           {rejected} rejected / {entries.length - rejected} stripped
         </span>
       </header>
+
+      <p className="ledger__prov">
+        {live ? (
+          <>
+            <span className="dot dot--pulse" /> Observed by the running index.
+          </>
+        ) : (
+          <>
+            <span className="dot" /> Replay of the hostile corpus through the validator
+            {day(generatedAt) ? ` on ${day(generatedAt)}` : null}
+            {commit ? ` at ${commit}` : null}. Every verdict below is the validator's own
+            output — run <code>npm test</code> for the cases behind them.
+          </>
+        )}
+      </p>
+
       <div className="ledger">
         {entries.length === 0 && (
           <p className="ledger__why" style={{ padding: '0.8rem 0' }}>

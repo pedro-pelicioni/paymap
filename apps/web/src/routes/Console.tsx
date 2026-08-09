@@ -171,7 +171,7 @@ export default function Console() {
           <div id="loop-panel">
             <PaymentLoop rec={paying} runId={runId} />
           </div>
-          <IntegrityLedger entries={cat.integrity} />
+          <IntegrityLedger ledger={cat.integrity} />
         </aside>
       </main>
     </div>

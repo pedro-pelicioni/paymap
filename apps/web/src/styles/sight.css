@@ -481,6 +481,31 @@
 }
 
 /* --- integrity ledger ------------------------------------------------ */
+/* Provenance line: says whether these verdicts were observed or replayed. It sits
+   above the rows on purpose — a reader must know which they are looking at before
+   they read the first one. */
+.ledger__prov {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0.55rem 1rem 0.6rem;
+  border-bottom: 1px solid var(--rule-2);
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.6563rem;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  color: var(--fg-3);
+}
+.ledger__prov .dot {
+  align-self: center;
+  flex: none;
+}
+.ledger__prov code {
+  font-family: inherit;
+  color: var(--fg-2);
+}
 .ledger {
   padding: 0.35rem 1rem 0.9rem;
   max-height: 340px;

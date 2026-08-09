@@ -27,6 +27,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
 | Catalog integrity is real, not decorative | `npm test` → 84 tests, 0 failing (66 of them adversarial) | 30s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
+| A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone to a paid, discoverable endpoint, four steps | ~13 min |
 
 That last row is the one worth pausing on. Almost every x402-on-Stellar project requires a
 Circle faucet captcha **and** an OpenZeppelin Channels API key before it will start. This one
@@ -148,21 +149,37 @@ the score into BM25 / metadata completeness / settlements / recency, each with i
 contribution and the matched terms with their `tf`, `idf` and field weight. Searching
 re-orders the board with a FLIP animation.
 
-**The Catalog Integrity ledger**, on the right, is live. It is not a mockup — those are real
-verdicts from the validator, timestamped:
+**The Catalog Integrity ledger**, on the right, is a **replay**, and the panel says so on its
+own first line. A fixed hostile corpus is pushed through the real validator by
+[`apps/web/scripts/gen-integrity.mjs`](apps/web/scripts/gen-integrity.mjs) at build time, and
+every rule, verdict and reason it renders is a string that
+[`createCatalog().upsert()`](packages/index/src/index.mjs) actually returned — stamped with
+the commit that produced it. It is evidence the validator works. It is **not** a claim that
+anyone attacked the catalog today, and when the index does report live verdicts the panel
+switches its label to say that instead.
 
 ```
-REJECTED    route-template/traversal      /v1/parse/{id}/../../admin/keys
-            Traversal segment in route template — escapes the advertised resource prefix.
-SOFT-DROP   resource/icon-url-origin      http://198.51.100.7/icon.png
-            Icon URL off the resource origin and not TLS — field dropped, record kept.
-SOFT-DROP   resource/tags-cardinality     ["invoice","inv","invoices", … 96 more]
-            Tag flood (99 > 16). Overflow truncated.
+REJECTED    resource.url                          javascript:alert(1)
+            resource.url is missing or invalid
+SOFT-DROP   routeTemplate                         /v1/%252e%252e/thing
+            routeTemplate contains path traversal ".." after decoding
+SOFT-DROP   resource.iconUrl                      http://169.254.169.254/latest/meta-data/
+            iconUrl host rejected: IP literal host (decimal/octal/hex)
+SOFT-DROP   resource.tags[5]:over-limit           ["invoice","inv","invoices", … 96 more]
+            99 tags submitted, catalog keeps 5 — overflow dropped to contain index pollution
 ```
 
-That last line matters: the record **survives**. Soft drop means a hostile field is discarded
-and the legitimate metadata around it is kept — which is exactly what the spec requires and
-exactly the invariant that is easy to get wrong.
+That third and fourth line matter: the record **survives**. Soft drop means a hostile field is
+discarded and the legitimate metadata around it is kept — which is exactly what the spec
+requires and exactly the invariant that is easy to get wrong.
+
+An earlier version of this section said the ledger was live and not a mockup. It was neither:
+the rows were hand-written, seven of their eight rule names existed nowhere in
+`packages/index/src/integrity.mjs`, and the caps they quoted (16 tags, 2,000 characters)
+contradicted the ones the code enforces (5 and 512). The generator exists so that cannot
+recur — the numbers above are now read back off the validator's own output rather than
+restated, so a drift between doc and code shows up as a failing build artifact instead of a
+sentence nobody rechecked. `npm test` runs the 66 adversarial cases the corpus is drawn from.
 
 ---
 
@@ -180,6 +197,7 @@ carry the largest share of the budget. Every component maps to a numbered requir
 | **3.3 Agent-facing MCP interface** | `apps/agent` — 4 MCP tools with input **and** output schemas, 17-code error enum | Settled payments via MCP |
 | **3.6 Conformance** — *"drift, not inability, is the failure mode being screened for"* | `npm run verify:conformance` — an **unmodified** `@x402/fetch` client driven through a real 402 → sign → settle → 200. It caught v1 drift in our own seller | [Documented below](#conformance) |
 | **3.2 seller helpers** — per-parameter descriptions that make an endpoint legible to an agent | `apps/seller`, declared via `declareDiscoveryExtension` | Working |
+| **UX** — *"docs to a paid, discoverable endpoint appearing in the Bazaar in well under an hour"* | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — four steps, each ending in a `curl` check. A resource is listed on seller boot **and** re-cataloged on settle, so it is discoverable before its first payment | ~13 min |
 
 **What we deliberately did not build**, and why: no on-chain registry (the RFP itself calls
 it an optional stretch and explains the rent/TTL cost and the doubled settlement cost); no
@@ -247,6 +265,9 @@ npm run verify:conformance   # stock @x402/fetch client pays the seller, end to 
 ```
 
 No API keys. No captcha. No mainnet. No real money.
+
+**Listing your own paid endpoint** — the seller side, timed step by step from a clean clone —
+is [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md).
 
 Deployment — including the routing trap where a SPA catch-all silently swallows
 `/discovery/*` — is documented in [`docs/DEPLOY.md`](docs/DEPLOY.md).
