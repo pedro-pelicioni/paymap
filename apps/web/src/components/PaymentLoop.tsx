@@ -64,7 +64,7 @@ export function PaymentLoop({ rec, runId }: { rec: PaymapRecord | null; runId: n
           </span>
         </header>
         <p className="loop__empty">
-          Pick a sight and press PAY.
+          Pick a result and press PAY.
           <br />
           One HTTP round trip: 402 → sign → settle → 200.
         </p>

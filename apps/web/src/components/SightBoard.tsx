@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { ASSET_CODE } from '../lib/api'
-import { ago, bearing, formatAmount, pct, shortKey, sightNumber } from '../lib/format'
+import { ago, formatAmount, pct, shortKey, sightNumber } from '../lib/format'
 import { tokenize } from '../lib/rank'
 import type { Explain, ExplainKey, PaymapRecord } from '../lib/types'
 
@@ -11,10 +11,10 @@ const PART_LABEL: Record<ExplainKey, string> = {
   recency: 'Recency',
 }
 const PART_COLOR: Record<ExplainKey, string> = {
-  bm25: 'var(--brass)',
-  metadata: 'var(--fg-3)',
+  bm25: 'var(--accent)',
+  metadata: 'var(--g-400)',
   settlements: 'var(--good)',
-  recency: 'var(--clay)',
+  recency: 'var(--amber)',
 }
 
 /* ------------------------------------------------------------------ explain */
@@ -38,7 +38,7 @@ function ExplainPanel({ ex, id }: { ex: Explain; id: string }) {
 
   return (
     <div className="explain" id={id}>
-      <p className="explain__lead">Why this sight ranked here</p>
+      <p className="explain__lead">Why this result ranked here</p>
       <div className="explain__rows">
         {parts.map((p) => (
           <div className="explain__row" key={p.key}>
@@ -61,8 +61,7 @@ function ExplainPanel({ ex, id }: { ex: Explain; id: string }) {
       <div className="explain__total">
         <span>SCORE</span>
         <b>{total.toFixed(3)}</b>
-        <span>· bearing {bearing(total)}</span>
-        <span>· {pct(total)} of a perfect fix</span>
+        <span>· {pct(total)} of a perfect score</span>
       </div>
       {terms.length > 0 ? (
         <div className="explain__terms">
@@ -103,9 +102,9 @@ function Sight({
   return (
     <article className={`sight${index === 0 ? ' sight--top' : ''}`}>
       <div className="sight__rail">
-        <span className="sight__seq">Sight</span>
+        <span className="sight__seq">Rank</span>
         <span className="sight__no">{sightNumber(index)}</span>
-        {ex && <span className="sight__bearing">{bearing(total)}</span>}
+        {ex && <span className="sight__score">{total.toFixed(2)}</span>}
       </div>
 
       <div className="sight__body">
@@ -190,7 +189,7 @@ export function SightBoard({
   items,
   query = '',
   onPay,
-  caption = 'The sight board',
+  caption = 'Ranked results',
 }: {
   items: PaymapRecord[]
   query?: string
@@ -230,7 +229,7 @@ export function SightBoard({
       <header className="board__head">
         <span className="label">{caption}</span>
         <span className="board__stat">
-          {items.length} sight{items.length === 1 ? '' : 's'} · ranked by hybrid score
+          {items.length} result{items.length === 1 ? '' : 's'} · ranked by hybrid score
         </span>
       </header>
       {items.map((rec, i) => (

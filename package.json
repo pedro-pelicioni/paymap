@@ -1,7 +1,7 @@
 {
   "name": "paymap",
   "version": "1.0.0",
-  "description": "PAYMAP \u2014 find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
+  "description": "PAYMAP — find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
   "type": "module",
   "private": true,
   "license": "Apache-2.0",
@@ -44,5 +44,8 @@
     "picocolors": "^1.1.1",
     "redis": "^6.2.0",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

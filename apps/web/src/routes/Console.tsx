@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AssetImg } from '../components/AssetImg'
 import { IntegrityLedger } from '../components/IntegrityLedger'
-import { ArcScale, PaymapGlyph } from '../components/Marks'
+import { PaymapMark } from '../components/Marks'
 import { PaymentLoop } from '../components/PaymentLoop'
 import { SightBoard } from '../components/SightBoard'
 import { Ticker } from '../components/Ticker'
@@ -56,21 +55,21 @@ export default function Console() {
   }
 
   return (
-    <div className="theme t-ink">
+    <div className="theme">
       <a className="skip" href="#main">
         Skip to content
       </a>
       <span className="grain" aria-hidden="true" />
 
-      <header className="topbar">
+      <header className="topbar topbar--solid">
         <div className="shell topbar__in">
           <Link className="topbar__mark" to="/" aria-label="PAYMAP home">
-            <PaymapGlyph />
+            <PaymapMark />
             <span>PAYMAP</span>
           </Link>
           <nav className="topbar__nav" aria-label="Sections">
-            <Link to="/">Landing</Link>
-            <a href="#board">Sight board</a>
+            <Link to="/">Home</Link>
+            <a href="#board">Results</a>
             <a href="#loop-panel">Payment loop</a>
           </nav>
           <span
@@ -110,7 +109,7 @@ export default function Console() {
             <label className="visually-hidden" htmlFor="q">
               Search the catalog
             </label>
-            <PaymapGlyph size={20} />
+            <PaymapMark size={20} />
             <input
               id="q"
               ref={inputRef}
@@ -122,7 +121,7 @@ export default function Console() {
             />
             {busy && <span className="search__spin" aria-hidden="true" />}
             <button className="search__go" type="submit">
-              Take sight
+              Search
             </button>
           </form>
 
@@ -147,18 +146,17 @@ export default function Console() {
           </div>
 
           <div className="board__wrap" id="board">
-            <ArcScale />
             <div>
               {items.length ? (
                 <SightBoard
                   items={items}
                   query={query}
                   onPay={onPay}
-                  caption={query ? `Sights for “${query}”` : 'Sight board — full catalog'}
+                  caption={query ? `Results for “${query}”` : 'Full catalog — ranked'}
                 />
               ) : (
                 <div className="emptystate">
-                  <p>No sight fixed on that horizon.</p>
+                  <p>No results for that query.</p>
                 </div>
               )}
               <p className="label" style={{ marginTop: '0.9rem', color: 'var(--fg-3)' }}>

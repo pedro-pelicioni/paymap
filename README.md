@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="apps/web/public/assets/lot-mark.png" width="88" alt="PAYMAP">
+<img src="apps/web/public/assets/paymap-mark.svg" width="96" alt="PAYMAP">
 
 # PAYMAP
 
@@ -10,13 +10,10 @@
 
 `Apache-2.0` · `stellar:testnet` · **14 settled x402 payments** · **84 tests, 0 failing**
 
-Scoped against the SCF #45 RFP — *X402 Facilitator with Bazaar (discovery) support*
-
 </div>
 
 <br>
 
-![PAYMAP landing page](docs/screenshots/landing.png)
 
 ---
 
@@ -144,7 +141,6 @@ Redis/KV store and a write token and the auto-cataloging write path turns on;
 
 ## What it looks like
 
-![PAYMAP discovery console](docs/screenshots/console.png)
 
 **The Sight Board.** Every result is a *sight* — the observation a navigator takes to fix
 position. Numbered, ranked, with a bearing readout, and a `_EXPLAIN` disclosure that breaks

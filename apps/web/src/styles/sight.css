@@ -1,41 +1,45 @@
 /* ============================================================
-   THE SIGHT BOARD — each result is a sight taken on the catalog
+   THE SIGHT BOARD — ranked discovery results
    plus: explain breakdown, payment loop, integrity ledger
    ============================================================ */
 
 .board {
-  border-top: 1px solid var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
 }
 .board__head {
   display: flex;
   align-items: baseline;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 0.7rem 0;
+  padding: 0.75rem 1.15rem;
   border-bottom: 1px solid var(--rule);
+  background: rgba(242, 237, 227, 0.02);
 }
 .board__head .label {
-  color: var(--fg-3);
+  color: var(--fg-2);
 }
 .board__stat {
   margin-left: auto;
   font-family: 'DM Mono', Menlo, monospace;
   font-size: 0.6875rem;
-  color: var(--fg-2);
+  color: var(--fg-3);
   letter-spacing: 0.06em;
 }
 
-/* --- a single sight ------------------------------------------------- */
+/* --- a single result ------------------------------------------------- */
 .sight {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) 168px;
-  border-bottom: 1px solid var(--rule);
+  grid-template-columns: 84px minmax(0, 1fr) 172px;
+  border-bottom: 1px solid var(--rule-2);
   position: relative;
   background: transparent;
   transition: background 0.3s var(--ease);
 }
 .sight:hover {
-  background: var(--bg-2);
+  background: rgba(242, 237, 227, 0.03);
 }
 .sight--top .sight__no {
   color: var(--accent);
@@ -47,7 +51,7 @@
 }
 
 .sight__rail {
-  padding: 1.05rem 0.85rem 1.05rem 0;
+  padding: 1.05rem 0.85rem 1.05rem 1.15rem;
   border-right: 1px solid var(--rule-2);
   display: flex;
   flex-direction: column;
@@ -61,13 +65,15 @@
   text-transform: uppercase;
 }
 .sight__no {
-  font-family: 'Instrument Serif', serif;
-  font-size: 2.4rem;
-  line-height: 0.9;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--fg);
   transition: color 0.4s var(--ease);
 }
-.sight__bearing {
+.sight__score {
   margin-top: auto;
   font-family: 'DM Mono', Menlo, monospace;
   font-size: 0.6875rem;
@@ -83,10 +89,11 @@
   gap: 0.55rem;
 }
 .sight__name {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 650;
+  font-size: clamp(1.125rem, 1.8vw, 1.3125rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
 }
 .sight__url {
   font-family: 'DM Mono', Menlo, monospace;
@@ -117,15 +124,16 @@
   letter-spacing: 0.05em;
   color: var(--fg-2);
   border: 1px solid var(--rule);
-  padding: 0.12rem 0.4rem;
+  border-radius: var(--r-pill);
+  padding: 0.14rem 0.5rem;
 }
 .tag--hit {
-  border-color: var(--accent-mark);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--accent);
 }
 
 .sight__right {
-  padding: 1.05rem 0 1.05rem 1.1rem;
+  padding: 1.05rem 1.15rem 1.05rem 1.1rem;
   border-left: 1px solid var(--rule-2);
   display: flex;
   flex-direction: column;
@@ -155,6 +163,7 @@
   display: flex;
   gap: 0.4rem;
   margin-top: auto;
+  align-items: center;
 }
 
 /* --- score bar ------------------------------------------------------- */
@@ -170,18 +179,18 @@
   transition: width 0.6s var(--ease);
 }
 .seg--bm25 {
-  background: var(--brass);
+  background: var(--accent);
 }
 .seg--metadata {
-  background: var(--fg-3);
+  background: var(--g-400);
 }
 .seg--settlements {
   background: var(--good);
 }
 .seg--recency {
-  background: var(--clay);
+  background: var(--amber);
 }
-/* degree ticks along the scale */
+/* quarter ticks along the scale */
 .scorebar__ticks {
   position: absolute;
   inset: 0;
@@ -190,7 +199,7 @@
 }
 .scorebar__ticks i {
   flex: 1;
-  border-right: 1px solid var(--bg);
+  border-right: 1px solid var(--surface);
 }
 .scorebar__ticks i:last-child {
   border: 0;
@@ -205,9 +214,9 @@
   animation: reveal 0.4s var(--ease) both;
 }
 .explain__lead {
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  font-size: 1.0625rem;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
   color: var(--fg);
   margin-bottom: 0.75rem;
 }
@@ -232,8 +241,10 @@
 }
 .explain__meter {
   height: 4px;
+  border-radius: var(--r-pill);
   background: var(--rule-2);
   position: relative;
+  overflow: hidden;
 }
 .explain__meter i {
   position: absolute;
@@ -279,8 +290,9 @@
   font-size: 0.625rem;
   color: var(--fg-2);
   border: 1px solid var(--rule);
-  border-left: 2px solid var(--accent-mark);
-  padding: 0.15rem 0.4rem;
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
 }
 .term b {
   color: var(--fg);
@@ -305,11 +317,13 @@
   color: var(--fg-2);
   border-bottom: 1px solid var(--rule);
   padding-bottom: 2px;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
 }
 .disclose:hover {
   color: var(--fg);
-  border-color: var(--accent-mark);
+  border-color: var(--accent);
 }
 .disclose i {
   font-style: normal;
@@ -363,12 +377,15 @@
   border-radius: 50%;
   border: 1px solid var(--fg-3);
   background: var(--bg);
-  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
 }
 .step.is-active .step__dot {
-  border-color: var(--brass);
-  background: var(--brass);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brass) 20%, transparent);
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
   animation: pulse 1.15s var(--ease) infinite;
 }
 .step.is-done .step__dot {
@@ -390,7 +407,7 @@
   letter-spacing: 0.08em;
 }
 .code--402 {
-  color: var(--warn);
+  color: var(--accent);
 }
 .code--200 {
   color: var(--good);
@@ -415,7 +432,7 @@
   word-break: break-all;
 }
 .step.is-active .step__wire {
-  border-color: var(--brass);
+  border-color: var(--accent);
   color: var(--fg-2);
 }
 
@@ -423,8 +440,9 @@
   margin-top: 0.35rem;
   border: 1px solid var(--rule);
   border-top: 2px solid var(--good);
+  border-radius: var(--r-sm);
   padding: 0.8rem 0.9rem;
-  background: var(--plate);
+  background: var(--bg-2);
   animation: reveal 0.5s var(--ease) both;
 }
 .receipt__row {
@@ -464,7 +482,7 @@
 
 /* --- integrity ledger ------------------------------------------------ */
 .ledger {
-  padding: 0.35rem 0.9rem 0.9rem;
+  padding: 0.35rem 1rem 0.9rem;
   max-height: 340px;
   overflow-y: auto;
 }
@@ -491,14 +509,15 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   border: 1px solid currentColor;
-  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  padding: 0.08rem 0.32rem;
   margin-right: 0.45rem;
 }
 .verdict--rejected {
-  color: var(--warn);
+  color: var(--accent);
 }
 .verdict--soft-drop {
-  color: var(--accent-mark);
+  color: var(--amber);
 }
 .ledger__rule {
   font-family: 'DM Mono', Menlo, monospace;
@@ -525,16 +544,18 @@
 /* --- responsive ------------------------------------------------------ */
 @media (max-width: 820px) {
   .sight {
-    grid-template-columns: 62px minmax(0, 1fr);
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+  .sight__rail {
+    padding-left: 0.9rem;
   }
   .sight__no {
-    font-size: 1.75rem;
+    font-size: 1.3rem;
   }
   .sight__right {
     grid-column: 2;
     border-left: 0;
-    padding: 0 1.15rem 1rem;
-    align-items: flex-start;
+    padding: 0 1.15rem 1rem 1.15rem;
     text-align: left;
     flex-direction: row;
     flex-wrap: wrap;
@@ -543,6 +564,7 @@
   }
   .sight__acts {
     margin-left: auto;
+    margin-top: 0;
   }
   .explain__row {
     grid-template-columns: 92px 1fr 58px;

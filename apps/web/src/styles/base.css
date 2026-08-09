@@ -1,60 +1,55 @@
 /* ============================================================
    PAYMAP — foundations
-   celestial navigation chart meets a precision instrument
+   dark-first developer-infrastructure chrome.
+   One theme, one accent, hairline borders, mono microtype.
    ============================================================ */
 
 :root {
-  /* fixed pigments */
-  --ink: #0b0c0e;
-  --paper: #f2ede3;
-  --brass: #ff7a18; /* signal amber, read as brass */
-  --jade: #00c2a0;
-  --clay: #b4553a;
-  --clay-deep: #8e3d26; /* darkened clay: AA-safe on paper */
-  --clay-lit: #d8734f; /* lifted clay: AA-safe on ink */
-  --jade-deep: #0a6b5a;
+  /* --- brand pigments (anchored on the mark) ------------------ */
+  --accent: #f5400e; /* the pin */
+  --accent-soft: rgba(245, 64, 14, 0.14);
+  --ink: #0b0c0e; /* page ground */
+  --surface: #121215; /* card ground — the pin's inner circle */
+  --cream: #f2ede3; /* text */
 
-  --shell: min(1440px, 100% - 3rem);
-  --gutter: clamp(1.25rem, 4vw, 4.5rem);
+  /* --- gray ramp (cool-neutral over ink) ---------------------- */
+  --g-950: #0b0c0e;
+  --g-900: #121215;
+  --g-850: #17181c;
+  --g-800: #1d1e24;
+  --g-700: #292b33;
+  --g-600: #3a3d47;
+  --g-500: #575b68;
+  --g-400: #7d818f;
+  --g-300: #a4a7b2;
+  --g-200: #cbccd3;
+  --g-100: #e6e4de;
+  --g-50: #f2ede3;
 
+  /* --- status ------------------------------------------------- */
+  --good: #2ed3a4; /* settled / live */
+  --amber: #e0a83c; /* soft-drop */
+
+  /* --- semantic mapping (what every component reads) ---------- */
+  --bg: var(--ink);
+  --bg-2: #0e0f12;
+  --plate: var(--surface);
+  --fg: var(--cream);
+  --fg-2: rgba(242, 237, 227, 0.68);
+  --fg-3: rgba(242, 237, 227, 0.52);
+  --rule: rgba(242, 237, 227, 0.11);
+  --rule-2: rgba(242, 237, 227, 0.06);
+  --accent-mark: var(--accent);
+  --warn: var(--accent);
+
+  /* --- geometry & motion -------------------------------------- */
+  --r-lg: 16px;
+  --r-md: 14px;
+  --r-sm: 9px;
+  --r-pill: 999px;
+  --shell: min(1180px, 100% - 2.5rem);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
-}
-
-/* daylight half ------------------------------------------------ */
-.t-paper {
-  --bg: #f2ede3;
-  --bg-2: #eae2d3;
-  --plate: #f7f4ec;
-  --fg: #0b0c0e;
-  --fg-2: rgba(11, 12, 14, 0.62);
-  --fg-3: rgba(11, 12, 14, 0.45);
-  --rule: rgba(11, 12, 14, 0.16);
-  --rule-2: rgba(11, 12, 14, 0.075);
-  --accent: var(--clay-deep);
-  --accent-mark: var(--brass);
-  --good: var(--jade-deep);
-  --warn: var(--clay-deep);
-  --grain-opacity: 0.5;
-  color-scheme: light;
-}
-
-/* night half --------------------------------------------------- */
-.t-ink {
-  --bg: #0b0c0e;
-  --bg-2: #101216;
-  --plate: #131519;
-  --fg: #f2ede3;
-  --fg-2: rgba(242, 237, 227, 0.66);
-  --fg-3: rgba(242, 237, 227, 0.5);
-  --rule: rgba(242, 237, 227, 0.15);
-  --rule-2: rgba(242, 237, 227, 0.07);
-  --accent: var(--brass);
-  --accent-mark: var(--brass);
-  --good: var(--jade);
-  --warn: var(--clay-lit);
-  --grain-opacity: 0.32;
-  color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------- reset */
@@ -65,11 +60,13 @@
 }
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 body {
   margin: 0;
   background: var(--ink);
-  font-family: 'Bricolage Grotesque', 'Bricolage Grotesque Placeholder', sans-serif;
+  color: var(--cream);
+  font-family: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', sans-serif;
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -99,7 +96,8 @@ h3,
 h4,
 p,
 figure,
-blockquote {
+blockquote,
+pre {
   margin: 0;
 }
 ul,
@@ -110,31 +108,17 @@ ol {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brass);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 1px;
+  border-radius: 2px;
 }
 
 ::selection {
-  background: var(--brass);
-  color: #0b0c0e;
+  background: var(--accent);
+  color: var(--ink);
 }
 
 /* ---------------------------------------------------------------- type */
-.display {
-  font-family: 'Instrument Serif', 'Times New Roman', serif;
-  font-weight: 400;
-  line-height: 0.88;
-  letter-spacing: -0.018em;
-}
-.display em,
-.serif em {
-  font-style: italic;
-}
-.serif {
-  font-family: 'Instrument Serif', 'Times New Roman', serif;
-  font-weight: 400;
-}
 .mono {
   font-family: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   font-weight: 400;
@@ -149,8 +133,8 @@ ol {
   color: var(--fg-2);
 }
 .lede {
-  font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
-  line-height: 1.55;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.6;
   color: var(--fg-2);
 }
 .prose {
@@ -176,62 +160,35 @@ ol {
   width: var(--shell);
   margin-inline: auto;
 }
-.rule {
-  height: 1px;
-  background: var(--rule);
-  border: 0;
-}
-.rule--strong {
-  background: var(--fg);
-  opacity: 0.85;
-}
 
-/* engraved paper: ledger rules + faint chart grid */
-.ruled {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 33px,
-    var(--rule-2) 33px 34px
-  );
-}
-
-/* film grain over everything */
-/* generated tile first, inline SVG noise underneath as the guaranteed fallback */
+/* faint film grain — inline SVG only, so it can never 404 */
 .grain {
   position: fixed;
   inset: 0;
   z-index: 90;
   pointer-events: none;
-  background-image: url('/assets/texture-grain.png'), var(--grain);
-  background-repeat: repeat, repeat;
-  opacity: var(--grain-opacity, 0.3);
+  background-image: var(--grain);
+  background-repeat: repeat;
+  opacity: 0.26;
   mix-blend-mode: overlay;
 }
 
 /* ---------------------------------------------------------------- plates */
-/* an instrument plate: hairline box, engraved caption, notched corner */
+/* an instrument panel: hairline border, mono caption strip, soft radius */
 .plate {
   position: relative;
   background: var(--plate);
   border: 1px solid var(--rule);
-}
-.plate::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 12px;
-  height: 12px;
-  background: var(--bg);
-  border-left: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  overflow: hidden;
 }
 .plate__cap {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.65rem 1rem;
   border-bottom: 1px solid var(--rule);
+  background: rgba(242, 237, 227, 0.02);
 }
 .plate__cap .label {
   color: var(--fg-2);
@@ -242,9 +199,9 @@ ol {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.22rem 0.5rem;
+  padding: 0.22rem 0.55rem;
   border: 1px solid var(--rule);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   font-family: 'DM Mono', Menlo, monospace;
   font-size: 0.625rem;
   letter-spacing: 0.13em;
@@ -253,11 +210,11 @@ ol {
   white-space: nowrap;
 }
 .pill--http {
-  border-color: color-mix(in srgb, var(--accent-mark) 45%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   color: var(--accent);
 }
 .pill--mcp {
-  border-color: color-mix(in srgb, var(--good) 50%, transparent);
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
   color: var(--good);
 }
 .pill--net {
@@ -278,8 +235,9 @@ ol {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.3rem 0.65rem;
   border: 1px solid currentColor;
+  border-radius: var(--r-pill);
   font-family: 'DM Mono', Menlo, monospace;
   font-size: 0.625rem;
   font-weight: 500;
@@ -301,53 +259,62 @@ ol {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.72rem 1.15rem;
-  border: 1px solid var(--fg);
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.78rem 1.35rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
   font-family: 'DM Mono', Menlo, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.17em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
   background: transparent;
   color: var(--fg);
-  transition: background 0.25s var(--ease), color 0.25s var(--ease),
+  transition:
+    background 0.25s var(--ease),
+    color 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
     transform 0.25s var(--ease);
 }
 .btn:hover {
-  background: var(--fg);
-  color: var(--bg);
+  border-color: var(--fg-2);
   transform: translateY(-1px);
 }
 .btn--solid {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
 }
 .btn--solid:hover {
-  background: var(--brass);
-  border-color: var(--brass);
-  color: #0b0c0e;
+  background: #ff5a24;
+  border-color: #ff5a24;
+  box-shadow: 0 8px 28px -10px rgba(245, 64, 14, 0.55);
+  color: var(--ink);
 }
 .btn--ghost {
   border-color: var(--rule);
-  color: var(--fg-2);
+  color: var(--fg);
+  background: rgba(242, 237, 227, 0.03);
 }
 .btn--ghost:hover {
-  border-color: var(--fg);
-  background: transparent;
-  color: var(--fg);
+  border-color: var(--fg-2);
+  background: rgba(242, 237, 227, 0.06);
 }
 .btn--sm {
-  padding: 0.45rem 0.75rem;
-  font-size: 0.625rem;
+  padding: 0.48rem 0.85rem;
+  font-size: 0.6563rem;
 }
 
 .link {
   color: var(--fg);
   text-decoration: none;
   border-bottom: 1px solid var(--rule);
-  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
 }
 .link:hover {
   border-color: var(--accent);
@@ -359,15 +326,22 @@ ol {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--ink) 74%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.topbar.is-scrolled,
+.topbar--solid {
+  border-bottom-color: var(--rule);
+  background: color-mix(in srgb, var(--ink) 86%, transparent);
 }
 .topbar__in {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  height: 58px;
+  height: 60px;
 }
 .topbar__mark {
   display: flex;
@@ -377,19 +351,20 @@ ol {
   flex: none;
 }
 .topbar__mark span {
-  font-family: 'Instrument Serif', serif;
-  font-size: 1.35rem;
-  letter-spacing: 0.06em;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: 0.09em;
 }
 .topbar__nav {
   display: flex;
-  gap: 1.35rem;
+  gap: 1.4rem;
   margin-left: auto;
 }
 .topbar__nav a {
   font-family: 'DM Mono', Menlo, monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.16em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-2);
   text-decoration: none;
@@ -399,15 +374,25 @@ ol {
 }
 .topbar__nav a:hover {
   color: var(--fg);
-  border-color: var(--accent-mark);
+  border-color: var(--accent);
 }
 @media (max-width: 860px) {
   .topbar__nav {
     display: none;
   }
+  /* with the nav gone, its auto margin goes too — the pill takes over */
+  .topbar__in .source-pill {
+    margin-left: auto;
+  }
+}
+/* at phone width the hero CTA is one scroll-height away — drop the duplicate */
+@media (max-width: 460px) {
+  .topbar__in > .btn {
+    display: none;
+  }
 }
 
-/* the paymap arc glyph inherits currentColor */
+/* inline brand glyphs inherit layout, never shrink */
 .glyph {
   flex: none;
 }
@@ -483,10 +468,10 @@ ol {
 [data-reveal='on'] .rise {
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
   transition-delay: calc(var(--i, 0) * var(--step, 80ms));
-  /* deliberately no will-change: there are ~60 of these on the page and
-     promoting them all costs more than the hint saves. */
 }
 [data-reveal='on'] [data-in] .rise,
 [data-reveal='on'] .rise[data-in] {
@@ -494,8 +479,7 @@ ol {
   transform: none;
 }
 
-/* words in a split heading: tighter step, shorter travel — the line should
-   read as type being set, not as four separate animations. */
+/* words in a split heading: tighter step, shorter travel */
 .wd {
   display: inline-block;
   --step: 34ms;
@@ -504,7 +488,7 @@ ol {
   transform: translateY(0.14em);
 }
 
-/* an engraved rule that draws itself left to right */
+/* a hairline that draws itself left to right */
 [data-reveal='on'] .rise--rule::before {
   transform: scaleX(0);
   transform-origin: left center;
@@ -514,26 +498,11 @@ ol {
 [data-reveal='on'] [data-in] .rise--rule::before {
   transform: none;
 }
-.reveal--rule {
-  transform: none;
-  transform-origin: left;
-  animation-name: reveal-rule;
-}
 
 @keyframes reveal {
   to {
     opacity: 1;
     transform: none;
-  }
-}
-@keyframes reveal-rule {
-  from {
-    opacity: 0;
-    scale: 0 1;
-  }
-  to {
-    opacity: 1;
-    scale: 1 1;
   }
 }
 @keyframes ticker {
@@ -561,17 +530,11 @@ ol {
     transform: rotate(360deg);
   }
 }
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
@@ -599,24 +562,10 @@ ol {
     transform: none !important;
     transition: none !important;
   }
-  .loopdia .wire,
-  .loopdia .node,
-  .loopdia .feed {
-    stroke-dashoffset: 0 !important;
-    opacity: 1 !important;
-    animation: none !important;
-  }
-  .loopdia .pulse {
-    display: none;
-  }
-  .stack__meter i {
-    transform: scaleX(var(--w, 1)) !important;
-    transition: none !important;
-  }
 }
 
-/* Printing (or saving to PDF) never scrolls, so nothing would ever be observed
-   and the lower half of the page would come out blank. Pin it all open. */
+/* Printing never scrolls, so nothing would ever be observed and the lower
+   half of the page would come out blank. Pin it all open. */
 @media print {
   [data-reveal='on'] .rise {
     opacity: 1 !important;
@@ -624,19 +573,6 @@ ol {
   }
   [data-reveal='on'] .rise--rule::before {
     transform: none !important;
-  }
-  .loopdia .wire,
-  .loopdia .node,
-  .loopdia .tip,
-  .loopdia .feed {
-    stroke-dashoffset: 0 !important;
-    opacity: 1 !important;
-  }
-  .loopdia .pulse {
-    display: none;
-  }
-  .stack__meter i {
-    transform: scaleX(var(--w, 1)) !important;
   }
 }
 
