@@ -6,6 +6,7 @@ import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
 import { DitherField } from '../components/DitherField'
 import { DottedGlobe } from '../components/DottedGlobe'
+import { OrbitRing } from '../components/OrbitRing'
 import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
 import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
@@ -483,6 +484,26 @@ export default function Landing() {
                 </div>
               </article>
             </RevealGroup>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------ one index */}
+        <section className="section" id="index">
+          <div className="shell orbit-split">
+            <RevealGroup>
+              <span className="section__kicker rise" style={{ ['--i' as string]: 0 }}>
+                <StarGlyph /> One index
+              </span>
+              <h2 className="section__title rise" style={{ ['--i' as string]: 1 }}>
+                Every client orbits <em>the same catalog.</em>
+              </h2>
+              <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
+                The four MCP tools and the <code>/discovery/*</code> routes are two doors into one
+                index — the same catalog code, the same ranking, the same records, whether it runs
+                on your laptop or at <code>paymap.dev</code>. Nothing is mirrored per client.
+              </p>
+            </RevealGroup>
+            <OrbitRing />
           </div>
         </section>
 

@@ -1,0 +1,234 @@
+/* ============================================================
+   ORBIT RING — every client orbits one public index
+   Concentric rings of labelled nodes around a DottedGlobe
+   (components/OrbitRing.tsx).
+
+   Pure CSS: two keyframes, `transform` only, no rAF loop and no
+   JavaScript per frame. The component supplies four custom
+   properties — --d, --dur, --a and --core — worked out from the
+   labels it was handed; this file spends them.
+
+   Nothing here names a colour. Rings and chips are drawn in
+   --rule / --plate / --fg-3, so retinting a placement is a token
+   override, not an edit.
+   ============================================================ */
+
+.orbit {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  aspect-ratio: 1;
+
+  /* Makes the children's `cqw` below resolve against THIS box. A container
+     cannot query itself, which is why the type scale sits on the children
+     rather than here. It also gives us a stacking context for --z. */
+  container-type: inline-size;
+  isolation: isolate;
+
+  /* The solved radii keep every chip INSIDE this box — measured slack is
+     ~3.7px a side at 375px and ~4.6px at the 34rem cap. That is not enough on
+     its own, because scrollable overflow is not computed from what you can
+     see. An `.orbit__arm` is a square the size of its ring whose overflow rect
+     is the union of that square with the counter-rotated chip hanging off its
+     top edge; rotating THAT union by the arm's angle yields a bounding box
+     ~7% wider than the ring, and it propagates to the document. Measured: at a
+     375px viewport (--shell = 335px) the page's scrollWidth was 378 against a
+     375px client width — a 3px scrollbar from a component nothing visibly
+     leaves. Clipping at the border box discards the phantom and, given the
+     slack above, cuts nothing that is drawn.
+
+     `clip` rather than `hidden`: no scroll container, so no scroll anchoring
+     and no programmatic scrolling of an inert, aria-hidden block. `hidden` is
+     stated first for engines that do not parse `clip`. */
+  overflow: hidden;
+  overflow: clip;
+
+  /* Decorative in full: aria-hidden in the markup, inert here. It sits in
+     normal flow next to real copy and must never eat a click. */
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The type scale the whole composition is measured in.
+   Every radius the component emits is `100% − N em`, and every `em` here is
+   this line — so the arrangement holds its proportions at any width instead of
+   being re-tuned per breakpoint.
+
+   Two declarations on purpose. The first is viewport-based and universal; the
+   second measures the CONTAINER, which is what we actually want (the block is
+   often one column of a split), and is dropped whole by engines that do not
+   parse `cqw`, leaving the first in place. */
+.orbit__ring,
+.orbit__core,
+.orbit__tag {
+  font-size: clamp(0.5625rem, 1.25vw + 0.2rem, 0.6875rem);
+  font-size: clamp(0.5625rem, 2.05cqw, 0.6875rem);
+}
+
+/* ------------------------------------------------------------------ centre */
+
+.orbit__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  display: block;
+  width: max(2rem, var(--core, 8rem));
+  transform: translate(-50%, -50%);
+}
+
+/* The sphere is the innermost circle of the family, so its silhouette carries
+   the same weight as the rings around it. globe.css invites exactly this
+   override; the component itself still never names a colour. */
+.orbit__core .globe {
+  --globe-rim: var(--rule);
+}
+
+/* ------------------------------------------------------------------- rings */
+
+.orbit__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z, 1);
+  width: max(2.5rem, var(--d, 20rem));
+  aspect-ratio: 1;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  /* Static — the rotation lives one level down, on the arms, so these two
+     transforms never have to share a property. */
+  transform: translate(-50%, -50%);
+}
+
+/* An arm is the ring's own box; rotating it sweeps whatever is pinned to its
+   edge around the centre. `--a` is the start angle, and it is the same value
+   the keyframe below opens on, so the animation continues the static transform
+   rather than jumping away from it. */
+.orbit__arm {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--a, 0deg));
+  animation: orbit-arm var(--dur, 60s) linear infinite;
+}
+
+/* Pinned to the top of the arm, i.e. on the ring's stroke. */
+.orbit__seat {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  transform: translate(-50%, -50%);
+}
+
+.orbit__tag {
+  display: inline-block;
+  padding: 0.34em 0.62em;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  background: var(--plate);
+  font-family: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 400;
+  font-size: inherit;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: var(--fg-3);
+  /* The exact mirror of the arm, over the same duration: the chip turns
+     backwards as fast as it is carried forwards, so the label never tips. */
+  transform: rotate(calc(-1 * var(--a, 0deg)));
+  animation: orbit-tag var(--dur, 60s) linear infinite;
+}
+
+/* Alternate the direction by ring. Reversing both halves together flips the
+   orbit without disturbing where any node starts — `to` is `from` plus a whole
+   turn, so the reversed first frame is the same frame. */
+.orbit__ring--ccw .orbit__arm,
+.orbit__ring--ccw .orbit__tag {
+  animation-direction: reverse;
+}
+
+@keyframes orbit-arm {
+  from {
+    transform: rotate(var(--a, 0deg));
+  }
+  to {
+    transform: rotate(calc(var(--a, 0deg) + 360deg));
+  }
+}
+
+@keyframes orbit-tag {
+  from {
+    transform: rotate(calc(-1 * var(--a, 0deg)));
+  }
+  to {
+    transform: rotate(calc(-1 * var(--a, 0deg) - 360deg));
+  }
+}
+
+/* ------------------------------------------------------- narrow: one ring */
+/* Below roughly a 30rem box the arithmetic runs out: the label type has hit its
+   legibility floor, so the reserves stop shrinking with the box and the centre
+   is what gets squeezed. Rather than set 8px labels, drop to the outer ring
+   alone and hand the reclaimed radius back to the sphere. Nothing is lost —
+   the labels are decorative texture, and every one of them is also written out
+   as text elsewhere on the page.
+
+   Stated twice, and they agree: the media query is the universal one, the
+   container query is the correct one (a narrow COLUMN on a wide viewport is
+   just as tight). Either firing gives the same layout. */
+@media (max-width: 520px) {
+  .orbit__ring {
+    display: none;
+  }
+  .orbit__ring--outer {
+    display: block;
+    width: max(2.5rem, var(--d-solo, 20rem));
+  }
+  .orbit__core {
+    width: max(2rem, var(--core-solo, 8rem));
+  }
+}
+
+@container (max-width: 30rem) {
+  .orbit__ring {
+    display: none;
+  }
+  .orbit__ring--outer {
+    display: block;
+    width: max(2.5rem, var(--d-solo, 20rem));
+  }
+  .orbit__core {
+    width: max(2rem, var(--core-solo, 8rem));
+  }
+}
+
+/* --------------------------------------------------------- reduced motion */
+/* Dropping the two animations leaves the static `rotate(var(--a))` on each arm
+   and its mirror on each chip — every node frozen at its own start angle,
+   upright, evenly spaced. A composed arrangement, not a collapsed one.
+   The sphere stops itself, in DottedGlobe.tsx. */
+@media (prefers-reduced-motion: reduce) {
+  .orbit__arm,
+  .orbit__tag {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------- placement */
+/* A two-column beat: the argument on one side, the picture on the other.
+   Lives here rather than in pages.css because nothing else uses it. */
+.orbit-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 5vw, 3.5rem);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .orbit-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
