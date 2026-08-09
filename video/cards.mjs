@@ -1,4 +1,4 @@
-// SEXTANT demo video — title card generator.
+// PAYMAP demo video — title card generator.
 // Emits standalone 1920x1080 HTML cards that headless Chrome rasterizes to PNG.
 // Visual language mirrors apps/web exactly: ink/paper/brass/jade/clay,
 // Instrument Serif (display), Bricolage Grotesque (UI), DM Mono (numbers).
@@ -53,7 +53,7 @@ cards['01-open'] = shell({
     <div style="width:46px;height:46px;border:2px solid var(--brass);transform:rotate(45deg);
          margin:0 auto 74px"></div>
     <h1 style="font-family:var(--serif);font-size:206px;line-height:.94;letter-spacing:.055em;
-        text-indent:.055em">SEXTANT</h1>
+        text-indent:.055em">PAYMAP</h1>
     <div style="width:180px;height:1px;background:var(--brass);margin:52px auto"></div>
     <p style="font-family:var(--serif);font-size:60px;opacity:.94">
       Find <em class="brass">what to pay for</em> on Stellar.</p>
@@ -94,7 +94,7 @@ cards['03-evidence'] = shell({
         <div class="s"><span class="mono">stellar/x402-stellar#50</span> — open and unassigned since April 2026.</div></div></div>
     </div>
     <p style="font-size:42px;margin-top:52px;line-height:1.4">
-      SEXTANT is that <span class="brass">missing facilitator-side layer</span>.</p>
+      PAYMAP is that <span class="brass">missing facilitator-side layer</span>.</p>
   </div>`,
 }, `
   .row{display:flex;gap:40px;align-items:flex-start;padding:34px 0;
@@ -184,7 +184,7 @@ cards['07-close'] = shell({
       <span style="opacity:.62;font-size:.78em">Runs start to finish. No web forms. No keys.</span></p>
     <div class="rule" style="width:200px;margin:56px auto"></div>
     <div class="mono" style="font-size:44px;letter-spacing:.03em">
-      github.com/<span class="brass">pedro-pelicioni/sextant</span></div>
+      github.com/<span class="brass">pedro-pelicioni/paymap</span></div>
   </div>`,
 }, `
   .stat{padding:0 62px;border-right:1px solid rgba(11,12,14,.16)}
@@ -199,7 +199,7 @@ cards['08-end'] = shell({
   html: `<div class="stage" style="align-items:center;text-align:center">
     <div style="width:38px;height:38px;border:2px solid var(--brass);transform:rotate(45deg);
          margin:0 auto 58px"></div>
-    <h1 style="font-family:var(--serif);font-size:152px;letter-spacing:.06em;text-indent:.06em">SEXTANT</h1>
+    <h1 style="font-family:var(--serif);font-size:152px;letter-spacing:.06em;text-indent:.06em">PAYMAP</h1>
     <p style="font-family:var(--serif);font-size:48px;opacity:.80;margin-top:30px">
       Find <em class="brass">what to pay for</em> on Stellar.</p>
     <p class="mono" style="font-size:26px;opacity:.50;margin-top:64px;letter-spacing:.20em">

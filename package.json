@@ -1,7 +1,7 @@
 {
-  "name": "sextant",
+  "name": "paymap",
   "version": "1.0.0",
-  "description": "SEXTANT \u2014 find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
+  "description": "PAYMAP \u2014 find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
   "type": "module",
   "private": true,
   "license": "Apache-2.0",

@@ -93,7 +93,7 @@ export function Globe() {
       const draw = () => {
         c.clearRect(0, 0, w, h)
 
-        // left of the composition, opposite the sextant plate on the right
+        // left of the composition, opposite the paymap plate on the right
         const R = Math.max(80, Math.min(w * 0.16, h * 0.42))
         const cx = w * 0.2
         const cy = h * 0.56

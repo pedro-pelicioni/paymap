@@ -1,4 +1,4 @@
-# SEXTANT — what to fix next
+# PAYMAP — what to fix next
 
 Output of a five-lens audit (RFP gap, security, correctness, product, ecosystem). Every
 finding below was produced with executed evidence — live curls, probes against
@@ -12,7 +12,7 @@ are no numbers yet. That posture is also the vulnerability, because it sets the 
 rest of the repo is then measured against.
 
 **The single biggest thing between this and a funded proposal: the README makes conformance
-claims that a reviewer can falsify in under a minute, and one of them is inverted — SEXTANT
+claims that a reviewer can falsify in under a minute, and one of them is inverted — PAYMAP
 is the non-conformant party, not the ecosystem.** On a bid scored explicitly on "drift, not
 inability", a falsified conformance claim costs more than the underlying defect.
 
@@ -48,7 +48,7 @@ search, so `withBazaar(client).search({query})` — three lines from the package
 returns `undefined` and throws on iteration.
 
 The item shape diverges too: the spec's `DiscoveryResource` has `resource` as a **URL string**,
-plus `accepts: PaymentRequirements[]`, `x402Version` and `lastUpdated` (ISO 8601). SEXTANT
+plus `accepts: PaymentRequirements[]`, `x402Version` and `lastUpdated` (ISO 8601). PAYMAP
 sends `resource` as an object, no `accepts` at all, and `lastSeenAt` as epoch ms. So even on
 the list endpoint, a stock consumer cannot construct a payment from a result.
 
@@ -105,7 +105,7 @@ RFP 3.6 names it in so many words: "a discovery index that does not let anyone s
 seller's listing or pricing." Today the index fails that sentence literally.
 
 `recordId()` keys purely on `resource.url`; `upsert()` ends in an unconditional `store.set`.
-Any holder of the single global `SEXTANT_WRITE_TOKEN` can rewrite a competitor's `payTo`,
+Any holder of the single global `PAYMAP_WRITE_TOKEN` can rewrite a competitor's `payTo`,
 `asset` and price — and the monotonic merge **keeps the victim's settlement count**, so the
 hijacked listing ranks as more trustworthy than an honest new one. Confirmed by execution.
 
@@ -135,7 +135,7 @@ CI gate. `buildIndex` and `scoreHybrid` are already exported — this is a fixtu
 scorer, not a refactor.
 
 **Do the query logging this week regardless.** `SEARCH-QUALITY.md` §6 says it cannot be
-backfilled, and sextants.dev has been serving search since `2607f84` with none.
+backfilled, and paymap.dev has been serving search since `2607f84` with none.
 
 ### 8. Two ecosystem contributions — 5h total · highest signal per hour
 
@@ -171,7 +171,7 @@ unreachable hostname.
 
 ## The one thing
 
-**Item 2 — make `withBazaar()` work against sextants.dev.**
+**Item 2 — make `withBazaar()` work against paymap.dev.**
 
 It is the RFP's largest budget line, its literal acceptance test, and a claim the README
 already makes. Today three lines from the SDK's own README return `undefined` against your

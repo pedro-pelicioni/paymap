@@ -32,7 +32,7 @@ export function ago(ts: number): string {
 
 export const sightNumber = (i: number) => String(i + 1).padStart(2, '0')
 
-/** score 0..1 rendered as a sextant bearing, e.g. 0.62 -> "055.8°" */
+/** score 0..1 rendered as a paymap bearing, e.g. 0.62 -> "055.8°" */
 export function bearing(score: number): string {
   const deg = Math.max(0, Math.min(1, score)) * 90
   return `${deg.toFixed(1).padStart(4, '0')}°`

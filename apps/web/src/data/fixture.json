@@ -9,7 +9,7 @@
       "id": "http://localhost:4023/v1/fx/usd-brl",
       "resource": {
         "url": "http://localhost:4023/v1/fx/usd-brl",
-        "serviceName": "sextant-fx",
+        "serviceName": "paymap-fx",
         "description": "USD/BRL exchange rate with bid, ask and mid price.",
         "tags": [
           "fx",
@@ -38,7 +38,7 @@
           "ask": 5.4389,
           "mid": 5.435,
           "asOf": "2026-08-06T12:00:00.000Z",
-          "source": "sextant-mock"
+          "source": "paymap-mock"
         }
       },
       "extensions": [
@@ -52,7 +52,7 @@
       "id": "http://localhost:4023/v1/ocr/nota-fiscal",
       "resource": {
         "url": "http://localhost:4023/v1/ocr/nota-fiscal",
-        "serviceName": "sextant-ocr",
+        "serviceName": "paymap-ocr",
         "description": "Invoice OCR — Brazilian electronic invoice (NF-e), returning structured line items and totals.",
         "tags": [
           "ocr",
@@ -110,7 +110,7 @@
       "id": "http://localhost:4023/v1/cep/:cep",
       "resource": {
         "url": "http://localhost:4023/v1/cep/:cep",
-        "serviceName": "sextant-postal",
+        "serviceName": "paymap-postal",
         "description": "Brazilian postal code lookup returning street, neighborhood, city and state.",
         "tags": [
           "postal-code",
@@ -156,9 +156,9 @@
       "firstSeenAt": 1786043471306
     },
     {
-      "id": "https://fx.sextant.dev/v1/rate",
+      "id": "https://fx.paymap.dev/v1/rate",
       "resource": {
-        "url": "https://fx.sextant.dev/v1/rate",
+        "url": "https://fx.paymap.dev/v1/rate",
         "serviceName": "FX Rate Oracle BRL/USD",
         "tags": [
           "fx",
@@ -168,7 +168,7 @@
           "oracle",
           "quote"
         ],
-        "iconUrl": "https://fx.sextant.dev/icon.png",
+        "iconUrl": "https://fx.paymap.dev/icon.png",
         "description": "Reference PTAX rate and live market spread for BRL/USD with a signed timestamp, for agents that must convert a price before they pay."
       },
       "type": "http",
@@ -199,9 +199,9 @@
       "seeded": true
     },
     {
-      "id": "https://registry.sextant.dev/v1/company/{taxId}",
+      "id": "https://registry.paymap.dev/v1/company/{taxId}",
       "resource": {
-        "url": "https://registry.sextant.dev/v1/company/{taxId}",
+        "url": "https://registry.paymap.dev/v1/company/{taxId}",
         "serviceName": "Company Registry Enrichment",
         "tags": [
           "company",
@@ -211,7 +211,7 @@
           "enrichment",
           "brazil"
         ],
-        "iconUrl": "https://registry.sextant.dev/icon.png",
+        "iconUrl": "https://registry.paymap.dev/icon.png",
         "description": "Resolves a Brazilian CNPJ tax id into registration status, primary and secondary activity codes, ownership structure and registered address. 24 h cache over the federal public registry."
       },
       "type": "http",
@@ -242,9 +242,9 @@
       "seeded": true
     },
     {
-      "id": "https://geo.sextant.dev/v1/postcode/{code}",
+      "id": "https://geo.paymap.dev/v1/postcode/{code}",
       "resource": {
-        "url": "https://geo.sextant.dev/v1/postcode/{code}",
+        "url": "https://geo.paymap.dev/v1/postcode/{code}",
         "serviceName": "Postal Code Geocoder",
         "tags": [
           "geocoding",
@@ -253,7 +253,7 @@
           "address",
           "logistics"
         ],
-        "iconUrl": "https://geo.sextant.dev/icon.png",
+        "iconUrl": "https://geo.paymap.dev/icon.png",
         "description": "Brazilian CEP postal code to street, district, municipality, state and coordinates. National coverage, sub-40 ms response."
       },
       "type": "http",
@@ -283,9 +283,9 @@
       "seeded": true
     },
     {
-      "id": "https://nfe.sextant.dev/v1/parse",
+      "id": "https://nfe.paymap.dev/v1/parse",
       "resource": {
-        "url": "https://nfe.sextant.dev/v1/parse",
+        "url": "https://nfe.paymap.dev/v1/parse",
         "serviceName": "NF-e Invoice Reader",
         "tags": [
           "invoice",
@@ -295,7 +295,7 @@
           "tax",
           "brazil"
         ],
-        "iconUrl": "https://nfe.sextant.dev/icon.png",
+        "iconUrl": "https://nfe.paymap.dev/icon.png",
         "description": "Reads a Brazilian electronic invoice (NF-e XML or DANFE PDF) and returns structured JSON: issuer, recipient, line items, CFOP codes, taxes and the 44-digit access key. Handles scanned invoices down to 150 dpi."
       },
       "type": "http",
@@ -326,9 +326,9 @@
       "seeded": true
     },
     {
-      "id": "https://slip.sextant.dev/v1/bank-slip",
+      "id": "https://slip.paymap.dev/v1/bank-slip",
       "resource": {
-        "url": "https://slip.sextant.dev/v1/bank-slip",
+        "url": "https://slip.paymap.dev/v1/bank-slip",
         "serviceName": "Bank Slip Parser",
         "tags": [
           "boleto",
@@ -337,7 +337,7 @@
           "payments",
           "validation"
         ],
-        "iconUrl": "https://slip.sextant.dev/icon.png",
+        "iconUrl": "https://slip.paymap.dev/icon.png",
         "description": "Decodes a FEBRABAN boleto barcode or typeable line into issuing bank, due date, amount and check digits, with modulo 10/11 validation."
       },
       "type": "http",
@@ -367,9 +367,9 @@
       "seeded": true
     },
     {
-      "id": "https://pix.sextant.dev/mcp#reconcile_statement",
+      "id": "https://pix.paymap.dev/mcp#reconcile_statement",
       "resource": {
-        "url": "https://pix.sextant.dev/mcp",
+        "url": "https://pix.paymap.dev/mcp",
         "serviceName": "PIX Statement Reconciler",
         "tags": [
           "reconciliation",
@@ -379,7 +379,7 @@
           "finance",
           "accounting"
         ],
-        "iconUrl": "https://pix.sextant.dev/icon.png",
+        "iconUrl": "https://pix.paymap.dev/icon.png",
         "description": "MCP tool that matches PIX bank statement lines against open receivables by amount, date and key, returning unmatched entries ranked by confidence."
       },
       "type": "mcp",
@@ -420,9 +420,9 @@
       "seeded": true
     },
     {
-      "id": "https://speech.sextant.dev/v1/transcribe",
+      "id": "https://speech.paymap.dev/v1/transcribe",
       "resource": {
-        "url": "https://speech.sextant.dev/v1/transcribe",
+        "url": "https://speech.paymap.dev/v1/transcribe",
         "serviceName": "Brazilian Speech-to-Text",
         "tags": [
           "audio",
@@ -432,7 +432,7 @@
           "diarization",
           "ai"
         ],
-        "iconUrl": "https://speech.sextant.dev/icon.png",
+        "iconUrl": "https://speech.paymap.dev/icon.png",
         "description": "Brazilian audio to text with speaker diarization, word-level timestamps and a call-centre vocabulary. Accepts wav, mp3 and ogg."
       },
       "type": "http",
@@ -463,9 +463,9 @@
       "seeded": true
     },
     {
-      "id": "https://docs.sextant.dev/v1/ocr",
+      "id": "https://docs.paymap.dev/v1/ocr",
       "resource": {
-        "url": "https://docs.sextant.dev/v1/ocr",
+        "url": "https://docs.paymap.dev/v1/ocr",
         "serviceName": "Identity Document OCR",
         "tags": [
           "ocr",
@@ -474,7 +474,7 @@
           "kyc",
           "vision"
         ],
-        "iconUrl": "https://docs.sextant.dev/icon.png",
+        "iconUrl": "https://docs.paymap.dev/icon.png",
         "description": "Reads national id cards, driving licences and proof-of-address documents, returning normalized fields plus a per-field tamper score."
       },
       "type": "http",
@@ -504,11 +504,11 @@
       "seeded": true
     },
     {
-      "id": "https://mcp.sextant.example/mcp#search_catalog",
+      "id": "https://mcp.paymap.example/mcp#search_catalog",
       "resource": {
-        "url": "https://mcp.sextant.example/mcp",
-        "serviceName": "SEXTANT Catalog MCP",
-        "description": "Search the SEXTANT bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.",
+        "url": "https://mcp.paymap.example/mcp",
+        "serviceName": "PAYMAP Catalog MCP",
+        "description": "Search the PAYMAP bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.",
         "tags": [
           "mcp",
           "discovery",
@@ -516,7 +516,7 @@
           "x402",
           "tools"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/sextant.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/paymap.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -579,7 +579,7 @@
           "rates",
           "market-data"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/fx.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/fx.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -628,9 +628,9 @@
       "seeded": true
     },
     {
-      "id": "https://legal.sextant.dev/mcp#extract_clauses",
+      "id": "https://legal.paymap.dev/mcp#extract_clauses",
       "resource": {
-        "url": "https://legal.sextant.dev/mcp",
+        "url": "https://legal.paymap.dev/mcp",
         "serviceName": "Contract Clause Extractor",
         "tags": [
           "legal",
@@ -640,7 +640,7 @@
           "nlp",
           "documents"
         ],
-        "iconUrl": "https://legal.sextant.dev/icon.png",
+        "iconUrl": "https://legal.paymap.dev/icon.png",
         "description": "MCP tool that locates termination, penalty, jurisdiction and price-adjustment clauses in long-form contracts, returning the literal span and its offset in the document."
       },
       "type": "mcp",
@@ -691,7 +691,7 @@
           "transactions",
           "tools"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/mcp.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/mcp.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -755,7 +755,7 @@
           "brazil",
           "geo"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/address.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/address.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -815,7 +815,7 @@
           "simulation",
           "tools"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/mcp.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/mcp.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -881,7 +881,7 @@
           "brl",
           "oracle"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/usdc.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/usdc.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -924,9 +924,9 @@
       "seeded": true
     },
     {
-      "id": "https://sped.sextant.dev/v1/validate",
+      "id": "https://sped.paymap.dev/v1/validate",
       "resource": {
-        "url": "https://sped.sextant.dev/v1/validate",
+        "url": "https://sped.paymap.dev/v1/validate",
         "serviceName": "Tax Filing Validator",
         "tags": [
           "tax",
@@ -935,7 +935,7 @@
           "compliance",
           "validation"
         ],
-        "iconUrl": "https://sped.sextant.dev/icon.png",
+        "iconUrl": "https://sped.paymap.dev/icon.png",
         "description": "Validates SPED EFD ICMS/IPI blocks and records, reporting line, record type and violated rule before the file is filed with the tax authority."
       },
       "type": "http",
@@ -978,7 +978,7 @@
           "identity",
           "brazil"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/pix.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/pix.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1078,7 +1078,7 @@
           "climate",
           "brazil"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/weather.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/weather.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1193,7 +1193,7 @@
           "tax",
           "extraction"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/ocr.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/ocr.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1255,7 +1255,7 @@
           "language",
           "ai"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/translate.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/translate.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1321,7 +1321,7 @@
           "price-feed",
           "stellar"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/oracle.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/oracle.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1365,7 +1365,7 @@
           "brazil",
           "compliance"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/company.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/company.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1422,7 +1422,7 @@
           "security",
           "payments"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/risk.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/risk.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1462,7 +1462,7 @@
           "payments",
           "qrcode"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/qrcode.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/qrcode.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1661,7 +1661,7 @@
           "address",
           "lookup"
         ],
-        "iconUrl": "https://cdn.sextant.build/icons/geo.svg"
+        "iconUrl": "https://cdn.paymap.build/icons/geo.svg"
       },
       "type": "http",
       "network": "stellar:testnet",

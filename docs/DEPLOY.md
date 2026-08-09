@@ -1,4 +1,4 @@
-# Deploying SEXTANT
+# Deploying PAYMAP
 
 The repo deploys as a **single Vercel project**: the Vite site in `apps/web` becomes the
 static output, and the three files in `api/discovery/` become Node.js Vercel Functions
@@ -83,13 +83,13 @@ nobody has done.
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | no | Accepted as aliases when you wire Upstash up yourself. |
 | `KV_REDIS_URL` | no | Redis **protocol** connection URL, `redis://` or `rediss://` (TLS). Used when no REST pair is set. |
 | `REDIS_URL` | no | Accepted as an alias for `KV_REDIS_URL`. |
-| `SEXTANT_WRITE_TOKEN` | no | Enables `POST /discovery/resources`. Callers must send `Authorization: Bearer <value>`. |
-| `SEXTANT_KV_KEY` | no | Redis hash key. Default `sextant:catalog:v1`. |
-| `SEXTANT_KV_TTL_MS` | no | How long a store snapshot is reused before re-reading. Default `5000`. |
-| `SEXTANT_KV_TIMEOUT_MS` | no | Per-command timeout against the store. Default `4000`. |
-| `SEXTANT_REDIS_CONNECT_TIMEOUT_MS` | no | Connect timeout, protocol transport only. Default `2000`. |
-| `SEXTANT_CACHE_S_MAXAGE` | no | CDN `s-maxage` on the read endpoints. Default `60`. |
-| `SEXTANT_CACHE_SWR` | no | CDN `stale-while-revalidate`. Default `600`. |
+| `PAYMAP_WRITE_TOKEN` | no | Enables `POST /discovery/resources`. Callers must send `Authorization: Bearer <value>`. |
+| `PAYMAP_KV_KEY` | no | Redis hash key. Default `paymap:catalog:v1`. |
+| `PAYMAP_KV_TTL_MS` | no | How long a store snapshot is reused before re-reading. Default `5000`. |
+| `PAYMAP_KV_TIMEOUT_MS` | no | Per-command timeout against the store. Default `4000`. |
+| `PAYMAP_REDIS_CONNECT_TIMEOUT_MS` | no | Connect timeout, protocol transport only. Default `2000`. |
+| `PAYMAP_CACHE_S_MAXAGE` | no | CDN `s-maxage` on the read endpoints. Default `60`. |
+| `PAYMAP_CACHE_SWR` | no | CDN `stale-while-revalidate`. Default `600`. |
 | `SEED_CATALOG` | no | `0` boots an empty catalog instead of the seed corpus. |
 | `VITE_INDEX_URL` | no | Build-time override for where the web console points. Leave unset. |
 
@@ -161,9 +161,9 @@ catalog gains a shared, persistent layer:
   `HSET` on a field is atomic, so two function instances cataloging different resources
   concurrently cannot clobber each other.
 - **Propagation**: a write forces the next read on that instance to reload; other
-  instances pick it up within `SEXTANT_KV_TTL_MS`.
+  instances pick it up within `PAYMAP_KV_TTL_MS`.
 
-Add `SEXTANT_WRITE_TOKEN` to open the write path.
+Add `PAYMAP_WRITE_TOKEN` to open the write path.
 
 **Why writes need a token even though the store variables are enough to make them work:**
 an unauthenticated write endpoint on a public discovery index is a spam magnet, and
@@ -176,42 +176,42 @@ silently accepted.
 
 ## Verifying a deployment with curl
 
-Replace `sextants.dev` with your own deployment URL.
+Replace `paymap.dev` with your own deployment URL.
 
 ```bash
 # 1. Which mode is live, how many records, which commit
-curl -s https://sextants.dev/discovery/health | jq
+curl -s https://paymap.dev/discovery/health | jq
 
 # 2. Search — ranked, with the score breakdown. NOTE the array is `resources`, not
 #    `items`: the search and list envelopes differ deliberately (see CONTRACT.md).
-curl -s 'https://sextants.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
+curl -s 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
   '.resources[] | {resource, name: .serviceName, score: ._score, price: .accepts[0].amount}'
 
 # 3. The full _explain on the top hit
-curl -s 'https://sextants.dev/discovery/search?query=invoice%20ocr&limit=1' \
+curl -s 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=1' \
   | jq '.resources[0]._explain'
 
 # 4. List with filters — the LIST endpoint uses `items` and offset pagination
-curl -s 'https://sextants.dev/discovery/resources?type=mcp&limit=5' | jq '.total, .items[].resource'
+curl -s 'https://paymap.dev/discovery/resources?type=mcp&limit=5' | jq '.total, .items[].resource'
 
 # 5. Cursor pagination
-CURSOR=$(curl -s 'https://sextants.dev/discovery/search?query=stellar&limit=2' | jq -r .pagination.cursor)
-curl -s "https://sextants.dev/discovery/search?query=stellar&limit=2&cursor=$CURSOR" | jq '.resources[].id'
+CURSOR=$(curl -s 'https://paymap.dev/discovery/search?query=stellar&limit=2' | jq -r .pagination.cursor)
+curl -s "https://paymap.dev/discovery/search?query=stellar&limit=2&cursor=$CURSOR" | jq '.resources[].id'
 
 # 5b. What a stock consumer sees: the payable offer, straight off a search hit
-curl -s 'https://sextants.dev/discovery/search?query=invoice%20ocr&limit=1' \
+curl -s 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=1' \
   | jq '.resources[0] | {resource, x402Version, lastUpdated, accepts}'
 
 # 6. CORS preflight — must answer 204 with Access-Control-Allow-Origin: *
-curl -s -i -X OPTIONS https://sextants.dev/discovery/resources | head -8
+curl -s -i -X OPTIONS https://paymap.dev/discovery/resources | head -8
 
 # 7. The SPA catch-all must NOT shadow the API: this must be JSON, not text/html
 curl -s -o /dev/null -w '%{http_code} %{content_type}\n' \
-  'https://sextants.dev/discovery/search?query=test'
+  'https://paymap.dev/discovery/search?query=test'
 
-# 8. Write path (kv mode + SEXTANT_WRITE_TOKEN only)
-curl -s -X POST https://sextants.dev/discovery/resources \
-  -H "Authorization: Bearer $SEXTANT_WRITE_TOKEN" \
+# 8. Write path (kv mode + PAYMAP_WRITE_TOKEN only)
+curl -s -X POST https://paymap.dev/discovery/resources \
+  -H "Authorization: Bearer $PAYMAP_WRITE_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"resource":{"url":"https://api.example.com/v1/thing","serviceName":"Thing",
         "description":"Does a thing, described well enough to be discoverable.",
@@ -247,7 +247,7 @@ end-to-end round trip skips unless you point it at one:
 
 ```bash
 docker run -d -p 6399:6379 redis:7-alpine
-SEXTANT_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
+PAYMAP_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
 ```
 
 ---

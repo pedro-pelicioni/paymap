@@ -1,5 +1,5 @@
 /* ============================================================
-   SEXTANT — foundations
+   PAYMAP — foundations
    celestial navigation chart meets a precision instrument
    ============================================================ */
 
@@ -407,7 +407,7 @@ ol {
   }
 }
 
-/* the sextant arc glyph inherits currentColor */
+/* the paymap arc glyph inherits currentColor */
 .glyph {
   flex: none;
 }

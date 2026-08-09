@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AssetImg } from '../components/AssetImg'
 import { IntegrityLedger } from '../components/IntegrityLedger'
-import { ArcScale, SextantGlyph } from '../components/Marks'
+import { ArcScale, PaymapGlyph } from '../components/Marks'
 import { PaymentLoop } from '../components/PaymentLoop'
 import { SightBoard } from '../components/SightBoard'
 import { Ticker } from '../components/Ticker'
 import { demoCatalog, INDEX_URL, loadCatalog, search } from '../lib/api'
 import { rank } from '../lib/rank'
-import type { Catalog, SextantRecord } from '../lib/types'
+import type { Catalog, PaymapRecord } from '../lib/types'
 
 const EXAMPLES = ['an agent that reads invoices', 'usd to brl rate', 'postal code lookup', 'mcp tool for ocr']
 
@@ -16,12 +16,12 @@ export default function Console() {
   const [cat, setCat] = useState<Catalog>(() => demoCatalog())
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
-  const [items, setItems] = useState<SextantRecord[]>(() =>
+  const [items, setItems] = useState<PaymapRecord[]>(() =>
     rank('', demoCatalog().items).sort((a, b) => b.settlements - a.settlements),
   )
   const [busy, setBusy] = useState(false)
   const [took, setTook] = useState(0)
-  const [paying, setPaying] = useState<SextantRecord | null>(null)
+  const [paying, setPaying] = useState<PaymapRecord | null>(null)
   const [runId, setRunId] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -47,7 +47,7 @@ export default function Console() {
     setBusy(false)
   }
 
-  function onPay(rec: SextantRecord) {
+  function onPay(rec: PaymapRecord) {
     setPaying(rec)
     setRunId((n) => n + 1)
     if (window.innerWidth < 1120) {
@@ -64,9 +64,9 @@ export default function Console() {
 
       <header className="topbar">
         <div className="shell topbar__in">
-          <Link className="topbar__mark" to="/" aria-label="SEXTANT home">
-            <SextantGlyph />
-            <span>SEXTANT</span>
+          <Link className="topbar__mark" to="/" aria-label="PAYMAP home">
+            <PaymapGlyph />
+            <span>PAYMAP</span>
           </Link>
           <nav className="topbar__nav" aria-label="Sections">
             <Link to="/">Landing</Link>
@@ -110,7 +110,7 @@ export default function Console() {
             <label className="visually-hidden" htmlFor="q">
               Search the catalog
             </label>
-            <SextantGlyph size={20} />
+            <PaymapGlyph size={20} />
             <input
               id="q"
               ref={inputRef}

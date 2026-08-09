@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEXTANT — paid resource server (the "seller").
+ * PAYMAP — paid resource server (the "seller").
  *
  * Three paid endpoints behind x402, priced in SXT, each declaring bazaar discovery
  * metadata so an agent can find them without a human ever reading docs.
@@ -127,7 +127,7 @@ const ROUTES = [
     path: "/v1/fx/usd-brl",
     aliases: [],
     priceSxt: 0.01,
-    serviceName: "sextant-fx",
+    serviceName: "paymap-fx",
     description: "USD/BRL exchange rate with bid, ask and mid price.",
     tags: ["fx", "forex", "usd", "brl", "quote", "finance"],
     discovery: declareDiscoveryExtension({
@@ -140,7 +140,7 @@ const ROUTES = [
           ask: 5.4389,
           mid: 5.435,
           asOf: "2026-08-06T12:00:00.000Z",
-          source: "sextant-mock",
+          source: "paymap-mock",
         },
       },
     }),
@@ -152,7 +152,7 @@ const ROUTES = [
         ask: Number((mid + 0.0039).toFixed(4)),
         mid: Number(mid.toFixed(4)),
         asOf: new Date().toISOString(),
-        source: "sextant-mock",
+        source: "paymap-mock",
       };
     },
   },
@@ -165,7 +165,7 @@ const ROUTES = [
     aliases: ["/v1/postal-code/:cep"],
     routeTemplate: "/v1/cep/:cep",
     priceSxt: 0.005,
-    serviceName: "sextant-postal",
+    serviceName: "paymap-postal",
     description:
       "Brazilian postal code lookup returning street, neighborhood, city and state.",
     tags: ["postal-code", "address", "brazil", "geocoding", "lookup"],
@@ -220,7 +220,7 @@ const ROUTES = [
     path: "/v1/ocr/nota-fiscal",
     aliases: ["/v1/ocr/invoice"],
     priceSxt: 0.05,
-    serviceName: "sextant-ocr",
+    serviceName: "paymap-ocr",
     description:
       "Invoice OCR — Brazilian electronic invoice (NF-e), returning structured line items and totals.",
     tags: ["ocr", "invoice", "nfe", "brazil", "document", "extraction"],
@@ -507,7 +507,7 @@ app.use(express.json({ limit: "4mb" }));
 app.get("/health", (_req, res) =>
   res.json({
     ok: true,
-    service: "sextant-seller",
+    service: "paymap-seller",
     network: NETWORK,
     asset: ASSET_SAC,
     assetCode: ASSET_CODE,
@@ -598,7 +598,7 @@ async function preRegister({ quiet = false } = {}) {
 }
 
 app.listen(PORT, async () => {
-  console.log(`\n[seller] SEXTANT paid API  http://localhost:${PORT}`);
+  console.log(`\n[seller] PAYMAP paid API  http://localhost:${PORT}`);
   for (const r of ROUTES) {
     console.log(
       `[seller]   ${r.method.padEnd(4)} ${r.path.padEnd(24)} ${r.priceSxt} ${ASSET_CODE}`,

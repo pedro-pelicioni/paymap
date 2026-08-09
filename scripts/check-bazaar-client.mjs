@@ -11,7 +11,7 @@
  *
  * So this is the same assertion, over the public internet, against a URL you choose.
  *
- *   node scripts/check-bazaar-client.mjs https://sextants.dev
+ *   node scripts/check-bazaar-client.mjs https://paymap.dev
  *   node scripts/check-bazaar-client.mjs https://<preview>.vercel.app
  *
  * Vercel preview deployments sit behind Deployment Protection. To reach one, create a
@@ -28,7 +28,7 @@ import { withBazaar } from '@x402/extensions/bazaar';
 import { HTTPFacilitatorClient } from '@x402/core/server';
 import { PaymentRequirementsSchema } from '@x402/core/schemas';
 
-const base = (process.argv[2] ?? 'https://sextants.dev').replace(/\/$/, '');
+const base = (process.argv[2] ?? 'https://paymap.dev').replace(/\/$/, '');
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
 let failures = 0;

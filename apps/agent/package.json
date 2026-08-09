@@ -1,12 +1,12 @@
 {
-  "name": "@sextant/agent",
+  "name": "@paymap/agent",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SEXTANT agent surface \u2014 MCP server + x402 payment client for the Stellar Bazaar",
+  "description": "PAYMAP agent surface \u2014 MCP server + x402 payment client for the Stellar Bazaar",
   "bin": {
-    "sextant-mcp": "./src/mcp-server.mjs",
-    "sextant": "./src/cli.mjs"
+    "paymap-mcp": "./src/mcp-server.mjs",
+    "paymap": "./src/cli.mjs"
   },
   "exports": {
     ".": "./src/pay.mjs",

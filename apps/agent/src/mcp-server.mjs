@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEXTANT — MCP server (stdio).
+ * PAYMAP — MCP server (stdio).
  *
  * Puts the Stellar Bazaar inside an AI agent's runtime: the agent can search for
  * a paid resource, read its full call contract, and actually pay for it over
@@ -15,7 +15,7 @@
  * Contract with the caller:
  *   - Every tool resolves. Nothing throws out of a handler.
  *   - Success  -> { ok:true,  ... }
- *   - Failure  -> { ok:false, code:<SEXTANT_*>, reason:<non-null human sentence> }
+ *   - Failure  -> { ok:false, code:<PAYMAP_*>, reason:<non-null human sentence> }
  *   - Result carries both `structuredContent` (machine) and a JSON text block (model).
  *
  * stdout is the MCP transport — every diagnostic goes to stderr, never stdout.
@@ -51,7 +51,7 @@ function guarded(toolName, handler) {
       const out = await handler(args ?? {}, extra);
       if (!out || typeof out !== 'object' || typeof out.ok !== 'boolean') {
         return toResult(
-          fail('SEXTANT_UPSTREAM_ERROR', `${toolName} produced a malformed internal result; nothing was paid.`)
+          fail('PAYMAP_UPSTREAM_ERROR', `${toolName} produced a malformed internal result; nothing was paid.`)
         );
       }
       // Invariant: a rejection always carries a non-null reason.
@@ -59,7 +59,7 @@ function guarded(toolName, handler) {
       return toResult(out);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err ?? 'unknown error');
-      return toResult(fail('SEXTANT_UPSTREAM_ERROR', `${toolName} threw an unexpected error: ${msg}`));
+      return toResult(fail('PAYMAP_UPSTREAM_ERROR', `${toolName} threw an unexpected error: ${msg}`));
     }
   };
 }
@@ -97,21 +97,21 @@ const resourceSummary = z
  * ------------------------------------------------------------------ */
 export function createServer() {
   const server = new McpServer(
-    { name: 'sextant', version: VERSION, title: 'SEXTANT — find what to pay for on Stellar' },
+    { name: 'paymap', version: VERSION, title: 'PAYMAP — find what to pay for on Stellar' },
     {
       instructions:
-        'SEXTANT exposes the Stellar Bazaar: a discovery index of x402-priced HTTP and MCP resources on ' +
-        'stellar:testnet. Workflow: sextant_search (natural language) -> sextant_describe ' +
-        '(exact call contract for one id) -> sextant_pay (runs the 402 challenge, signs the Soroban auth ' +
+        'PAYMAP exposes the Stellar Bazaar: a discovery index of x402-priced HTTP and MCP resources on ' +
+        'stellar:testnet. Workflow: paymap_search (natural language) -> paymap_describe ' +
+        '(exact call contract for one id) -> paymap_pay (runs the 402 challenge, signs the Soroban auth ' +
         'entry with the operator PAYER key, retries, returns the unlocked payload plus the settled tx hash). ' +
-        'Use sextant_browse to enumerate the catalogue. Every rejection returns ok:false with a SEXTANT_* ' +
+        'Use paymap_browse to enumerate the catalogue. Every rejection returns ok:false with a PAYMAP_* ' +
         'code and a non-null reason — read the reason before retrying.'
     }
   );
 
-  /* -- sextant_search --------------------------------------------- */
+  /* -- paymap_search --------------------------------------------- */
   server.registerTool(
-    'sextant_search',
+    'paymap_search',
     {
       title: 'Search the Stellar Bazaar',
       description:
@@ -137,14 +137,14 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('sextant_search', (a) =>
+    guarded('paymap_search', (a) =>
       search({ query: a.query, limit: a.limit ?? 5, network: a.network, maxPrice: a.maxPrice })
     )
   );
 
-  /* -- sextant_browse --------------------------------------------- */
+  /* -- paymap_browse --------------------------------------------- */
   server.registerTool(
-    'sextant_browse',
+    'paymap_browse',
     {
       title: 'Browse the Stellar Bazaar catalogue',
       description:
@@ -167,25 +167,25 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('sextant_browse', (a) =>
+    guarded('paymap_browse', (a) =>
       browse({ type: a.type, payTo: a.payTo, network: a.network, limit: a.limit ?? 20, offset: a.offset ?? 0 })
     )
   );
 
-  /* -- sextant_describe ------------------------------------------- */
+  /* -- paymap_describe ------------------------------------------- */
   server.registerTool(
-    'sextant_describe',
+    'paymap_describe',
     {
       title: 'Describe one bazaar resource',
       description:
         'Full discovery metadata for a single resource id, including every input parameter with its type and ' +
         'description, the output shape, the route template and the price. Enough to construct a valid call ' +
-        'with no external documentation. Call this before sextant_pay when unsure of the parameters.',
+        'with no external documentation. Call this before paymap_pay when unsure of the parameters.',
       inputSchema: {
         id: z
           .string()
           .min(1)
-          .describe('Resource id from sextant_search / sextant_browse (the resource URL, or url#toolName for MCP).')
+          .describe('Resource id from paymap_search / paymap_browse (the resource URL, or url#toolName for MCP).')
       },
       outputSchema: {
         ...errorShape,
@@ -220,22 +220,22 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('sextant_describe', (a) => describe({ id: a.id }))
+    guarded('paymap_describe', (a) => describe({ id: a.id }))
   );
 
-  /* -- sextant_pay ------------------------------------------------ */
+  /* -- paymap_pay ------------------------------------------------ */
   server.registerTool(
-    'sextant_pay',
+    'paymap_pay',
     {
       title: 'Pay for and fetch a resource (x402 on Stellar)',
       description:
         'Run the complete x402 loop against a paid URL: request, receive the 402 challenge, sign the Soroban ' +
         'auth entry with the operator PAYER key, retry with the payment header, and return the unlocked body ' +
         'plus the settled transaction hash and its stellar.expert link. Spends real testnet funds. Set ' +
-        'maxPrice to cap what may be spent — the call is refused with SEXTANT_PRICE_EXCEEDS_BUDGET if the ' +
+        'maxPrice to cap what may be spent — the call is refused with PAYMAP_PRICE_EXCEEDS_BUDGET if the ' +
         'resource asks for more. If the resource turns out to be free, the body is returned with paid:false.',
       inputSchema: {
-        url: z.string().min(1).describe('Absolute URL of the paid resource (from sextant_search / describe).'),
+        url: z.string().min(1).describe('Absolute URL of the paid resource (from paymap_search / describe).'),
         params: z
           .record(z.unknown())
           .optional()
@@ -268,7 +268,7 @@ export function createServer() {
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
-    guarded('sextant_pay', async (a) => {
+    guarded('paymap_pay', async (a) => {
       const res = await payAndFetch(a.url, {
         params: a.params,
         method: a.method ?? 'GET',
@@ -291,19 +291,19 @@ async function main() {
   const cfg = loadConfig();
   // Diagnostics on stderr only — stdout belongs to the JSON-RPC transport.
   process.stderr.write(
-    `[sextant] mcp server v${VERSION} | network=${cfg.network} | index=${cfg.indexUrl} | ` +
-      `payer=${cfg.payerPublic || (cfg.payerSecret ? 'set' : 'MISSING — sextant_pay will return SEXTANT_CONFIG_MISSING')}\n`
+    `[paymap] mcp server v${VERSION} | network=${cfg.network} | index=${cfg.indexUrl} | ` +
+      `payer=${cfg.payerPublic || (cfg.payerSecret ? 'set' : 'MISSING — paymap_pay will return PAYMAP_CONFIG_MISSING')}\n`
   );
 
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write('[sextant] ready on stdio\n');
+  process.stderr.write('[paymap] ready on stdio\n');
 }
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   main().catch((err) => {
-    process.stderr.write(`[sextant] fatal: ${err instanceof Error ? err.stack : String(err)}\n`);
+    process.stderr.write(`[paymap] fatal: ${err instanceof Error ? err.stack : String(err)}\n`);
     process.exit(1);
   });
 }

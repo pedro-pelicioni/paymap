@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEXTANT demo video — 1920x1080 H.264. Static frames with cross-fades to black.
+# PAYMAP demo video — 1920x1080 H.264. Static frames with cross-fades to black.
 set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf seg; mkdir -p seg

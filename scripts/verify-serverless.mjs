@@ -132,7 +132,7 @@ async function call(fn, req) {
 /* ─────────────────────────── the checks ─────────────────────────── */
 
 async function main() {
-  console.log('\nSEXTANT serverless verification\n');
+  console.log('\nPAYMAP serverless verification\n');
 
   /* ---------- 1. GET /discovery/resources through the real api/ file ---------- */
   console.log('api/discovery/resources.mjs');
@@ -151,7 +151,7 @@ async function main() {
     eq(b.items.length, 5, 'limit is honoured');
   });
 
-  await check("SEXTANT's additive fields survive the spec projection", () => {
+  await check("PAYMAP's additive fields survive the spec projection", () => {
     // These are NOT spec fields. They are the ones CONTRACT.md promises the console and
     // the MCP agent can still read after the record is projected onto DiscoveryResource.
     const rec = list.json.items[0];
@@ -253,7 +253,7 @@ async function main() {
   });
 
   await check('`items` is still emitted as a deprecated alias of the same array', () => {
-    // One release of grace for consumers written against the old SEXTANT envelope.
+    // One release of grace for consumers written against the old PAYMAP envelope.
     // When this alias is removed, DELETE THIS CHECK — do not weaken it.
     const b = search.json;
     assert(Array.isArray(b.items), '`items` alias missing');
@@ -379,7 +379,7 @@ async function main() {
       const res = mockRes();
       await resourcesHandler(mockReq('POST', '/discovery/resources', { body: SAMPLE }), res, KV_ENV);
       eq(res.statusCode, 503, 'status');
-      assert(/SEXTANT_WRITE_TOKEN/.test(res.json.reason), `reason should name the token, got: ${res.json.reason}`);
+      assert(/PAYMAP_WRITE_TOKEN/.test(res.json.reason), `reason should name the token, got: ${res.json.reason}`);
     } finally {
       restore();
     }
@@ -393,7 +393,7 @@ async function main() {
       await resourcesHandler(
         mockReq('POST', '/discovery/resources', { body: SAMPLE, headers: { authorization: 'Bearer nope' } }),
         res,
-        { ...KV_ENV, SEXTANT_WRITE_TOKEN: 's3cret' },
+        { ...KV_ENV, PAYMAP_WRITE_TOKEN: 's3cret' },
       );
       eq(res.statusCode, 401, 'status');
     } finally {
@@ -405,7 +405,7 @@ async function main() {
     resetState();
     const kv = new Map();
     const restore = stubFetch(kv);
-    const env = { ...KV_ENV, SEXTANT_WRITE_TOKEN: 's3cret', SEXTANT_KV_TTL_MS: '0' };
+    const env = { ...KV_ENV, PAYMAP_WRITE_TOKEN: 's3cret', PAYMAP_KV_TTL_MS: '0' };
     try {
       const write = mockRes();
       await resourcesHandler(
@@ -451,7 +451,7 @@ async function main() {
           headers: { authorization: 'Bearer s3cret' },
         }),
         res,
-        { ...KV_ENV, SEXTANT_WRITE_TOKEN: 's3cret' },
+        { ...KV_ENV, PAYMAP_WRITE_TOKEN: 's3cret' },
       );
       eq(res.statusCode, 200, 'the record must survive');
       assert(res.json.dropped.includes('routeTemplate'), `expected routeTemplate in dropped, got ${JSON.stringify(res.json.dropped)}`);
@@ -735,7 +735,7 @@ async function main() {
 
     await check('a stock consumer can go from one search hit to a payable offer', async () => {
       // The end-to-end shape claim, stated as behaviour: search -> pick -> read the price
-      // and the recipient off `accepts[0]` with no SEXTANT-specific knowledge at all.
+      // and the recipient off `accepts[0]` with no PAYMAP-specific knowledge at all.
       const { resources } = await bazaar.search({ query: 'invoice ocr', limit: 1 });
       const [hit] = resources;
       const offer = hit.accepts[0];
@@ -746,7 +746,7 @@ async function main() {
       eq(offer.scheme, 'exact', 'scheme');
     });
 
-    await check('SEXTANT extras ride along without displacing a spec field', async () => {
+    await check('PAYMAP extras ride along without displacing a spec field', async () => {
       const { resources } = await bazaar.search({ query: 'invoice ocr', limit: 3 });
       for (const r of resources) {
         assert(typeof r._score === 'number', `_score missing on ${r.resource}`);

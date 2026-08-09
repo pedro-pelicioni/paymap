@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEXTANT — end-to-end proof.
+ * PAYMAP — end-to-end proof.
  *
  * An agent that has never seen this API:
  *   1. discovers a resource through the bazaar index,
@@ -169,7 +169,7 @@ function appendTxDoc() {
     const prev = readFileSync(TX_DOC_PATH, "utf8").trimEnd();
     writeFileSync(TX_DOC_PATH, `${prev}\n${rows}\n`, "utf8");
   } else {
-    const header = `# SEXTANT — testnet transactions\n\n| Step | Hash | Explorer |\n|---|---|---|\n`;
+    const header = `# PAYMAP — testnet transactions\n\n| Step | Hash | Explorer |\n|---|---|---|\n`;
     writeFileSync(TX_DOC_PATH, header + rows + "\n", "utf8");
   }
   console.log(`\n   appended ${settled.length} settlement hash(es) to docs/TESTNET-TXS.md`);
@@ -181,7 +181,7 @@ function appendTxDoc() {
 
 async function main() {
   console.log("\n" + "=".repeat(70));
-  console.log("  SEXTANT — agent discovers, pays and unlocks a resource");
+  console.log("  PAYMAP — agent discovers, pays and unlocks a resource");
   console.log("=".repeat(70));
   console.log(`  agent wallet ${signer.address}`);
   console.log(`  index        ${INDEX_URL}`);

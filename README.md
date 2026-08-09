@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="apps/web/public/assets/lot-mark.png" width="88" alt="SEXTANT">
+<img src="apps/web/public/assets/lot-mark.png" width="88" alt="PAYMAP">
 
-# SEXTANT
+# PAYMAP
 
 ### Find *what to pay for* on Stellar.
 
@@ -10,13 +10,13 @@
 
 `Apache-2.0` · `stellar:testnet` · **14 settled x402 payments** · **84 tests, 0 failing**
 
-Stellar Summit SP 2026 — sub-lane 3A, Agentic Payments (x402 / MPP)
+Scoped against the SCF #45 RFP — *X402 Facilitator with Bazaar (discovery) support*
 
 </div>
 
 <br>
 
-![SEXTANT landing page](docs/screenshots/landing.png)
+![PAYMAP landing page](docs/screenshots/landing.png)
 
 ---
 
@@ -39,10 +39,9 @@ requires neither, by design — see [Two blockers removed](#two-blockers-removed
 
 ## Why this is not another paywall demo
 
-The sub-lane brief offers five example builds. Four are variations on one idea: an agent
-paying for an API, a metered service, a channel-mode feed, a middleware kit. They are good
-examples. They are also built on ground that is **already solved**, and the SCF #45 RFP says
-so in plain language:
+Most x402 builds are variations on one idea: an agent paying for an API, a metered service,
+a channel-mode feed, a middleware kit. They are good examples. They are also built on ground
+that is **already solved**, and the SCF #45 RFP says so in plain language:
 
 > *"settlement on Stellar is largely solved; the novel work is discovery, the agent facing
 > interface, the upto scheme upstream, and conformance that holds as the spec moves."*
@@ -58,24 +57,24 @@ payment demo around it** so you can watch the missing part work.
 | `@x402/extensions/bazaar` implements them | ❌ **its own README states it ships only client and server helpers, and no facilitator-side catalog implementation** |
 | Stellar has a Bazaar | ❌ [`stellar/x402-stellar#50`](https://github.com/stellar/x402-stellar/issues/50) — *"Explore Bazaar support for Stellar"* — **open and unassigned since April 2026**. The SDF repo's Dockerfile still reads `bazaar not used` |
 
-An agent that can pay but cannot discover is an agent with a wallet and no map. SEXTANT is
+An agent that can pay but cannot discover is an agent with a wallet and no map. PAYMAP is
 the map.
 
 ---
 
 ## The public discovery API
 
-**Live at [`sextants.dev`](https://sextants.dev).** The same catalog that `packages/index`
+**Live at [`paymap.dev`](https://paymap.dev).** The same catalog that `packages/index`
 serves on `:4022` also deploys as Vercel functions, so the Bazaar is a **public, hosted
 endpoint any agent can call** — which is what the RFP asks for, and what does not exist for
 Stellar anywhere else. Run the commands below and they answer.
 
 | Method | Endpoint | What it does |
 |---|---|---|
-| `GET` | [`/discovery/resources`](https://sextants.dev/discovery/resources?limit=3) | Paginated catalog, with the spec's `type`, `payTo`, `scheme`, `network`, `extensions`, `limit`, `offset` filters |
-| `GET` | [`/discovery/search`](https://sextants.dev/discovery/search?query=invoice%20ocr&limit=3) | Natural-language search. Results arrive under `resources`, with `partialResults`, `pagination { limit, cursor }`, and `_explain` per result |
-| `GET` | [`/discovery/health`](https://sextants.dev/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
-| `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <SEXTANT_WRITE_TOKEN>` |
+| `GET` | [`/discovery/resources`](https://paymap.dev/discovery/resources?limit=3) | Paginated catalog, with the spec's `type`, `payTo`, `scheme`, `network`, `extensions`, `limit`, `offset` filters |
+| `GET` | [`/discovery/search`](https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3) | Natural-language search. Results arrive under `resources`, with `partialResults`, `pagination { limit, cursor }`, and `_explain` per result |
+| `GET` | [`/discovery/health`](https://paymap.dev/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
+| `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <PAYMAP_WRITE_TOKEN>` |
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
 
 CORS is `*`, because the point is for *other people's* agents to call it. Every rejection —
@@ -84,33 +83,33 @@ a non-null, human-readable `reason` that names what to do about it.
 
 ```bash
 # Natural-language search over the catalog, ranked
-curl -s 'https://sextants.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
+curl -s 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
   '.resources[] | {resource, score: ._score, name: .serviceName}'
 
 # The full score breakdown on the top hit — BM25 / completeness / settlements / recency
-curl -s 'https://sextants.dev/discovery/search?query=convert%20dollars%20to%20reais&limit=1' \
+curl -s 'https://paymap.dev/discovery/search?query=convert%20dollars%20to%20reais&limit=1' \
   | jq '.resources[0]._explain'
 
 # List, with the spec filters. Note the envelopes differ deliberately: the list
 # endpoint returns `items` with offset pagination, search returns `resources`
 # with a cursor — that asymmetry is the spec's, not ours.
-curl -s 'https://sextants.dev/discovery/resources?type=mcp&limit=5' \
+curl -s 'https://paymap.dev/discovery/resources?type=mcp&limit=5' \
   | jq '.total, .items[].resource'
 
 # Which mode the catalog is in, how many records, which commit is serving them
-curl -s https://sextants.dev/discovery/health | jq
+curl -s https://paymap.dev/discovery/health | jq
 ```
 
 Real output, at the time of writing:
 
 ```
-$ curl -s 'https://sextants.dev/discovery/search?query=invoice%20ocr&limit=3' …
+$ curl -s 'https://paymap.dev/discovery/search?query=invoice%20ocr&limit=3' …
   0.8098  Invoice OCR
 
-$ curl -s https://sextants.dev/discovery/health …
+$ curl -s https://paymap.dev/discovery/health …
   mode=kv  transport=redis  records=27  writable=true  commit=c32e43d
 
-$ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://sextants.dev/discovery/nope
+$ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://paymap.dev/discovery/nope
   404 application/json; charset=utf-8
 ```
 
@@ -145,7 +144,7 @@ Redis/KV store and a write token and the auto-cataloging write path turns on;
 
 ## What it looks like
 
-![SEXTANT discovery console](docs/screenshots/console.png)
+![PAYMAP discovery console](docs/screenshots/console.png)
 
 **The Sight Board.** Every result is a *sight* — the observation a navigator takes to fix
 position. Numbered, ranked, with a bearing readout, and a `_EXPLAIN` disclosure that breaks
@@ -173,7 +172,7 @@ exactly the invariant that is easy to get wrong.
 
 ## Scoped against SCF #45, RFP Track
 
-SEXTANT is built against the RFP *"X402 Facilitator with Bazaar (discovery) support"*, which
+PAYMAP is built against the RFP *"X402 Facilitator with Bazaar (discovery) support"*, which
 names the Bazaar discovery layer as the highest-value part of the scope and says it should
 carry the largest share of the budget. Every component maps to a numbered requirement:
 
@@ -192,15 +191,15 @@ mainnet; no audit; no `upto` implementation — that scheme has [an active desig
 discussion](https://github.com/stellar/x402-stellar/issues/72) opened on 3 August 2026 that
 deserves a considered answer rather than a rushed one.
 
-The point is not to win a weekend. It is to leave behind a piece of public infrastructure the
-Stellar ecosystem is currently missing, permissively licensed, that anyone can fork and run.
+The point is to leave behind a piece of public infrastructure the Stellar ecosystem is
+currently missing, permissively licensed, that anyone can fork and run.
 
 ---
 
 ## Architecture
 
 ```
- seller ──declares metadata──►  SEXTANT INDEX  ◄──natural-language search──  agent
+ seller ──declares metadata──►  PAYMAP INDEX  ◄──natural-language search──  agent
     │                                ▲                                          │
     │                                │ auto-cataloged on settle (bazaar ext)    │
     └──────────►  SELF-HOSTED FACILITATOR  ◄────── 402 → sign → settle ─────────┘
@@ -221,11 +220,11 @@ Stellar ecosystem is currently missing, permissively licensed, that anyone can f
 
 ## Two blockers removed by design
 
-Built in a single afternoon. The two things that normally stall an x402 setup on Stellar were
-eliminated — not by shortcut, but by decisions that are also architecturally better.
+The two things that normally stall an x402 setup on Stellar were eliminated — not by
+shortcut, but by decisions that are also architecturally better.
 
 **1. No faucet, no captcha.** Rather than depending on Circle's web faucet for testnet USDC,
-SEXTANT **issues its own SEP-41 asset** (`SXT`) and wraps it in a SAC. The Stellar `exact`
+PAYMAP **issues its own SEP-41 asset** (`SXT`) and wraps it in a SAC. The Stellar `exact`
 scheme accepts any SEP-41 token — USDC is only the default. `npm run setup` therefore runs
 start to finish with no web forms and no API keys.
 
@@ -326,7 +325,7 @@ the fallback in our client**, so the bug cannot return quietly. The v1 spellings
 body are still emitted for backward compatibility; nothing depends on them.
 
 `npm run verify:conformance` is that test, kept. It drives an unmodified `@x402/fetch` client
-— `wrapFetchWithPayment`, no SEXTANT code anywhere on the path — through a real
+— `wrapFetchWithPayment`, no PAYMAP code anywhere on the path — through a real
 402 → sign → settle → 200 against a running seller, and prints the settled hash:
 
 ```
@@ -386,8 +385,8 @@ Apache-2.0, public from the first commit.
 
 <div align="center">
 
-**[github.com/pedro-pelicioni/sextant](https://github.com/pedro-pelicioni/sextant)**
+**[github.com/pedro-pelicioni/paymap](https://github.com/pedro-pelicioni/paymap)**
 
-Built in São Paulo for Stellar Summit SP 2026.
+Built in São Paulo, Brazil.
 
 </div>

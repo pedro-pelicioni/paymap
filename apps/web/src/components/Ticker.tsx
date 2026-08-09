@@ -1,9 +1,9 @@
 import { ASSET_CODE } from '../lib/api'
 import { formatAmount } from '../lib/format'
-import type { SextantRecord } from '../lib/types'
+import type { PaymapRecord } from '../lib/types'
 
 /** Continuously scrolling tape of what is live in the catalog. */
-export function Ticker({ items }: { items: SextantRecord[] }) {
+export function Ticker({ items }: { items: PaymapRecord[] }) {
   if (!items.length) return null
   const run = [...items, ...items]
   return (

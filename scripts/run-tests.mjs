@@ -159,7 +159,7 @@ function main() {
 
   const files = discover(targets);
 
-  console.log(`\nSEXTANT test runner — discovered ${files.length} test file(s):`);
+  console.log(`\nPAYMAP test runner — discovered ${files.length} test file(s):`);
   for (const file of files) console.log(`  • ${path.relative(ROOT, file)}`);
   console.log('');
 
@@ -172,7 +172,7 @@ function main() {
 
   if (listOnly) process.exit(0);
 
-  const reportDir = mkdtempSync(path.join(tmpdir(), 'sextant-test-'));
+  const reportDir = mkdtempSync(path.join(tmpdir(), 'paymap-test-'));
   const reportPath = path.join(reportDir, 'results.tap');
 
   const args = [
@@ -204,7 +204,7 @@ function main() {
 
     if (counts) {
       console.log(
-        `\nSEXTANT totals across ${files.length} file(s): ` +
+        `\nPAYMAP totals across ${files.length} file(s): ` +
           `${counts.tests} test(s) — ${counts.passed} passed, ` +
           `${counts.failures} failed, ${counts.skipped} skipped.`,
       );
@@ -219,7 +219,7 @@ function main() {
       exitCode = 1;
     }
 
-    console.log(exitCode === 0 ? 'SEXTANT test run: PASS\n' : 'SEXTANT test run: FAIL\n');
+    console.log(exitCode === 0 ? 'PAYMAP test run: PASS\n' : 'PAYMAP test run: FAIL\n');
     process.exit(exitCode);
   });
 }

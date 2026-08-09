@@ -1,5 +1,5 @@
 /**
- * packages/index/src/seed.mjs — SEXTANT demo catalog.
+ * packages/index/src/seed.mjs — PAYMAP demo catalog.
  *
  * A realistic slice of x402-enabled services on Stellar. Two properties are deliberate:
  *
@@ -36,7 +36,7 @@ const PAY_C = 'GDQNY3PBOJOKYZSRMK2S7LHHGWZIUISD4QORETLMXEWXBI7KFZZMKTL3';
 const PAY_D = 'GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB';
 const ASSET = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
 
-const ICON = (name) => `https://cdn.sextant.build/icons/${name}.svg`;
+const ICON = (name) => `https://cdn.paymap.build/icons/${name}.svg`;
 
 /** Draft 2020-12 schema helper. Descriptions here feed the ranker's `params` field. */
 const schema = (properties, required = []) => ({
@@ -636,12 +636,12 @@ export const SEED_RECORDS = [
     // [FULL] a different MCP server
     ...base,
     resource: {
-      url: 'https://mcp.sextant.example/mcp',
-      serviceName: 'SEXTANT Catalog MCP',
+      url: 'https://mcp.paymap.example/mcp',
+      serviceName: 'PAYMAP Catalog MCP',
       description:
-        'Search the SEXTANT bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.',
+        'Search the PAYMAP bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.',
       tags: ['mcp', 'discovery', 'search', 'x402', 'tools'],
-      iconUrl: ICON('sextant'),
+      iconUrl: ICON('paymap'),
     },
     type: 'mcp',
     payTo: PAY_B,
@@ -767,7 +767,7 @@ export function writeFixture(outPath) {
 // CLI: `node packages/index/src/seed.mjs` regenerates the fixture. Import is side-effect free.
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const r = writeFixture();
-  console.log(`[sextant] wrote ${r.count} records to ${r.path}`);
+  console.log(`[paymap] wrote ${r.count} records to ${r.path}`);
 }
 
 export default { SEED_RECORDS, asSeedRecord, seedCatalog, buildSeededRecords, writeFixture };

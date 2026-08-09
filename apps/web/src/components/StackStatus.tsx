@@ -9,7 +9,7 @@ import { useReveal } from '../lib/reveal'
  * shape and, in the ecosystem at large, none of the parts.
  *
  * The third row is not decoration either: with only the first two, a reader on
- * SEXTANT's own landing page sees "Discovery — Unsolved — 0/4" and reasonably
+ * PAYMAP's own landing page sees "Discovery — Unsolved — 0/4" and reasonably
  * concludes that THIS project does not do those things. It does, and they are
  * live. So the plate has to carry the diagnosis and the answer, or it argues
  * against itself.
@@ -53,7 +53,7 @@ const ROWS: Row[] = [
     score: 0,
   },
   {
-    name: 'Discovery, with SEXTANT',
+    name: 'Discovery, with PAYMAP',
     verdict: 'Live',
     ok: true,
     parts: [
@@ -124,7 +124,7 @@ export function StackStatus() {
 
       <p className="stack__foot">
         The second row is why this exists. The third is <em>running right now</em> —{' '}
-        <a href="https://sextants.dev/discovery/health" target="_blank" rel="noreferrer noopener">
+        <a href="https://paymap.dev/discovery/health" target="_blank" rel="noreferrer noopener">
           check it
         </a>
         .

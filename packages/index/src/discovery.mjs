@@ -6,7 +6,7 @@
  * This module owns the *semantics* of the two discovery endpoints: which query
  * parameters exist, how they are coerced, and the exact response envelope. It knows
  * nothing about Express, Node's `http` module or Vercel. It is the one DEFINITION of the
- * wire format, and it is where SEXTANT's internal catalog record (CONTRACT.md) is
+ * wire format, and it is where PAYMAP's internal catalog record (CONTRACT.md) is
  * projected onto the type the shipped SDK declares — see `toDiscoveryResource`. The
  * catalog keeps its own shape; only the wire is spec-shaped.
  *
@@ -82,7 +82,7 @@ function isoFrom(ms) {
  * [spec: `extensions.bazaar` carries `{ info: { input, output }, routeTemplate?, schema? }`
  *  — the same payload the resource server declared through `declareDiscoveryExtension`.]
  *
- * SEXTANT stores that payload flattened onto the record (`input`, `output`,
+ * PAYMAP stores that payload flattened onto the record (`input`, `output`,
  * `routeTemplate`), so the bazaar entry is rebuilt from those fields. Any other extension
  * key the record claims is echoed as `{}` — we know it was announced, we hold no payload
  * for it, and inventing one would be worse than an empty object.
@@ -131,14 +131,14 @@ function extensionsMapOf(rec) {
  *     built with it is silently unusable.
  *  3. `lastUpdated` is ISO 8601; the record keeps epoch ms in `lastSeenAt`.
  *
- * Everything SEXTANT-native is kept as ADDITIVE fields the spec does not define and a
+ * Everything PAYMAP-native is kept as ADDITIVE fields the spec does not define and a
  * spec consumer therefore ignores: `id`, the flat `payTo`/`asset`/`maxAmountRequired`/
  * `network`/`scheme` mirrors of `accepts[0]`, `input`/`output`/`routeTemplate`,
  * `lastSeenAt`/`firstSeenAt`, `settlements`, `seeded`, and the ranking annotations
  * `_score` / `_explain`.
  *
  * @param {object} rec  an internal catalog record (see CONTRACT.md)
- * @returns {object}    a spec `DiscoveryResource` plus SEXTANT's additive fields
+ * @returns {object}    a spec `DiscoveryResource` plus PAYMAP's additive fields
  */
 export function toDiscoveryResource(rec) {
   if (!rec || typeof rec !== 'object') return rec;
@@ -179,7 +179,7 @@ export function toDiscoveryResource(rec) {
     ...(iconUrl !== undefined ? { iconUrl } : {}),
     extensions: extensionsMapOf(rec),
 
-    /* ── additive, SEXTANT-native: not in the spec, ignored by a spec client ── */
+    /* ── additive, PAYMAP-native: not in the spec, ignored by a spec client ── */
     id: rec.id ?? url,
     network,
     scheme,
@@ -256,7 +256,7 @@ export function listResources(catalog, q = {}) {
  * declares `items`, and `withBazaar()` returns the parsed body untransformed — so a
  * client reading `search.resources` gets `undefined` from an `items`-only envelope and
  * throws on iteration. `items` is emitted as a duplicate ALIAS of the same array for one
- * release, for consumers written against the old SEXTANT envelope. It is not spec and
+ * release, for consumers written against the old PAYMAP envelope. It is not spec and
  * will be removed.
  *
  * An absent `query` parameter is a 400. A present-but-empty `query` is a browse: the

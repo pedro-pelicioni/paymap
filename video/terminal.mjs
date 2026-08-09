@@ -33,7 +33,7 @@ const term = (title, lines, fontSize = 27) => `<!doctype html>
 /* --- verbatim excerpt: ranked sights ------------------------------------ */
 const sights = `<span class="d">├──</span> <span class="b">02  SIGHTS TAKEN</span> <span class="d">GET http://localhost:4022/discovery/search</span>
 
-  <span class="w">01</span> <span class="b">██████████████████████</span>  <span class="w">0.862</span>  <span class="w">sextant-fx</span>
+  <span class="w">01</span> <span class="b">██████████████████████</span>  <span class="w">0.862</span>  <span class="w">paymap-fx</span>
                             <span class="d">http://localhost:4023/v1/fx/usd-brl</span>
                             <span class="j">100000 SXT</span> · http · <span class="j">2 settled</span>
                             <span class="d">bm25 14.35 · fields description+tags+url · terms usd+brl+exchang+rate · completeness 0.80</span>
@@ -90,6 +90,6 @@ const settle = `<span class="d">├──</span> <span class="b">04  PAYMENT SET
 
   <span class="d">Discovered, priced, paid and delivered without a human in the loop.</span>`;
 
-writeFileSync(`${OUT}/t1-sights.html`, term('agent · sextant discovery', sights, 25));
+writeFileSync(`${OUT}/t1-sights.html`, term('agent · paymap discovery', sights, 25));
 writeFileSync(`${OUT}/t2-settle.html`, term('agent · x402 paid loop · stellar:testnet', settle, 27));
 console.log('wrote 2 terminal cards');

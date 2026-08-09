@@ -1,5 +1,5 @@
 /**
- * SEXTANT — thin, fail-soft HTTP client for the Bazaar index (`INDEX_URL`).
+ * PAYMAP — thin, fail-soft HTTP client for the Bazaar index (`INDEX_URL`).
  *
  * Endpoints (CONTRACT.md, owned by packages/index served on :4022):
  *   GET /discovery/search?query&limit&cursor&...filters
@@ -24,7 +24,7 @@ async function getJson(url, timeoutMs = 8000) {
   } catch (err) {
     const to = /abort|timeout/i.test(errText(err));
     return fail(
-      to ? 'SEXTANT_TIMEOUT' : 'SEXTANT_INDEX_UNREACHABLE',
+      to ? 'PAYMAP_TIMEOUT' : 'PAYMAP_INDEX_UNREACHABLE',
       to
         ? `The bazaar index at ${url} did not answer within ${timeoutMs}ms.`
         : `The bazaar index is not reachable at ${url} (${errText(err)}). ` +
@@ -36,11 +36,11 @@ async function getJson(url, timeoutMs = 8000) {
   try {
     json = text ? JSON.parse(text) : null;
   } catch {
-    return fail('SEXTANT_INDEX_ERROR', `The bazaar index returned non-JSON (HTTP ${res.status}): ${text.slice(0, 200)}`);
+    return fail('PAYMAP_INDEX_ERROR', `The bazaar index returned non-JSON (HTTP ${res.status}): ${text.slice(0, 200)}`);
   }
   if (!res.ok) {
     return fail(
-      'SEXTANT_INDEX_ERROR',
+      'PAYMAP_INDEX_ERROR',
       `The bazaar index returned HTTP ${res.status}: ${json?.error || json?.reason || text.slice(0, 200) || 'no body'}`
     );
   }
@@ -82,7 +82,7 @@ export function summarise(rec, extra = {}) {
  */
 export async function search({ query, limit = 5, network, maxPrice, type, payTo, config } = {}) {
   if (!query || typeof query !== 'string' || !query.trim()) {
-    return fail('SEXTANT_BAD_REQUEST', 'A non-empty `query` string is required for sextant_search.');
+    return fail('PAYMAP_BAD_REQUEST', 'A non-empty `query` string is required for paymap_search.');
   }
   const cfg = loadConfig(config || {});
   const u = new URL(`${cfg.indexUrl}/discovery/search`);
@@ -107,7 +107,7 @@ export async function search({ query, limit = 5, network, maxPrice, type, payTo,
     try {
       ceiling = BigInt(String(maxPrice));
     } catch {
-      return fail('SEXTANT_BAD_REQUEST', `maxPrice "${maxPrice}" must be an integer amount in atomic units.`);
+      return fail('PAYMAP_BAD_REQUEST', `maxPrice "${maxPrice}" must be an integer amount in atomic units.`);
     }
     const before = items.length;
     items = items.filter((i) => {
@@ -119,7 +119,7 @@ export async function search({ query, limit = 5, network, maxPrice, type, payTo,
     });
     if (items.length === 0 && before > 0) {
       return fail(
-        'SEXTANT_NO_RESULTS',
+        'PAYMAP_NO_RESULTS',
         `${before} resource(s) matched "${query}" but all of them price above the caller's budget of ${maxPrice} atomic units.`
       );
     }
@@ -127,9 +127,9 @@ export async function search({ query, limit = 5, network, maxPrice, type, payTo,
 
   if (items.length === 0) {
     return fail(
-      'SEXTANT_NO_RESULTS',
+      'PAYMAP_NO_RESULTS',
       `No resource in the bazaar index matched "${query}"${network ? ` on ${network}` : ''}. ` +
-        `The index returned 0 matches; try broader terms, or call sextant_browse to see the whole catalogue.`
+        `The index returned 0 matches; try broader terms, or call paymap_browse to see the whole catalogue.`
     );
   }
 
@@ -161,7 +161,7 @@ export async function browse({ type, payTo, network, scheme, extensions, limit =
   const items = itemsOf(res.json).map((r) => summarise(r));
   if (items.length === 0) {
     return fail(
-      'SEXTANT_NO_RESULTS',
+      'PAYMAP_NO_RESULTS',
       `The bazaar index returned no resources for these filters ` +
         `(${JSON.stringify({ type, payTo, network, scheme, extensions })}). The catalogue may still be empty.`
     );
@@ -182,7 +182,7 @@ export async function browse({ type, payTo, network, scheme, extensions, limit =
  */
 export async function describe({ id, config } = {}) {
   if (!id || typeof id !== 'string' || !id.trim()) {
-    return fail('SEXTANT_BAD_REQUEST', 'A non-empty resource `id` is required for sextant_describe.');
+    return fail('PAYMAP_BAD_REQUEST', 'A non-empty resource `id` is required for paymap_describe.');
   }
   const cfg = loadConfig(config || {});
   const wanted = id.trim();
@@ -204,9 +204,9 @@ export async function describe({ id, config } = {}) {
 
   if (!rec) {
     return fail(
-      'SEXTANT_NOT_FOUND',
+      'PAYMAP_NOT_FOUND',
       `No resource with id "${wanted}" is registered in the bazaar index at ${cfg.indexUrl}. ` +
-        `Use sextant_search or sextant_browse to obtain a valid id.`
+        `Use paymap_search or paymap_browse to obtain a valid id.`
     );
   }
 
@@ -233,18 +233,18 @@ export function describeRecord(rec) {
     output: rec?.output ?? null,
     parameters: params,
     howToCall: {
-      tool: 'sextant_pay',
+      tool: 'paymap_pay',
       url: rec?.resource?.url ?? null,
       method: rec?.input?.method ?? (rec?.type === 'mcp' ? 'MCP' : 'GET'),
       params: Object.fromEntries(params.map((p) => [p.name, p.example ?? `<${p.type || 'string'}>`])),
       methodHint:
         (rec?.input?.method ?? 'GET') === 'GET'
-          ? 'Pass params as the query string (sextant_pay defaults to GET).'
-          : `This endpoint is ${rec?.input?.method}: call sextant_pay with method:"${rec?.input?.method}" and pass params as the JSON body.`,
+          ? 'Pass params as the query string (paymap_pay defaults to GET).'
+          : `This endpoint is ${rec?.input?.method}: call paymap_pay with method:"${rec?.input?.method}" and pass params as the JSON body.`,
       note:
         rec?.type === 'mcp'
-          ? `MCP tool "${rec?.input?.toolName ?? 'unknown'}" — call the upstream MCP server; sextant_pay covers the HTTP-facing 402 leg.`
-          : 'sextant_pay performs the 402 challenge, signs the Soroban auth entry with PAYER_SECRET and retries.'
+          ? `MCP tool "${rec?.input?.toolName ?? 'unknown'}" — call the upstream MCP server; paymap_pay covers the HTTP-facing 402 leg.`
+          : 'paymap_pay performs the 402 challenge, signs the Soroban auth entry with PAYER_SECRET and retries.'
     }
   };
 }

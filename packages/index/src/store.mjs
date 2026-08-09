@@ -53,16 +53,16 @@
  *
  * Storage layout — a single Redis HASH, `id -> JSON(record)`:
  *
- *   HGETALL sextant:catalog:v1            read the whole catalog (one round trip)
- *   HSET    sextant:catalog:v1 <id> <json>  upsert one record
- *   HDEL    sextant:catalog:v1 <id>         remove one record
+ *   HGETALL paymap:catalog:v1            read the whole catalog (one round trip)
+ *   HSET    paymap:catalog:v1 <id> <json>  upsert one record
+ *   HDEL    paymap:catalog:v1 <id>         remove one record
  *
  * A hash rather than one JSON blob because HSET on a field is atomic: two lambda
  * instances cataloging different resources at the same moment cannot clobber each other,
  * which a read-modify-write of a single key absolutely would.
  */
 
-export const DEFAULT_STORE_KEY = 'sextant:catalog:v1';
+export const DEFAULT_STORE_KEY = 'paymap:catalog:v1';
 const DEFAULT_TIMEOUT_MS = 4000;
 /** Short by design: a hung connect is worse than a seeded fallback. */
 const DEFAULT_CONNECT_TIMEOUT_MS = 2000;
@@ -119,8 +119,8 @@ function scrubbed(value, secrets = []) {
  */
 export function readStoreConfig(env = process.env) {
   const e = env ?? {};
-  const key = trimmed(e.SEXTANT_KV_KEY) || DEFAULT_STORE_KEY;
-  const timeoutMs = positiveInt(e.SEXTANT_KV_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
+  const key = trimmed(e.PAYMAP_KV_KEY) || DEFAULT_STORE_KEY;
+  const timeoutMs = positiveInt(e.PAYMAP_KV_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
 
   const restUrl = trimmed(e.KV_REST_API_URL) || trimmed(e.UPSTASH_REDIS_REST_URL);
   const restToken = trimmed(e.KV_REST_API_TOKEN) || trimmed(e.UPSTASH_REDIS_REST_TOKEN);
@@ -155,7 +155,7 @@ export function readStoreConfig(env = process.env) {
         url: redisUrl,
         key,
         timeoutMs,
-        connectTimeoutMs: positiveInt(e.SEXTANT_REDIS_CONNECT_TIMEOUT_MS, DEFAULT_CONNECT_TIMEOUT_MS),
+        connectTimeoutMs: positiveInt(e.PAYMAP_REDIS_CONNECT_TIMEOUT_MS, DEFAULT_CONNECT_TIMEOUT_MS),
         // `URL.host` is `hostname[:port]` — no scheme, no username, no password.
         host: parsed.host,
         // Held only so error strings can be scrubbed of it; never returned, never logged.

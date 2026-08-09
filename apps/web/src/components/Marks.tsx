@@ -2,7 +2,7 @@
 
 import { useReveal } from '../lib/reveal'
 
-export function SextantGlyph({ size = 22 }: { size?: number }) {
+export function PaymapGlyph({ size = 22 }: { size?: number }) {
   return (
     <svg className="glyph" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M3 21 A18 18 0 0 1 21 3" fill="none" stroke="currentColor" strokeWidth="1.3" />
@@ -160,7 +160,7 @@ export function LoopDiagram() {
       className="loopdia"
       viewBox="0 0 1000 300"
       role="img"
-      aria-label="The SEXTANT loop: advertise, discover, settle, consume, with settlements feeding back into ranking."
+      aria-label="The PAYMAP loop: advertise, discover, settle, consume, with settlements feeding back into ranking."
     >
       <g stroke="var(--rule)" strokeWidth="1">
         <line x1="0" y1="118" x2="1000" y2="118" />

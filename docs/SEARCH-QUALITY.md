@@ -1,4 +1,4 @@
-# SEXTANT — Search Quality
+# PAYMAP — Search Quality
 
 How the bazaar index decides what an agent sees, why it is built this way, and how we
 would prove it works.

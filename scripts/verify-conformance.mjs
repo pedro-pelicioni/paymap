@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEXTANT — stock-client conformance check.
+ * PAYMAP — stock-client conformance check.
  *
  * The RFP's hard acceptance criterion is that an UNMODIFIED canonical client can pay an
  * independent resource server. This script is that test, and it is deliberately written
@@ -78,10 +78,10 @@ const SELLER_URL = String(arg("seller", process.env.SELLER_URL || "http://localh
 const TARGET = arg("url", `${SELLER_URL}/v1/fx/usd-brl`);
 const METHOD = arg("method", "GET").toUpperCase();
 
-console.log(`\n${C.bold}SEXTANT — x402 v2 conformance against an unmodified @x402/fetch client${C.off}`);
+console.log(`\n${C.bold}PAYMAP — x402 v2 conformance against an unmodified @x402/fetch client${C.off}`);
 console.log(`${C.dim}  resource ${TARGET}`);
 console.log(`  network  ${NETWORK}`);
-console.log(`  client   @x402/fetch wrapFetchWithPayment (no SEXTANT code on the path)${C.off}`);
+console.log(`  client   @x402/fetch wrapFetchWithPayment (no PAYMAP code on the path)${C.off}`);
 
 if (!PAYER_SECRET) die("PAYER_SECRET is not set in .env — run `npm run setup` first.");
 if (NETWORK !== "stellar:testnet") die(`Refusing to run on ${NETWORK}; this check is testnet-only.`);

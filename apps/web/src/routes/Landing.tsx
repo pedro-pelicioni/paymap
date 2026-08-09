@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AssetImg } from '../components/AssetImg'
 import { Globe } from '../components/Globe'
 import { IntegrityLedger } from '../components/IntegrityLedger'
-import { LoopDiagram, SextantGlyph, StarChart } from '../components/Marks'
+import { LoopDiagram, PaymapGlyph, StarChart } from '../components/Marks'
 import { SightBoard } from '../components/SightBoard'
 import { StackStatus } from '../components/StackStatus'
 import { Ticker } from '../components/Ticker'
@@ -13,7 +13,7 @@ import { rank } from '../lib/rank'
 import { RevealGroup, SplitLine } from '../lib/reveal'
 import type { Catalog } from '../lib/types'
 
-const GITHUB = 'https://github.com/pedro-pelicioni/sextant'
+const GITHUB = 'https://github.com/pedro-pelicioni/paymap'
 
 export default function Landing() {
   const [cat, setCat] = useState<Catalog>(() => demoCatalog())
@@ -44,9 +44,9 @@ export default function Landing() {
 
       <header className="topbar">
         <div className="shell topbar__in">
-          <Link className="topbar__mark" to="/" aria-label="SEXTANT home">
-            <SextantGlyph />
-            <span>SEXTANT</span>
+          <Link className="topbar__mark" to="/" aria-label="PAYMAP home">
+            <PaymapGlyph />
+            <span>PAYMAP</span>
           </Link>
           <nav className="topbar__nav" aria-label="Sections">
             <a href="#problem">The problem</a>
@@ -76,7 +76,7 @@ export default function Landing() {
             </div>
 
             <h1 className="wordmark reveal" style={{ ['--d' as string]: '160ms' }}>
-              SEXTANT<sup>°</sup>
+              PAYMAP<sup>°</sup>
             </h1>
 
             <div className="hero__lines">
@@ -364,7 +364,7 @@ export default function Landing() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <AssetImg src="/assets/lot-mark.png" width={56} height={56} />
               <p className="footer__mark">
-                SEXTANT<sup style={{ fontSize: '0.3em', color: 'var(--brass)' }}>°</sup>
+                PAYMAP<sup style={{ fontSize: '0.3em', color: 'var(--brass)' }}>°</sup>
               </p>
             </div>
             <nav className="footer__links" aria-label="Elsewhere">

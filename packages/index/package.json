@@ -1,7 +1,7 @@
 {
-  "name": "@sextant/index",
+  "name": "@paymap/index",
   "version": "1.0.0",
-  "description": "SEXTANT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
+  "description": "PAYMAP \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {

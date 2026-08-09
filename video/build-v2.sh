@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEXTANT demo v2 — real motion captured from the live product over CDP screencast.
+# PAYMAP demo v2 — real motion captured from the live product over CDP screencast.
 # Title cards (still) bookend; the bulk is real UI motion: landing scroll, query typed,
 # Sight Board FLIP re-order, _EXPLAIN disclosure, PAY 402 -> sign -> settle -> 200.
 set -euo pipefail
