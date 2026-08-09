@@ -1,0 +1,96 @@
+/* ============================================================
+   DITHER FIELD — the hero's ground texture
+   An ordered-dither swirl on a 2D canvas (components/DitherField.tsx).
+
+   The component does not name a single colour. It reads the three
+   tones below off the host element and lets the browser resolve
+   them, so the design tokens remain the only place pigment is
+   decided. Retint a placement by overriding them, not by editing
+   the component.
+
+   Two masks, with different jobs:
+     - the canvas owns the hard zeros. It drives the field's weight
+       to exactly 0 over the copy column (derived from --shell and
+       the .hero__grid split, so it tracks the real layout) and
+       fades it to nothing before all four edges;
+     - the radial mask below is the second pass, and it is what
+       actually clears the corners — the canvas's own radial envelope
+       only thins them. It is biased toward the terminal side, so what
+       survives leans away from the headline, and it is a single layer
+       — no mask-composite, nothing to feature-detect. The #000 in it
+       is a stencil, not pigment: only its alpha is read.
+   ============================================================ */
+
+.dither {
+  /* --- what the canvas paints with — tokens only -------------------------
+     Front sits close to --g-800 / --rule *after* the opacity below is
+     applied: --g-700 at 0.58 over --ink composites to about #1c1e23.
+     The accent is the third tone. It fires only where the field's own
+     crest and a fine third octave coincide — a measured mean of
+     3.8-4.3% of the blocks that reach the front tone, and never more
+     than 0.31% of the canvas at any point in the cycle. Raising
+     --dither-hot-a is the only thing here that can make it loud;
+     --dither-hot-a: 0 removes it entirely. */
+  --dither-back: var(--g-850);
+  --dither-back-a: 0.9;
+  --dither-front: var(--g-700);
+  --dither-front-a: 1;
+  --dither-hot: var(--accent);
+  --dither-hot-a: 0.34;
+
+  position: absolute;
+  inset: 0;
+  /* .hero::before (blueprint grid) and .hero::after (accent ember) both sit at
+     z-index 0. Matching them puts the field between the two in tree order:
+     grid, field, ember — layered with the hero's atmosphere, not over it. */
+  z-index: 0;
+
+  /* The single largest legibility lever on the page. Everything above was
+     measured against cream (--fg) on ink at this value. */
+  opacity: 0.58;
+
+  /* Decorative. It is aria-hidden in the markup; this is the other half —
+     it must never intercept a click meant for the content it sits behind. */
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+
+  -webkit-mask-image: radial-gradient(
+    112% 118% at 64% 36%,
+    #000 0%,
+    #000 30%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(112% 118% at 64% 36%, #000 0%, #000 30%, transparent 92%);
+}
+
+.dither__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Below 1020px .hero__grid collapses and the copy takes the full shell, so the
+   field only has the outer gutters and the band under the copy left to live in.
+   Quieter, twice. */
+@media (max-width: 1020px) {
+  .dither {
+    opacity: 0.4;
+  }
+}
+@media (max-width: 640px) {
+  .dither {
+    opacity: 0.28;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The animation is stopped in DitherField.tsx — the canvas holds one static,
+     fully legible frame and the rAF loop never starts. This block exists so
+     nothing added here can quietly put motion back. */
+  .dither,
+  .dither__canvas {
+    animation: none !important;
+    transition: none !important;
+  }
+}

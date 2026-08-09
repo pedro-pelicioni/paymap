@@ -4,8 +4,8 @@ import { AssetImg } from '../components/AssetImg'
 import { PaymapMark, StarGlyph } from '../components/Marks'
 import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
+import { DitherField } from '../components/DitherField'
 import { DottedGlobe } from '../components/DottedGlobe'
-import { Swirl } from '../components/Swirl'
 import { bakedIntegrity, demoCatalog, loadCatalog, testnetTxs } from '../lib/api'
 import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
@@ -194,7 +194,7 @@ export default function Landing() {
       <main id="main">
         {/* ---------------------------------------------------------- hero */}
         <section className="hero">
-          <Swirl />
+          <DitherField />
           <div className="shell hero__in">
             <div className="hero__grid">
               <div>
