@@ -1,0 +1,53 @@
+{
+  "name": "@paymap/express",
+  "version": "1.0.0",
+  "description": "x402 paywall middleware for Express — sell any endpoint for a Stellar token and have it listed in the PAYMAP bazaar before its first payment.",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "keywords": [
+    "x402",
+    "stellar",
+    "soroban",
+    "express",
+    "middleware",
+    "paywall",
+    "http-402",
+    "bazaar",
+    "discovery",
+    "agent-payments",
+    "paymap"
+  ],
+  "homepage": "https://github.com/pedro-pelicioni/paymap/tree/main/packages/express#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedro-pelicioni/paymap.git",
+    "directory": "packages/express"
+  },
+  "bugs": {
+    "url": "https://github.com/pedro-pelicioni/paymap/issues"
+  },
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@x402/core": ">=2.21.0 <3",
+    "@x402/extensions": ">=2.21.0 <3",
+    "express": ">=4.18.0 <6"
+  },
+  "scripts": {
+    "test": "node --test ../../test/express-middleware.test.mjs"
+  }
+}

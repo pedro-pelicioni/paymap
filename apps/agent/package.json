@@ -1,9 +1,8 @@
 {
   "name": "@paymap/agent",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "PAYMAP agent surface \u2014 MCP server + x402 payment client for the Stellar Bazaar",
+  "description": "PAYMAP agent surface — MCP server + x402 payment client for the Stellar Bazaar",
   "bin": {
     "paymap-mcp": "./src/mcp-server.mjs",
     "paymap": "./src/cli.mjs"
@@ -13,6 +12,34 @@
     "./pay": "./src/pay.mjs",
     "./bazaar": "./src/bazaar.mjs",
     "./mcp-server": "./src/mcp-server.mjs"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "keywords": [
+    "x402",
+    "stellar",
+    "mcp",
+    "model-context-protocol",
+    "agent-payments",
+    "bazaar",
+    "paymap"
+  ],
+  "homepage": "https://github.com/pedro-pelicioni/paymap/tree/main/apps/agent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedro-pelicioni/paymap.git",
+    "directory": "apps/agent"
+  },
+  "bugs": {
+    "url": "https://github.com/pedro-pelicioni/paymap/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "mcp": "node src/mcp-server.mjs",
