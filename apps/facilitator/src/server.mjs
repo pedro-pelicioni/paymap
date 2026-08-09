@@ -163,10 +163,30 @@ if (seedEnabled) {
 
 const feePayerSigner = createEd25519Signer(FEEPAYER_SECRET, NETWORK);
 
+// `maxTransactionFeeStroops` is a SAFETY CEILING, not a fee we pay. @x402/stellar
+// simulates the transfer, and if the simulation-derived fee exceeds this number it
+// refuses at /verify before any money moves. Its default is 50_000.
+//
+// That default is too tight for this scheme and was empirically breaking payments.
+// A SEP-41 SAC transfer with a sponsored fee bump simulates around 57_000 stroops on
+// testnet today — above the default — and the margin moves with network load, so the
+// failure is intermittent: it disappears when you test and returns under load, which
+// is the worst way for a reviewer to meet it. Observed: four consecutive /verify
+// rejections at 57_031–57_038 stroops, and a settlement that squeaked through at
+// max_fee 57_227 an hour later.
+//
+// 500_000 stroops is 0.05 XLM. It is 8.7x the observed simulation and still small
+// enough to catch a genuinely runaway transaction, which is what the ceiling is for.
+// The FEEPAYER pays this, never the buyer.
+const MAX_TRANSACTION_FEE_STROOPS = Number(
+  process.env.MAX_TRANSACTION_FEE_STROOPS ?? 500_000,
+);
+
 const stellarScheme = new ExactStellarScheme([feePayerSigner], {
   rpcConfig: { url: STELLAR_RPC_URL },
   areFeesSponsored: true,
   feeBumpSigner: feePayerSigner,
+  maxTransactionFeeStroops: MAX_TRANSACTION_FEE_STROOPS,
 });
 
 const facilitator = new x402Facilitator().register(NETWORK, stellarScheme);
