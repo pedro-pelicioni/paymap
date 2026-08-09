@@ -1,7 +1,7 @@
 {
-  "name": "@paymap/index",
+  "name": "@starsight/index",
   "version": "1.0.0",
-  "description": "PAYMAP \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
+  "description": "STARSIGHT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {

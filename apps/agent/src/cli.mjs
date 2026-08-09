@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PAYMAP — terminal demo of the agent loop.
+ * STARSIGHT — terminal demo of the agent loop.
  *
  *   node apps/agent/src/cli.mjs "usd to brl exchange rate"
  *   node apps/agent/src/cli.mjs "..." --dry-run # discovery only, never spends
@@ -45,7 +45,7 @@ function rule(char = BOX.h, n = W) {
 
 /** Top banner. */
 function banner(cfg, mode) {
-  const title = ' PAYMAP ';
+  const title = ' STARSIGHT ';
   const sub = ' Find what to pay for on Stellar ';
   out();
   out(dim(BOX.tl + BOX.h.repeat(W - 2) + BOX.tr));
@@ -105,7 +105,7 @@ function parseArgs(argv) {
 
 function usage() {
   out();
-  out(hi('  paymap') + dim(' — agent-side demo of the Stellar Bazaar payment loop'));
+  out(hi('  starsight') + dim(' — agent-side demo of the Stellar Bazaar payment loop'));
   out();
   out(`  ${key('node apps/agent/src/cli.mjs')} ${dim('"usd to brl exchange rate"')}`);
   out();

@@ -1,5 +1,5 @@
 /**
- * test/catalog-integrity.test.mjs — PAYMAP catalog trust-boundary tests.
+ * test/catalog-integrity.test.mjs — STARSIGHT catalog trust-boundary tests.
  *
  * Run with:  node --test test/
  *

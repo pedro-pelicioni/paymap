@@ -1,8 +1,8 @@
-# PAYMAP — agent surface
+# STARSIGHT — agent surface
 
 **Find what to pay for on Stellar.**
 
-`apps/agent` is the agent-facing half of PAYMAP: an **MCP server** that drops the Stellar
+`apps/agent` is the agent-facing half of STARSIGHT: an **MCP server** that drops the Stellar
 Bazaar directly into an AI agent's runtime. The agent searches the bazaar in natural
 language, reads a resource's exact call contract, and then *actually pays for it* — the full
 `discover → 402 → sign → retry → settle` x402 loop happens inside a single tool call.
@@ -20,7 +20,7 @@ This is RFP requirement **3.3**.
 | `src/replay-guard.test.mjs` | `node:test` proof that replays and expired auth entries are refused with a reason |
 
 Testnet only. No relayer, no third-party channel service — the payment is signed locally with
-`@x402/stellar` and settled by the PAYMAP facilitator on `stellar:testnet`.
+`@x402/stellar` and settled by the STARSIGHT facilitator on `stellar:testnet`.
 
 ---
 
@@ -49,7 +49,7 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "paymap": {
+    "starsight": {
       "command": "node",
       "args": ["/absolute/path/to/repo/apps/agent/src/mcp-server.mjs"],
       "env": {
@@ -67,7 +67,7 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 ### Claude Code
 
 ```bash
-claude mcp add paymap -- node /absolute/path/to/repo/apps/agent/src/mcp-server.mjs
+claude mcp add starsight -- node /absolute/path/to/repo/apps/agent/src/mcp-server.mjs
 ```
 
 or in `.mcp.json` at the project root:
@@ -75,7 +75,7 @@ or in `.mcp.json` at the project root:
 ```json
 {
   "mcpServers": {
-    "paymap": {
+    "starsight": {
       "command": "node",
       "args": ["apps/agent/src/mcp-server.mjs"]
     }
@@ -95,7 +95,7 @@ All four tools return **both** a JSON text block (for the model) and `structured
 the host). Every result is `{ ok: true, ... }` or `{ ok: false, code, reason }`. `reason` is
 **never null** on a rejection.
 
-### `paymap_search`
+### `starsight_search`
 
 Ranked natural-language search over the bazaar. Each candidate carries the index's `_explain`
 breakdown, so the ranking is auditable rather than a black box.
@@ -115,7 +115,7 @@ breakdown, so the ranking is auditable rather than a black box.
   "query": "usd to brl exchange rate",
   "items": [{
     "id": "http://localhost:4023/v1/fx/usd-brl",
-    "url": "...", "serviceName": "paymap-fx", "description": "...", "tags": ["fx"],
+    "url": "...", "serviceName": "starsight-fx", "description": "...", "tags": ["fx"],
     "type": "http", "network": "stellar:testnet", "scheme": "exact",
     "payTo": "G...", "asset": "C...", "maxAmountRequired": "100000",
     "settlements": 1,
@@ -128,7 +128,7 @@ breakdown, so the ranking is auditable rather than a black box.
 }
 ```
 
-### `paymap_browse`
+### `starsight_browse`
 
 Unranked catalogue listing. Use it to see what exists, or to enumerate one seller's endpoints.
 
@@ -142,7 +142,7 @@ Unranked catalogue listing. Use it to see what exists, or to enumerate one selle
   "total": 4, "limit": 20, "offset": 0, "source": "http://localhost:4022" }
 ```
 
-### `paymap_describe`
+### `starsight_describe`
 
 Full discovery metadata for one resource, flattened into a call-construction brief: every
 parameter with its type, whether it is required, and its description — so the agent can build a
@@ -166,14 +166,14 @@ valid call with no external documentation.
     { "name": "pair", "in": "query", "type": "string", "required": true,
       "description": "Currency pair", "enum": null, "example": "USD/BRL" }
   ],
-  "howToCall": { "tool": "paymap_pay", "url": "...", "method": "GET", "params": {...},
-                 "methodHint": "Pass params as the query string (paymap_pay defaults to GET).",
+  "howToCall": { "tool": "starsight_pay", "url": "...", "method": "GET", "params": {...},
+                 "methodHint": "Pass params as the query string (starsight_pay defaults to GET).",
                  "note": "..." },
   "source": "http://localhost:4022"
 }
 ```
 
-### `paymap_pay`
+### `starsight_pay`
 
 The whole x402 loop in one call: request → 402 challenge → sign the Soroban auth entry with the
 operator's `PAYER_SECRET` → retry with the payment header → return the unlocked body plus the
@@ -217,23 +217,23 @@ Nothing throws out of a tool handler.
 
 | Code | Meaning | Typical fix |
 |---|---|---|
-| `PAYMAP_CONFIG_MISSING` | `PAYER_SECRET` absent or not a valid `S...` seed | run `scripts/setup-testnet.mjs`, or set it in the MCP `env` block |
-| `PAYMAP_BAD_REQUEST` | malformed argument (empty url/query/id, non-integer `maxPrice`) | fix the argument named in the reason |
-| `PAYMAP_INDEX_UNREACHABLE` | the discovery index did not answer | start the stack (`npm run dev:all`) or set `INDEX_URL` |
-| `PAYMAP_INDEX_ERROR` | index answered non-2xx or non-JSON | check the index logs; the HTTP status is in the reason |
-| `PAYMAP_NO_RESULTS` | nothing matched the query or the filters | broaden the query, or raise `maxPrice` |
-| `PAYMAP_NOT_FOUND` | no resource with that id is registered | get a valid id from `paymap_search` / `paymap_browse` |
-| `PAYMAP_RESOURCE_UNREACHABLE` | the seller endpoint refused the connection | the seller is down, or the URL is wrong |
-| `PAYMAP_402_MALFORMED` | 402 with no decodable `PAYMENT-REQUIRED` header and no `accepts` body | the seller is not speaking x402 v2 |
-| `PAYMAP_UNSUPPORTED_NETWORK` | resource wants a network/scheme this agent is not configured for | testnet only; check `STELLAR_NETWORK` |
-| `PAYMAP_PRICE_EXCEEDS_BUDGET` | quoted price is above the caller's `maxPrice` | raise `maxPrice`, or pick a cheaper resource |
-| `PAYMAP_SIGN_FAILED` | the Soroban auth entry could not be built or signed | check RPC reachability and the payer account |
-| `PAYMAP_INSUFFICIENT_BALANCE` | payer lacks the asset, or has no trustline | fund the payer / add the trustline |
-| `PAYMAP_REPLAY_REJECTED` | the payment authorization had already been consumed | sign a fresh payment; never reuse a header |
-| `PAYMAP_AUTH_EXPIRED` | the auth entry's ledger bounds had passed | retry — signing is cheap |
-| `PAYMAP_SETTLE_FAILED` | facilitator returned `success: false` for another reason | the facilitator's `errorReason` is quoted in the reason |
-| `PAYMAP_UPSTREAM_ERROR` | unexpected non-402 HTTP error, or an internal throw | read the reason; the HTTP status is included |
-| `PAYMAP_TIMEOUT` | the resource or index exceeded the timeout | raise `timeoutMs` |
+| `STARSIGHT_CONFIG_MISSING` | `PAYER_SECRET` absent or not a valid `S...` seed | run `scripts/setup-testnet.mjs`, or set it in the MCP `env` block |
+| `STARSIGHT_BAD_REQUEST` | malformed argument (empty url/query/id, non-integer `maxPrice`) | fix the argument named in the reason |
+| `STARSIGHT_INDEX_UNREACHABLE` | the discovery index did not answer | start the stack (`npm run dev:all`) or set `INDEX_URL` |
+| `STARSIGHT_INDEX_ERROR` | index answered non-2xx or non-JSON | check the index logs; the HTTP status is in the reason |
+| `STARSIGHT_NO_RESULTS` | nothing matched the query or the filters | broaden the query, or raise `maxPrice` |
+| `STARSIGHT_NOT_FOUND` | no resource with that id is registered | get a valid id from `starsight_search` / `starsight_browse` |
+| `STARSIGHT_RESOURCE_UNREACHABLE` | the seller endpoint refused the connection | the seller is down, or the URL is wrong |
+| `STARSIGHT_402_MALFORMED` | 402 with no decodable `PAYMENT-REQUIRED` header and no `accepts` body | the seller is not speaking x402 v2 |
+| `STARSIGHT_UNSUPPORTED_NETWORK` | resource wants a network/scheme this agent is not configured for | testnet only; check `STELLAR_NETWORK` |
+| `STARSIGHT_PRICE_EXCEEDS_BUDGET` | quoted price is above the caller's `maxPrice` | raise `maxPrice`, or pick a cheaper resource |
+| `STARSIGHT_SIGN_FAILED` | the Soroban auth entry could not be built or signed | check RPC reachability and the payer account |
+| `STARSIGHT_INSUFFICIENT_BALANCE` | payer lacks the asset, or has no trustline | fund the payer / add the trustline |
+| `STARSIGHT_REPLAY_REJECTED` | the payment authorization had already been consumed | sign a fresh payment; never reuse a header |
+| `STARSIGHT_AUTH_EXPIRED` | the auth entry's ledger bounds had passed | retry — signing is cheap |
+| `STARSIGHT_SETTLE_FAILED` | facilitator returned `success: false` for another reason | the facilitator's `errorReason` is quoted in the reason |
+| `STARSIGHT_UPSTREAM_ERROR` | unexpected non-402 HTTP error, or an internal throw | read the reason; the HTTP status is included |
+| `STARSIGHT_TIMEOUT` | the resource or index exceeded the timeout | raise `timeoutMs` |
 
 The enum is exported as `ERROR_CODES` from `src/pay.mjs`, and facilitator failure strings are
 mapped onto it deterministically by `classifySettleFailure()`.
@@ -310,7 +310,7 @@ Read from the repo-root `/.env`, overridable by `process.env` or the MCP `env` b
 | `INDEX_URL` | `http://localhost:4022` | discovery index |
 | `FACILITATOR_URL` | `http://localhost:4021` | facilitator (`/supported`, `/verify`, `/settle`) |
 | `SELLER_URL` | `http://localhost:4023` | demo seller |
-| `PAYER_SECRET` | — | the agent's wallet; **required for `paymap_pay`** |
+| `PAYER_SECRET` | — | the agent's wallet; **required for `starsight_pay`** |
 | `PAYER_PUBLIC` | — | display only |
 | `ASSET_CODE` | `SXT` | display only |
 
@@ -318,9 +318,9 @@ Read from the repo-root `/.env`, overridable by `process.env` or the MCP `env` b
 
 Verified against the installed `@x402/core@2.21` build, not assumed:
 
-- 402 challenge arrives in the **`PAYMENT-REQUIRED`** response header (base64 JSON). PAYMAP
+- 402 challenge arrives in the **`PAYMENT-REQUIRED`** response header (base64 JSON). STARSIGHT
   also accepts the same object in the JSON body, which is what several v2 servers emit.
-- The signed payload goes out as **`PAYMENT-SIGNATURE`** (x402 v2); PAYMAP mirrors it onto
+- The signed payload goes out as **`PAYMENT-SIGNATURE`** (x402 v2); STARSIGHT mirrors it onto
   **`X-PAYMENT`** so v1-shaped sellers work unchanged.
 - Settlement comes back in **`PAYMENT-RESPONSE`** / `X-PAYMENT-RESPONSE` as
   `{ success, errorReason, transaction, network, payer }`.

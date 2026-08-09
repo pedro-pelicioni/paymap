@@ -1,11 +1,11 @@
 {
-  "name": "@paymap/agent",
+  "name": "@starsight/agent",
   "version": "0.1.0",
   "type": "module",
-  "description": "PAYMAP agent surface — MCP server + x402 payment client for the Stellar Bazaar",
+  "description": "STARSIGHT agent surface — MCP server + x402 payment client for the Stellar Bazaar",
   "bin": {
-    "paymap-mcp": "./src/mcp-server.mjs",
-    "paymap": "./src/cli.mjs"
+    "starsight-mcp": "./src/mcp-server.mjs",
+    "starsight": "./src/cli.mjs"
   },
   "exports": {
     ".": "./src/pay.mjs",
@@ -27,16 +27,16 @@
     "model-context-protocol",
     "agent-payments",
     "bazaar",
-    "paymap"
+    "starsight"
   ],
-  "homepage": "https://github.com/pedro-pelicioni/paymap/tree/main/apps/agent#readme",
+  "homepage": "https://github.com/pedro-pelicioni/starsight/tree/main/apps/agent#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pedro-pelicioni/paymap.git",
+    "url": "git+https://github.com/pedro-pelicioni/starsight.git",
     "directory": "apps/agent"
   },
   "bugs": {
-    "url": "https://github.com/pedro-pelicioni/paymap/issues"
+    "url": "https://github.com/pedro-pelicioni/starsight/issues"
   },
   "publishConfig": {
     "access": "public"

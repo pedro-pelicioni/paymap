@@ -1,7 +1,7 @@
 {
-  "name": "@paymap/express",
+  "name": "@starsight/express",
   "version": "1.0.0",
-  "description": "x402 paywall middleware for Express — sell any endpoint for a Stellar token and have it listed in the PAYMAP bazaar before its first payment.",
+  "description": "x402 paywall middleware for Express — sell any endpoint for a Stellar token and have it listed in the STARSIGHT bazaar before its first payment.",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {
@@ -27,16 +27,16 @@
     "bazaar",
     "discovery",
     "agent-payments",
-    "paymap"
+    "starsight"
   ],
-  "homepage": "https://github.com/pedro-pelicioni/paymap/tree/main/packages/express#readme",
+  "homepage": "https://github.com/pedro-pelicioni/starsight/tree/main/packages/express#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pedro-pelicioni/paymap.git",
+    "url": "git+https://github.com/pedro-pelicioni/starsight.git",
     "directory": "packages/express"
   },
   "bugs": {
-    "url": "https://github.com/pedro-pelicioni/paymap/issues"
+    "url": "https://github.com/pedro-pelicioni/starsight/issues"
   },
   "license": "Apache-2.0",
   "publishConfig": {

@@ -1,14 +1,14 @@
 /**
- * @paymap/express — the paywall.
+ * @starsight/express — the paywall.
  *
- * One `paymapPaywall(...)` call owns the whole x402 loop for a server:
+ * One `starsightPaywall(...)` call owns the whole x402 loop for a server:
  *
  *   1. no payment            -> 402 + `PAYMENT-REQUIRED` (base64 of the PaymentRequired object)
  *   2. `PAYMENT-SIGNATURE`   -> decode with @x402/core's own codec
  *   3. re-derive the price   -> compare the client's echo, reject any mismatch
  *   4. POST /verify          -> facilitator says yes or gives a reason
  *   5. POST /settle          -> facilitator moves the money or gives a reason
- *   6. `PAYMENT-RESPONSE` + `EXTENSION-RESPONSES` forwarded, `req.paymap` populated, next()
+ *   6. `PAYMENT-RESPONSE` + `EXTENSION-RESPONSES` forwarded, `req.starsight` populated, next()
  *
  * WIRE FORMAT. Every base64 payload is produced and consumed by `@x402/core/http`'s own
  * encoders/decoders, never by hand. The v2 HTTP transport puts the challenge in the
@@ -54,7 +54,7 @@ import {
  * @param {object} options - see the package README
  * @returns {Function & {routes: Function, wellKnown: Function, wellKnownHandler: Function, announce: Function, stop: Function, config: object}}
  */
-export function paymapPaywall(options) {
+export function starsightPaywall(options) {
   const config = normalizeConfig(options);
   const routes = [];
   const announcer = createAnnouncer(config, routes);
@@ -128,7 +128,7 @@ function makeMiddleware(route, config, announcer) {
    * agent gets no response and no reason at all. That is the one rejection path this
    * package must never have, so every throw is funnelled back into a reasoned 402.
    */
-  return function paymapPaywallMiddleware(req, res, next) {
+  return function starsightPaywallMiddleware(req, res, next) {
     let promise;
     try {
       promise = handle(req, res, next);
@@ -145,7 +145,7 @@ function makeMiddleware(route, config, announcer) {
  */
 function failSafe(error, req, res, next, route, config) {
   const reason = reasonOf(error, "the paywall failed unexpectedly");
-  config.logger.error(`[paymap] ${route.method} ${route.path ?? "?"} failed unexpectedly: ${reason}`);
+  config.logger.error(`[starsight] ${route.method} ${route.path ?? "?"} failed unexpectedly: ${reason}`);
 
   if (res.headersSent || res.writableEnded) return next(error);
 
@@ -168,7 +168,7 @@ function failSafe(error, req, res, next, route, config) {
     return send402(res, route, config, originFor(req, config), sentence, req);
   } catch (secondary) {
     // Even the challenge could not be built. Still answer, still with a reason.
-    config.logger.error(`[paymap] could not encode the 402 challenge: ${reasonOf(secondary)}`);
+    config.logger.error(`[starsight] could not encode the 402 challenge: ${reasonOf(secondary)}`);
     try {
       return res
         .status(402)
@@ -293,7 +293,7 @@ function makeHandler(route, config, announcer) {
     if (extensionResponses) res.set("EXTENSION-RESPONSES", extensionResponses);
 
     req.x402 = settle.json; // compatible with apps/seller's existing handlers
-    req.paymap = {
+    req.starsight = {
       settlement: settle.json,
       transaction: settle.json.transaction ?? null,
       payer: settle.json.payer ?? null,
@@ -306,10 +306,10 @@ function makeHandler(route, config, announcer) {
 
     if (config.onSettled) {
       try {
-        config.onSettled(req.paymap, req);
+        config.onSettled(req.starsight, req);
       } catch (e) {
         // A bookkeeping callback must never fail a payment the chain already accepted.
-        config.logger.warn(`[paymap] onSettled threw and was ignored: ${reasonOf(e)}`);
+        config.logger.warn(`[starsight] onSettled threw and was ignored: ${reasonOf(e)}`);
       }
     }
 
@@ -329,7 +329,7 @@ function send402(res, route, config, origin, reason, req) {
     try {
       config.onRejected({ reason: error, route: publicViewOf(route, config) }, req);
     } catch (e) {
-      config.logger.warn(`[paymap] onRejected threw and was ignored: ${reasonOf(e)}`);
+      config.logger.warn(`[starsight] onRejected threw and was ignored: ${reasonOf(e)}`);
     }
   }
 

@@ -1,5 +1,5 @@
 /**
- * test/express-middleware.test.mjs — @paymap/express, the installable seller paywall.
+ * test/express-middleware.test.mjs — @starsight/express, the installable seller paywall.
  *
  * Run with:  npm test        (or: node --test test/express-middleware.test.mjs)
  *
@@ -38,7 +38,7 @@ import {
 } from '@x402/core/http';
 import { PaymentRequirementsSchema } from '@x402/core/schemas';
 
-import { paymapPaywall, toAtomicUnits, x402CorsOptions } from '@paymap/express';
+import { starsightPaywall, toAtomicUnits, x402CorsOptions } from '@starsight/express';
 
 const NETWORK = 'stellar:testnet';
 const PAY_TO = 'GSELLERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
@@ -138,7 +138,7 @@ async function startIndex() {
 }
 
 function makePaywall(overrides = {}) {
-  const pay = paymapPaywall({
+  const pay = starsightPaywall({
     facilitator: DEAD_FACILITATOR,
     payTo: PAY_TO,
     asset: ASSET,
@@ -178,7 +178,7 @@ const defaultDeclare = (app, pay) => {
       tags: ['fx', 'forex'],
       output: { example: { pair: 'USD/BRL', mid: 5.435 } },
     }),
-    (req, res) => res.json({ ok: true, paymap: req.paymap, x402: req.x402 }),
+    (req, res) => res.json({ ok: true, starsight: req.starsight, x402: req.x402 }),
   );
   app.get('/.well-known/x402', pay.wellKnownHandler());
 };
@@ -692,10 +692,10 @@ test('settlement: a verified payment reaches the handler with a decodable PAYMEN
   assert.equal(res.headers.get('x-payment-response'), res.headers.get('payment-response'));
 
   const body = await res.json();
-  assert.equal(body.paymap.transaction, TX);
-  assert.equal(body.paymap.payer, PAYER);
-  assert.equal(body.paymap.route.path, '/v1/fx');
-  assert.equal(body.paymap.requirements.amount, '200000');
+  assert.equal(body.starsight.transaction, TX);
+  assert.equal(body.starsight.payer, PAYER);
+  assert.equal(body.starsight.route.path, '/v1/fx');
+  assert.equal(body.starsight.requirements.amount, '200000');
   assert.equal(body.x402.transaction, TX, 'req.x402 stays compatible with the reference seller');
 });
 
@@ -735,7 +735,7 @@ test('settlement: EXTENSION-RESPONSES from the facilitator is forwarded to the c
   const res = await paidFetch(seller, decoded.accepts[0]);
   assert.equal(res.status, 200);
   assert.equal(res.headers.get('extension-responses'), extension);
-  assert.equal((await res.json()).paymap.extensionResponses, extension);
+  assert.equal((await res.json()).starsight.extensionResponses, extension);
 });
 
 test('settlement: onSettled is called once, and a throwing callback never voids a settled payment', async () => {
@@ -744,8 +744,8 @@ test('settlement: onSettled is called once, and a throwing callback never voids 
   const seller = await startSeller({
     paywall: {
       facilitator: facilitator.url,
-      onSettled: (paymap) => {
-        seen.push(paymap.transaction);
+      onSettled: (starsight) => {
+        seen.push(starsight.transaction);
         throw new Error('bookkeeping exploded');
       },
     },
@@ -940,15 +940,15 @@ test('declaration: an unusable method, path or bodyType is refused at declaratio
 });
 
 test('config: missing facilitator, payTo or asset stops the process at construction', async () => {
-  assert.throws(() => paymapPaywall(), /facilitator/);
-  assert.throws(() => paymapPaywall({ payTo: PAY_TO, asset: ASSET }), /facilitator/);
-  assert.throws(() => paymapPaywall({ facilitator: 'not-a-url', payTo: PAY_TO, asset: ASSET }), /absolute URL/);
-  assert.throws(() => paymapPaywall({ facilitator: 'ftp://x.example', payTo: PAY_TO, asset: ASSET }), /http/);
-  assert.throws(() => paymapPaywall({ facilitator: 'http://f.test', asset: ASSET }), /payTo/);
-  assert.throws(() => paymapPaywall({ facilitator: 'http://f.test', payTo: PAY_TO }), /asset/);
+  assert.throws(() => starsightPaywall(), /facilitator/);
+  assert.throws(() => starsightPaywall({ payTo: PAY_TO, asset: ASSET }), /facilitator/);
+  assert.throws(() => starsightPaywall({ facilitator: 'not-a-url', payTo: PAY_TO, asset: ASSET }), /absolute URL/);
+  assert.throws(() => starsightPaywall({ facilitator: 'ftp://x.example', payTo: PAY_TO, asset: ASSET }), /http/);
+  assert.throws(() => starsightPaywall({ facilitator: 'http://f.test', asset: ASSET }), /payTo/);
+  assert.throws(() => starsightPaywall({ facilitator: 'http://f.test', payTo: PAY_TO }), /asset/);
   // Every message has to name the missing option AND say what belongs there.
   try {
-    paymapPaywall({ facilitator: 'http://f.test', payTo: PAY_TO });
+    starsightPaywall({ facilitator: 'http://f.test', payTo: PAY_TO });
   } catch (e) {
     assert.match(e.message, /ASSET_SAC|SEP-41|SAC/);
   }

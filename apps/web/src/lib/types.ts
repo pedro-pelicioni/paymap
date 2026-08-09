@@ -15,10 +15,10 @@ export type ResourceBlock = {
  *    money lives in `accepts[0]` as x402 v2 `PaymentRequirements` (`amount`, not
  *    `maxAmountRequired`), the timestamp is `lastUpdated` in ISO 8601, and
  *    serviceName / description / tags / iconUrl sit at the TOP LEVEL;
- *  · the baked fixture and any older PAYMAP record — `resource` is a block, the money
+ *  · the baked fixture and any older STARSIGHT record — `resource` is a block, the money
  *    fields are flat, the timestamp is `lastSeenAt` in epoch ms.
  *
- * `sane()` collapses both onto `PaymapRecord`, which is the board's own shape.
+ * `sane()` collapses both onto `StarsightRecord`, which is the board's own shape.
  */
 export type WirePaymentRequirements = {
   scheme?: string
@@ -60,7 +60,7 @@ export type WireRecord = {
   _explain?: unknown
 }
 
-export type PaymapRecord = {
+export type StarsightRecord = {
   id: string
   resource: ResourceBlock
   type: 'http' | 'mcp'
@@ -135,7 +135,7 @@ export type TxEntry = { hash: string; label: string; source?: 'live' | 'demo' }
 export type Source = 'live' | 'demo'
 
 export type Catalog = {
-  items: PaymapRecord[]
+  items: StarsightRecord[]
   integrity: IntegrityProvenance
   source: Source
   asset: string

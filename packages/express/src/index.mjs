@@ -1,11 +1,11 @@
 /**
- * @paymap/express — sell an Express endpoint for a Stellar token with one line.
+ * @starsight/express — sell an Express endpoint for a Stellar token with one line.
  *
  *   import express from 'express'
- *   import { paymapPaywall } from '@paymap/express'
+ *   import { starsightPaywall } from '@starsight/express'
  *
  *   const app = express()
- *   const pay = paymapPaywall({
+ *   const pay = starsightPaywall({
  *     facilitator: 'http://localhost:4021',
  *     payTo: process.env.SELLER_PUBLIC,
  *     asset: process.env.ASSET_SAC,
@@ -20,14 +20,14 @@
  *     tags: ['weather', 'forecast'],
  *     pathParams: { city: 'sao-paulo' },   // `input` is published as queryParams — see README
  *     output: { example: { city: 'sao-paulo', tempC: 21.4 } },
- *   }), (req, res) => res.json({ tempC: 21.4, tx: req.paymap.transaction }))
+ *   }), (req, res) => res.json({ tempC: 21.4, tx: req.starsight.transaction }))
  *
  *   app.get('/.well-known/x402', pay.wellKnownHandler())
  *
  * See README.md for the full option reference.
  */
 
-export { paymapPaywall } from "./paywall.mjs";
+export { starsightPaywall } from "./paywall.mjs";
 export {
   DEFAULTS,
   X402_ALLOWED_HEADERS,

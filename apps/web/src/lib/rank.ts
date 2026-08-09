@@ -1,4 +1,4 @@
-import type { Explain, PaymapRecord } from './types'
+import type { Explain, StarsightRecord } from './types'
 
 /**
  * Client-side mirror of packages/index `scoreHybrid`: BM25 over boosted fields
@@ -39,7 +39,7 @@ export function tokenize(s: string): string[] {
 
 type Fields = Record<string, string[]>
 
-function fieldsOf(r: PaymapRecord): Fields {
+function fieldsOf(r: StarsightRecord): Fields {
   return {
     serviceName: tokenize(r.resource?.serviceName ?? ''),
     tags: tokenize((r.resource?.tags ?? []).join(' ')),
@@ -49,7 +49,7 @@ function fieldsOf(r: PaymapRecord): Fields {
 }
 
 /** 0..1 — how completely the seller filled out the advertisement */
-export function metadataScore(r: PaymapRecord): { score: number; missing: string[] } {
+export function metadataScore(r: StarsightRecord): { score: number; missing: string[] } {
   const checks: [string, boolean][] = [
     ['serviceName', Boolean(r.resource?.serviceName)],
     ['description ≥ 80', (r.resource?.description ?? '').length >= 80],
@@ -70,7 +70,7 @@ const recencyScore = (ts: number) => {
   return Math.exp(-hours / 72)
 }
 
-export function rank(query: string, docs: PaymapRecord[]): PaymapRecord[] {
+export function rank(query: string, docs: StarsightRecord[]): StarsightRecord[] {
   const q = tokenize(query)
   const corpus = docs.map(fieldsOf)
   const N = docs.length || 1

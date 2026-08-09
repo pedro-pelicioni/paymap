@@ -95,7 +95,7 @@ export function createAnnouncer(config, routes) {
         result.announced.push(record.id);
         if (!quiet) {
           const dropped = res.json?.dropped?.length ? ` (index dropped: ${res.json.dropped.join(", ")})` : "";
-          config.logger.log(`[paymap] announced ${label} -> ${config.index}${dropped}`);
+          config.logger.log(`[starsight] announced ${label} -> ${config.index}${dropped}`);
         }
       } else {
         // The index's own `reason` is the most specific thing available — prefer it over
@@ -106,7 +106,7 @@ export function createAnnouncer(config, routes) {
           res.error ?? `the bazaar at ${config.index} rejected the announcement without saying why`,
         );
         result.failed.push({ route: label, reason });
-        if (!quiet) config.logger.warn(`[paymap] could not announce ${label}: ${reason}`);
+        if (!quiet) config.logger.warn(`[starsight] could not announce ${label}: ${reason}`);
       }
     }
 

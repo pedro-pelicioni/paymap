@@ -1,5 +1,5 @@
 /**
- * packages/index/src/http.mjs — PAYMAP discovery endpoints, Express binding.
+ * packages/index/src/http.mjs — STARSIGHT discovery endpoints, Express binding.
  *
  * [spec: the bazaar extension defines GET /discovery/resources and GET /discovery/search]
  *

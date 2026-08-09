@@ -1,4 +1,4 @@
-# PAYMAP — Integration Contract (read this first)
+# STARSIGHT — Integration Contract (read this first)
 
 Monorepo, plain npm workspaces, Node 22, ESM (`"type": "module"`). No TypeScript build step
 anywhere except `apps/web` (Vite). Everything must run with `node <file>.mjs` or `npm run dev`.
@@ -88,7 +88,7 @@ of the three transport adapters go through it:
 
 | Adapter | Serves | Goes through `discovery.mjs`? |
 |---|---|---|
-| `packages/index/src/serverless.mjs` (via `api/discovery/*.mjs`) | `paymap.dev` | yes |
+| `packages/index/src/serverless.mjs` (via `api/discovery/*.mjs`) | `starsight.dev` | yes |
 | `packages/index/src/http.mjs` (`mountDiscoveryRoutes`) | any Express host | yes |
 | `apps/facilitator/src/server.mjs:559,584` | the local index on `:4022` | **no — KNOWN DRIFT** |
 
@@ -97,7 +97,7 @@ returns `catalog.list()` / `catalog.search()` verbatim, so **the local index on 
 still serves the INTERNAL record shape** while the deployed API serves the wire shape
 above. It should call `mountDiscoveryRoutes(indexApp, catalog)` instead. That change also
 requires updating `apps/agent/src/bazaar.mjs` (`summarise`, `describeRecord`), which reads
-`rec.resource.url`. Until both land, do not assume `:4022` and `paymap.dev` agree.
+`rec.resource.url`. Until both land, do not assume `:4022` and `starsight.dev` agree.
 
 ```js
 {
@@ -112,7 +112,7 @@ requires updating `apps/agent/src/bazaar.mjs` (`summarise`, `describeRecord`), w
   serviceName?, description?, tags?, iconUrl?, mimeType?,   // TOP LEVEL, not nested
   extensions: { bazaar: { info: { input, output }, routeTemplate?, schema? } },  // object MAP
 
-  // ---- additive, PAYMAP-native: not spec, ignored by a spec consumer ----
+  // ---- additive, STARSIGHT-native: not spec, ignored by a spec consumer ----
   id, network, scheme, payTo, asset, maxAmountRequired,     // mirrors of accepts[0]
   input, output, routeTemplate,
   lastSeenAt, firstSeenAt, settlements, seeded,

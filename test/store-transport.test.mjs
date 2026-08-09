@@ -17,11 +17,11 @@
  *                 never hangs, and never takes the process down with an unhandled
  *                 `error` event.
  *
- * The end-to-end round trip against a real server runs only when PAYMAP_TEST_REDIS_URL
+ * The end-to-end round trip against a real server runs only when STARSIGHT_TEST_REDIS_URL
  * points at one, and skips cleanly otherwise:
  *
  *   docker run -d -p 6399:6379 redis:7-alpine
- *   PAYMAP_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
+ *   STARSIGHT_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
  *
  * Every credential below is an obvious placeholder. Nothing here talks to a real service.
  */
@@ -113,7 +113,7 @@ test('discretion: a failed protocol command never leaks the password', async () 
   // Port 1 on the loopback refuses instantly, so this is a fast, real connect failure.
   const store = createStore({
     KV_REDIS_URL: 'redis://default:placeholder-password@127.0.0.1:1',
-    PAYMAP_REDIS_CONNECT_TIMEOUT_MS: '250',
+    STARSIGHT_REDIS_CONNECT_TIMEOUT_MS: '250',
   });
   const loaded = await store.load();
   assert.equal(loaded.ok, false);
@@ -128,7 +128,7 @@ test('discretion: a failed protocol command never leaks the password', async () 
    ══════════════════════════════════════════════════════════════════════════ */
 
 test('degradation: an unreachable protocol store answers, it does not throw or hang', async () => {
-  const env = { KV_REDIS_URL: 'redis://127.0.0.1:1', PAYMAP_REDIS_CONNECT_TIMEOUT_MS: '250' };
+  const env = { KV_REDIS_URL: 'redis://127.0.0.1:1', STARSIGHT_REDIS_CONNECT_TIMEOUT_MS: '250' };
   const store = createStore(env);
 
   const ping = await store.ping();
@@ -184,13 +184,13 @@ test('rest: the round trip still speaks the REST command protocol', async () => 
    END TO END, against a real server — skipped unless one is pointed at
    ══════════════════════════════════════════════════════════════════════════ */
 
-const LIVE_URL = process.env.PAYMAP_TEST_REDIS_URL;
+const LIVE_URL = process.env.STARSIGHT_TEST_REDIS_URL;
 
 test(
   'redis: a real server round-trips a record and reuses one connection',
-  { skip: LIVE_URL ? false : 'set PAYMAP_TEST_REDIS_URL to run against a real Redis' },
+  { skip: LIVE_URL ? false : 'set STARSIGHT_TEST_REDIS_URL to run against a real Redis' },
   async () => {
-    const env = { KV_REDIS_URL: LIVE_URL, PAYMAP_KV_KEY: `paymap:test:${Date.now()}` };
+    const env = { KV_REDIS_URL: LIVE_URL, STARSIGHT_KV_KEY: `starsight:test:${Date.now()}` };
     const store = createStore(env);
     try {
       assert.equal(store.transport, 'redis');
@@ -227,15 +227,15 @@ test(
 
 test(
   'redis: a server error reply is reported without discarding the connection',
-  { skip: LIVE_URL ? false : 'set PAYMAP_TEST_REDIS_URL to run against a real Redis' },
+  { skip: LIVE_URL ? false : 'set STARSIGHT_TEST_REDIS_URL to run against a real Redis' },
   async () => {
     // A key holding a string is a WRONGTYPE for HGETALL. The server answering "no" is not
     // the connection failing, and treating it as one would rebuild a socket per request
     // for as long as the mistake lasted.
-    const key = `paymap:test:wrongtype:${Date.now()}`;
-    const clash = createStore({ KV_REDIS_URL: LIVE_URL, PAYMAP_KV_KEY: key });
+    const key = `starsight:test:wrongtype:${Date.now()}`;
+    const clash = createStore({ KV_REDIS_URL: LIVE_URL, STARSIGHT_KV_KEY: key });
     try {
-      const store = createStore({ KV_REDIS_URL: LIVE_URL, PAYMAP_KV_KEY: `${key}:ok` });
+      const store = createStore({ KV_REDIS_URL: LIVE_URL, STARSIGHT_KV_KEY: `${key}:ok` });
       assert.deepEqual(await store.put(RECORD), { ok: true }); // opens the connection
 
       const { createClient } = await import('redis');

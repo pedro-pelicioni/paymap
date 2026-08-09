@@ -1,6 +1,6 @@
 /**
- * packages/index/src/rank.mjs — hybrid lexical ranking for the PAYMAP bazaar index.
- * PAYMAP: find what to pay for on Stellar.
+ * packages/index/src/rank.mjs — hybrid lexical ranking for the STARSIGHT bazaar index.
+ * STARSIGHT: find what to pay for on Stellar.
  *
  * This is a real retrieval implementation, not a substring filter:
  *

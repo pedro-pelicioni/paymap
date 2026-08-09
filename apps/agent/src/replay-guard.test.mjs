@@ -1,13 +1,13 @@
 /**
- * PAYMAP — replay / expiry guard tests.
+ * STARSIGHT — replay / expiry guard tests.
  *
  *   node --test apps/agent/src/replay-guard.test.mjs
  *
  * What is proven here:
  *   1. A replayed PAYMENT-SIGNATURE header is rejected, with a NON-NULL reason
- *      and the PAYMAP_REPLAY_REJECTED code.
+ *      and the STARSIGHT_REPLAY_REJECTED code.
  *   2. An expired authorization entry is rejected, with a NON-NULL reason and
- *      the PAYMAP_AUTH_EXPIRED code.
+ *      the STARSIGHT_AUTH_EXPIRED code.
  *   3. Every rejection path in the client carries a non-null reason, always.
  *
  * Tests 1-3 are hermetic: they run a local seller stub on an ephemeral port and
@@ -145,7 +145,7 @@ test('a replayed PAYMENT-SIGNATURE header is rejected with a non-null reason', a
     // Same header again -> must be refused.
     const replay = await payAndFetch(stub.url, { config: HERMETIC, forcePaymentHeader: header });
     assert.equal(replay.ok, false, 'a replayed header must not succeed');
-    assert.equal(replay.code, ERROR_CODES.PAYMAP_REPLAY_REJECTED);
+    assert.equal(replay.code, ERROR_CODES.STARSIGHT_REPLAY_REJECTED);
     assert.ok(replay.reason, 'reason must not be null');
     assert.notEqual(replay.reason.trim(), '', 'reason must not be empty');
     assert.match(replay.reason, /replay/i);
@@ -164,7 +164,7 @@ test('an expired authorization entry is rejected with a non-null reason', async 
   try {
     const res = await payAndFetch(stub.url, { config: HERMETIC, forcePaymentHeader: fakeSignedHeader('expired') });
     assert.equal(res.ok, false, 'an expired auth entry must not succeed');
-    assert.equal(res.code, ERROR_CODES.PAYMAP_AUTH_EXPIRED);
+    assert.equal(res.code, ERROR_CODES.STARSIGHT_AUTH_EXPIRED);
     assert.ok(res.reason && res.reason.trim() !== '', 'reason must not be null or empty');
     assert.match(res.reason, /expired/i);
     assert.equal(res.txHash, null);
@@ -177,41 +177,41 @@ test('an expired authorization entry is rejected with a non-null reason', async 
 test('every rejection carries a non-null reason and a known code', async () => {
   // The failure factory itself can never emit a null/blank reason.
   for (const bad of [null, undefined, '', '   ']) {
-    const f = fail('PAYMAP_SETTLE_FAILED', bad);
+    const f = fail('STARSIGHT_SETTLE_FAILED', bad);
     assert.equal(f.ok, false);
     assert.ok(f.reason && f.reason.trim() !== '', `reason must be filled in for input ${JSON.stringify(bad)}`);
     assert.ok(Object.values(ERROR_CODES).includes(f.code));
   }
 
   // Facilitator failure strings map onto the enum deterministically.
-  assert.equal(classifySettleFailure('payment replayed'), 'PAYMAP_REPLAY_REJECTED');
-  assert.equal(classifySettleFailure('nonce already used'), 'PAYMAP_REPLAY_REJECTED');
-  assert.equal(classifySettleFailure('auth entry expired'), 'PAYMAP_AUTH_EXPIRED');
-  assert.equal(classifySettleFailure('ledger bounds exceeded'), 'PAYMAP_AUTH_EXPIRED');
-  assert.equal(classifySettleFailure('insufficient balance'), 'PAYMAP_INSUFFICIENT_BALANCE');
-  assert.equal(classifySettleFailure('something unheard of'), 'PAYMAP_SETTLE_FAILED');
-  assert.equal(classifySettleFailure(undefined), 'PAYMAP_SETTLE_FAILED');
+  assert.equal(classifySettleFailure('payment replayed'), 'STARSIGHT_REPLAY_REJECTED');
+  assert.equal(classifySettleFailure('nonce already used'), 'STARSIGHT_REPLAY_REJECTED');
+  assert.equal(classifySettleFailure('auth entry expired'), 'STARSIGHT_AUTH_EXPIRED');
+  assert.equal(classifySettleFailure('ledger bounds exceeded'), 'STARSIGHT_AUTH_EXPIRED');
+  assert.equal(classifySettleFailure('insufficient balance'), 'STARSIGHT_INSUFFICIENT_BALANCE');
+  assert.equal(classifySettleFailure('something unheard of'), 'STARSIGHT_SETTLE_FAILED');
+  assert.equal(classifySettleFailure(undefined), 'STARSIGHT_SETTLE_FAILED');
 
   // Real client rejections, no server involved.
   const noUrl = await payAndFetch('', { config: HERMETIC });
   assert.equal(noUrl.ok, false);
-  assert.equal(noUrl.code, ERROR_CODES.PAYMAP_BAD_REQUEST);
+  assert.equal(noUrl.code, ERROR_CODES.STARSIGHT_BAD_REQUEST);
   assert.ok(noUrl.reason);
 
   const noKey = await payAndFetch('http://127.0.0.1:1/x', { config: { PAYER_SECRET: '' } });
   assert.equal(noKey.ok, false);
-  assert.equal(noKey.code, ERROR_CODES.PAYMAP_CONFIG_MISSING);
+  assert.equal(noKey.code, ERROR_CODES.STARSIGHT_CONFIG_MISSING);
   assert.ok(noKey.reason);
 
   const unreachable = await payAndFetch('http://127.0.0.1:1/x', { config: HERMETIC, timeoutMs: 1500 });
   assert.equal(unreachable.ok, false);
-  assert.ok([ERROR_CODES.PAYMAP_RESOURCE_UNREACHABLE, ERROR_CODES.PAYMAP_TIMEOUT].includes(unreachable.code));
+  assert.ok([ERROR_CODES.STARSIGHT_RESOURCE_UNREACHABLE, ERROR_CODES.STARSIGHT_TIMEOUT].includes(unreachable.code));
   assert.ok(unreachable.reason);
 
-  // Every code in the enum is PAYMAP-namespaced.
+  // Every code in the enum is STARSIGHT-namespaced.
   for (const [k, v] of Object.entries(ERROR_CODES)) {
     assert.equal(k, v);
-    assert.match(v, /^PAYMAP_[A-Z0-9_]+$/);
+    assert.match(v, /^STARSIGHT_[A-Z0-9_]+$/);
   }
 });
 

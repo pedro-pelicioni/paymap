@@ -5,7 +5,7 @@ import '../styles/orbit.css'
 /**
  * Concentric rings of labelled nodes turning around one centre.
  *
- * Why it is here: PAYMAP's argument for the Bazaar is that there is exactly ONE
+ * Why it is here: STARSIGHT's argument for the Bazaar is that there is exactly ONE
  * public index, and every client — whatever transport it speaks — comes to the
  * same catalog. This draws that sentence: the centre is the index (the existing
  * `DottedGlobe`, reused rather than rewritten), and the things in orbit are the
@@ -72,7 +72,7 @@ const RING_PHASE = 29
  */
 export const ORBIT_RINGS_DEFAULT: readonly (readonly string[])[] = [
   ['HTTP', 'MCP'],
-  ['paymap_search', 'paymap_browse', 'paymap_describe', 'paymap_pay'],
+  ['starsight_search', 'starsight_browse', 'starsight_describe', 'starsight_pay'],
 ]
 
 /** Seconds per revolution, innermost first. Slow, and deliberately unrelated. */

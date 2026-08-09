@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { ASSET_CODE } from '../lib/api'
 import { ago, formatAmount } from '../lib/format'
-import type { PaymapRecord } from '../lib/types'
+import type { StarsightRecord } from '../lib/types'
 import '../styles/hover-preview.css'
 
 /**
@@ -460,7 +460,7 @@ export function HoverPreview({
 }
 
 /* ====================================================================== */
-/*  The PAYMAP-shaped payload for the card.                                */
+/*  The STARSIGHT-shaped payload for the card.                            */
 /* ====================================================================== */
 
 function hostOf(url: string): string {
@@ -473,9 +473,9 @@ function hostOf(url: string): string {
 
 /**
  * What a catalog entry actually is, for someone who has only seen its name go
- * past on the tape. Every field is read off `PaymapRecord` — nothing invented.
+ * past on the tape. Every field is read off `StarsightRecord` — nothing invented.
  */
-export function CatalogPreview({ record }: { record: PaymapRecord }) {
+export function CatalogPreview({ record }: { record: StarsightRecord }) {
   const { resource } = record
   const name = resource.serviceName || hostOf(resource.url)
   const price = formatAmount(record.amount ?? record.maxAmountRequired)

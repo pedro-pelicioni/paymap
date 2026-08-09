@@ -1,8 +1,8 @@
-/** Brand marks — inline SVG mirrors of /assets/paymap-mark.svg, so the
+/** Brand marks — inline SVG mirrors of /assets/starsight-mark.svg, so the
  *  chrome never depends on an image file being present. */
 
-/** The Paymap pin: accent drop, ink core, four-pointed star. */
-export function PaymapMark({ size = 22 }: { size?: number }) {
+/** The Starsight pin: accent drop, ink core, four-pointed star. */
+export function StarsightMark({ size = 22 }: { size?: number }) {
   return (
     <svg className="glyph" width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
       <path

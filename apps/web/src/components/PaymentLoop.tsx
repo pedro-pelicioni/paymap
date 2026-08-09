@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ASSET_CODE, testnetTxs } from '../lib/api'
 import { explorerTx, formatAmount, shortHash, shortKey } from '../lib/format'
-import type { PaymapRecord } from '../lib/types'
+import type { StarsightRecord } from '../lib/types'
 
 const DURATIONS = [1100, 1200, 1500, 800]
 
@@ -35,7 +35,7 @@ function hashPick(id: string): string | undefined {
  * through to stellar.expert sees `successful: true` and would otherwise reasonably
  * conclude they had just triggered it.
  */
-export function PaymentLoop({ rec, runId }: { rec: PaymapRecord | null; runId: number }) {
+export function PaymentLoop({ rec, runId }: { rec: StarsightRecord | null; runId: number }) {
   const [stage, setStage] = useState(0)
 
   useEffect(() => {

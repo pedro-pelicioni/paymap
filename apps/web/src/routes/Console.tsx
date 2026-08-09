@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IntegrityLedger } from '../components/IntegrityLedger'
-import { PaymapMark } from '../components/Marks'
+import { StarsightMark } from '../components/Marks'
 import { PaymentLoop } from '../components/PaymentLoop'
 import { SightBoard } from '../components/SightBoard'
 import { Ticker } from '../components/Ticker'
 import { demoCatalog, INDEX_URL, loadCatalog, search } from '../lib/api'
 import { rank } from '../lib/rank'
-import type { Catalog, PaymapRecord } from '../lib/types'
+import type { Catalog, StarsightRecord } from '../lib/types'
 
 const EXAMPLES = ['an agent that reads invoices', 'usd to brl rate', 'postal code lookup', 'mcp tool for ocr']
 
@@ -15,12 +15,12 @@ export default function Console() {
   const [cat, setCat] = useState<Catalog>(() => demoCatalog())
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
-  const [items, setItems] = useState<PaymapRecord[]>(() =>
+  const [items, setItems] = useState<StarsightRecord[]>(() =>
     rank('', demoCatalog().items).sort((a, b) => b.settlements - a.settlements),
   )
   const [busy, setBusy] = useState(false)
   const [took, setTook] = useState(0)
-  const [paying, setPaying] = useState<PaymapRecord | null>(null)
+  const [paying, setPaying] = useState<StarsightRecord | null>(null)
   const [runId, setRunId] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -46,7 +46,7 @@ export default function Console() {
     setBusy(false)
   }
 
-  function onPay(rec: PaymapRecord) {
+  function onPay(rec: StarsightRecord) {
     setPaying(rec)
     setRunId((n) => n + 1)
     if (window.innerWidth < 1120) {
@@ -63,9 +63,9 @@ export default function Console() {
 
       <header className="topbar topbar--solid">
         <div className="shell topbar__in">
-          <Link className="topbar__mark" to="/" aria-label="PAYMAP home">
-            <PaymapMark />
-            <span>PAYMAP</span>
+          <Link className="topbar__mark" to="/" aria-label="STARSIGHT home">
+            <StarsightMark />
+            <span>STARSIGHT</span>
           </Link>
           <nav className="topbar__nav" aria-label="Sections">
             <Link to="/">Home</Link>
@@ -109,7 +109,7 @@ export default function Console() {
             <label className="visually-hidden" htmlFor="q">
               Search the catalog
             </label>
-            <PaymapMark size={20} />
+            <StarsightMark size={20} />
             <input
               id="q"
               ref={inputRef}

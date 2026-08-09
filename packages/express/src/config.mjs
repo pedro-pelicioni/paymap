@@ -1,7 +1,7 @@
 /**
  * Facilitator-wide configuration for a paywall instance.
  *
- * Everything here is validated ONCE, when `paymapPaywall()` is called — i.e. while the
+ * Everything here is validated ONCE, when `starsightPaywall()` is called — i.e. while the
  * developer is looking at their terminal — rather than on the first request from a paying
  * agent. A typo in `payTo` should stop the process at boot, not silently mint 402s that
  * point at an account nobody owns.
@@ -28,7 +28,7 @@ export const DEFAULTS = Object.freeze({
  */
 export function normalizeConfig(options = {}) {
   if (options === null || typeof options !== "object") {
-    throw new TypeError("paymapPaywall(options): options must be an object.");
+    throw new TypeError("starsightPaywall(options): options must be an object.");
   }
 
   const facilitator = requireOrigin("facilitator", options.facilitator, {
@@ -36,7 +36,7 @@ export function normalizeConfig(options = {}) {
   });
 
   const index = options.index == null ? null : requireOrigin("index", options.index, {
-    hint: "the URL of a PAYMAP bazaar index exposing POST /discovery/resources, e.g. http://localhost:4022",
+    hint: "the URL of a STARSIGHT bazaar index exposing POST /discovery/resources, e.g. http://localhost:4022",
   });
 
   const baseUrl = options.baseUrl == null ? null : requireOrigin("baseUrl", options.baseUrl, {
@@ -118,14 +118,14 @@ export function normalizeConfig(options = {}) {
 
   if (typeof config.fetch !== "function") {
     throw new TypeError(
-      "paymapPaywall(options): no fetch implementation available. Run on Node 18+ or pass `fetch`.",
+      "starsightPaywall(options): no fetch implementation available. Run on Node 18+ or pass `fetch`.",
     );
   }
 
   // A configured index with no baseUrl cannot be announced to safely — see announce.mjs.
   if (config.index && !config.baseUrl && config.announce) {
     config.logger.warn(
-      "[paymap] `index` is set but `baseUrl` is not, so nothing will be announced to the bazaar. " +
+      "[starsight] `index` is set but `baseUrl` is not, so nothing will be announced to the bazaar. " +
         "The only origin available at request time comes from the client-supplied Host header, and " +
         "publishing that would let any caller list your routes under a URL they control. " +
         "Set `baseUrl` to the public origin of this server.",
@@ -168,7 +168,7 @@ export function x402CorsOptions(overrides = {}) {
 function requireString(name, value, { hint }) {
   if (typeof value !== "string" || value.trim() === "") {
     throw new TypeError(
-      `paymapPaywall(options): \`${name}\` is required and must be a non-empty string — ${hint}. ` +
+      `starsightPaywall(options): \`${name}\` is required and must be a non-empty string — ${hint}. ` +
         `Received ${describe(value)}.`,
     );
   }
@@ -182,12 +182,12 @@ function requireOrigin(name, value, { hint }) {
     url = new URL(text);
   } catch {
     throw new TypeError(
-      `paymapPaywall(options): \`${name}\` must be an absolute URL — ${hint}. Received ${describe(value)}.`,
+      `starsightPaywall(options): \`${name}\` must be an absolute URL — ${hint}. Received ${describe(value)}.`,
     );
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw new TypeError(
-      `paymapPaywall(options): \`${name}\` must use http: or https:, received ${describe(value)}.`,
+      `starsightPaywall(options): \`${name}\` must use http: or https:, received ${describe(value)}.`,
     );
   }
   return text.replace(/\/+$/, "");
@@ -197,7 +197,7 @@ function requireInteger(name, value, min, max) {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isInteger(n) || n < min || n > max) {
     throw new TypeError(
-      `paymapPaywall(options): \`${name}\` must be an integer between ${min} and ${max}, received ${describe(value)}.`,
+      `starsightPaywall(options): \`${name}\` must be an integer between ${min} and ${max}, received ${describe(value)}.`,
     );
   }
   return n;
@@ -206,7 +206,7 @@ function requireInteger(name, value, min, max) {
 function requireFunctionOrNull(name, value) {
   if (value == null) return null;
   if (typeof value !== "function") {
-    throw new TypeError(`paymapPaywall(options): \`${name}\` must be a function, received ${describe(value)}.`);
+    throw new TypeError(`starsightPaywall(options): \`${name}\` must be a function, received ${describe(value)}.`);
   }
   return value;
 }

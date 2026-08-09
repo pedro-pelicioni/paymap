@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { ASSET_CODE } from '../lib/api'
 import { ago, formatAmount, pct, shortKey, sightNumber } from '../lib/format'
 import { tokenize } from '../lib/rank'
-import type { Explain, ExplainKey, PaymapRecord } from '../lib/types'
+import type { Explain, ExplainKey, StarsightRecord } from '../lib/types'
 
 const PART_LABEL: Record<ExplainKey, string> = {
   bm25: 'BM25 text',
@@ -89,10 +89,10 @@ function Sight({
   hits,
   onPay,
 }: {
-  rec: PaymapRecord
+  rec: StarsightRecord
   index: number
   hits: Set<string>
-  onPay?: (r: PaymapRecord) => void
+  onPay?: (r: StarsightRecord) => void
 }) {
   const [open, setOpen] = useState(false)
   const ex = rec._explain
@@ -191,9 +191,9 @@ export function SightBoard({
   onPay,
   caption = 'Ranked results',
 }: {
-  items: PaymapRecord[]
+  items: StarsightRecord[]
   query?: string
-  onPay?: (r: PaymapRecord) => void
+  onPay?: (r: StarsightRecord) => void
   caption?: string
 }) {
   const refs = useRef(new Map<string, HTMLElement>())

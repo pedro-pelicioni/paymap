@@ -1,6 +1,6 @@
 import { ASSET_CODE } from '../lib/api'
 import { formatAmount } from '../lib/format'
-import type { PaymapRecord } from '../lib/types'
+import type { StarsightRecord } from '../lib/types'
 import { CatalogPreview, HoverPreview } from './HoverPreview'
 
 /**
@@ -12,7 +12,7 @@ import { CatalogPreview, HoverPreview } from './HoverPreview'
  * focusable node inside an `aria-hidden` subtree is an accessibility fault, and
  * duplicate announcements of the same catalog entry are noise.
  */
-function Cell({ r, focusable }: { r: PaymapRecord; focusable: boolean }) {
+function Cell({ r, focusable }: { r: StarsightRecord; focusable: boolean }) {
   return (
     <HoverPreview className="ticker__item" focusable={focusable} content={<CatalogPreview record={r} />}>
       <span className="tick">◦</span>
@@ -27,7 +27,7 @@ function Cell({ r, focusable }: { r: PaymapRecord; focusable: boolean }) {
 }
 
 /** Continuously scrolling tape of what is live in the catalog. */
-export function Ticker({ items }: { items: PaymapRecord[] }) {
+export function Ticker({ items }: { items: StarsightRecord[] }) {
   if (!items.length) return null
   return (
     <div className="ticker" role="group" aria-label="Live catalog tape">
