@@ -49,11 +49,22 @@ const HERO_CMD: CodeSpan[] = [
   },
 ]
 
+/**
+ * Counts a visitor can falsify by running the command printed beside them, so they are
+ * declared once and rendered from here in both the proof strip and the verify block. The
+ * page previously carried a hand-typed 84 in the strip and 129 in the block, for the same
+ * `npm test`, eighty lines apart.
+ */
+const TEST_COUNT = 129
+const API_CHECKS = 46
+/** Of API_CHECKS, the ones driven through the unmodified @x402/extensions client. */
+const STOCK_CLIENT_CHECKS = 9
+
 /** The three verification commands, declared once: the block renders them aligned
  *  with their comments, the copy button ships the bare commands. */
 const VERIFY_CMDS = [
-  { cmd: 'npm test', note: '129 tests, 0 failing' },
-  { cmd: 'npm run verify:api', note: '46 stock-client checks' },
+  { cmd: 'npm test', note: `${TEST_COUNT} tests, 0 failing` },
+  { cmd: 'npm run verify:api', note: `${API_CHECKS} checks, incl. the stock withBazaar() client` },
   { cmd: 'npm run demo', note: 'discover → 402 → sign → settle → 200' },
 ] as const
 const VERIFY_COL = Math.max(...VERIFY_CMDS.map((c) => c.cmd.length)) + 1
@@ -275,12 +286,15 @@ export default function Landing() {
                   <span className="proof__l">settled x402 payments on Stellar testnet</span>
                 </div>
                 <div className="proof__cell">
-                  <span className="proof__n">84</span>
+                  <span className="proof__n">{TEST_COUNT}</span>
                   <span className="proof__l">tests, 0 failing — 66 of them adversarial</span>
                 </div>
                 <div className="proof__cell">
-                  <span className="proof__n">46</span>
-                  <span className="proof__l">stock-client API checks against the handlers</span>
+                  <span className="proof__n">{API_CHECKS}</span>
+                  <span className="proof__l">
+                    API conformance checks — {STOCK_CLIENT_CHECKS} through the unmodified{' '}
+                    <code>@x402/extensions</code> client
+                  </span>
                 </div>
                 <div className="proof__cell">
                   <span className="proof__n">Apache-2.0</span>

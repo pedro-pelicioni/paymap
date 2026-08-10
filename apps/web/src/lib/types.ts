@@ -130,12 +130,27 @@ export type IntegrityProvenance = {
   commit?: string
 }
 
+/**
+ * One settled testnet transaction, as recorded by apps/web/scripts/sync-txs.mjs.
+ *
+ * Everything past `label` is read off Horizon at build time and is absent when Horizon
+ * could not answer, when the transaction failed, or when its operations carried anything
+ * other than exactly one transfer. Absent, never guessed — the receipt drops a row it
+ * cannot source rather than filling it from somewhere else.
+ */
 export type TxEntry = {
   hash: string
   label: string
   source?: 'live' | 'demo'
-  /** Horizon `created_at` for the settlement, ISO-8601. Absent when it could not be read. */
+  /** Horizon `created_at`, ISO-8601. */
   settledAt?: string
+  /** Decimal string as Horizon reports it, e.g. "0.0050000". NOT stroops. */
+  amount?: string
+  assetCode?: string
+  /** The account the asset actually moved from. */
+  from?: string
+  /** The account it moved to. */
+  to?: string
 }
 
 export type Source = 'live' | 'demo'

@@ -25,7 +25,7 @@ is public and CORS-open. This document is for the *seller* side.
 
 | | |
 |---|---|
-| Node.js | ≥ 20 |
+| Node.js | ≥ 22 |
 | A Stellar account | **No.** `npm run setup` generates every keypair it needs and funds them from Friendbot. |
 | Testnet USDC | **No.** STELLARSIGHT issues its own SEP-41 asset (`SXT`) and wraps it in a SAC. The Stellar `exact` scheme accepts any SEP-41 token. |
 | A facilitator API key | **No.** The facilitator is self-hosted from this repo on the Apache-2.0 `@x402/stellar` package. |
@@ -231,7 +231,9 @@ the v1 shapes and they will cost you an afternoon otherwise:
    only in the body is invisible to a stock client — this repo shipped exactly that bug and
    [documents it in the README](../README.md#where-we-had-drifted).
 2. **v2 `PaymentRequirements` uses `amount`, not `maxAmountRequired`**, and the resource
-   metadata moved to `PaymentRequired.resource`.
+   metadata moved to `PaymentRequired.resource`. Both names appear in the wild because the
+   index still accepts either on the way in; [CONTRACT.md](../CONTRACT.md) is the canonical
+   statement of which field is emitted where.
 
 Use `@x402/core`'s own codecs (`encodePaymentRequiredHeader`, `decodePaymentSignatureHeader`,
 `encodePaymentResponseHeader`) rather than hand-rolling base64, and the wire format cannot

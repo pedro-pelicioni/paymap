@@ -6,13 +6,16 @@ import type { StellarsightRecord, TxEntry } from '../lib/types'
 const DURATIONS = [1100, 1200, 1500, 800]
 
 /**
- * Only the `demo:` rows are x402 payments. The rest of docs/TESTNET-TXS.md is setup and
- * housekeeping — trustlines, the asset issuance, the SAC deploy, a legacy-asset cleanup.
- * Picking from all of them once produced a receipt that read "settled 0.0500 SXT" over
- * the hash of a `changeTrust` operation, which is a small lie told confidently. Filter
- * first, so the receipt can only ever point at a transaction that actually moved SXT.
+ * Only rows that are x402 payments AND carry a recorded transfer amount. The rest of
+ * docs/TESTNET-TXS.md is setup and housekeeping — trustlines, the asset issuance, the SAC
+ * deploy, a legacy-asset cleanup. Picking from all of them once produced a receipt reading
+ * "settled 0.0500 SXT" over the hash of a `changeTrust` operation, which is a small lie
+ * told confidently. The `amount` test is the stronger half of the filter now: the receipt
+ * is sourced entirely from the transaction, so a row without one cannot fill it.
  */
-const paymentTxs = testnetTxs.filter((t) => /^demo:/i.test(t.label ?? ''))
+const paymentTxs = testnetTxs.filter(
+  (t) => /^(demo|conformance):/i.test(t.label ?? '') && Boolean(t.amount),
+)
 
 /** deterministic pick so the same sight always shows the same settled payment */
 function txPick(id: string): TxEntry | undefined {
@@ -31,9 +34,13 @@ function txPick(id: string): TxEntry | undefined {
  * a payment at click time. Settling live needs the resource server and the facilitator,
  * which run locally (`npm run dev:all`); only the discovery index is deployed publicly.
  *
- * The hash is genuine, which is exactly why the label matters: a viewer who clicks
+ * The hash is genuine, which is exactly why the labelling matters: a viewer who clicks
  * through to stellar.expert sees `successful: true` and would otherwise reasonably
- * conclude they had just triggered it.
+ * conclude they had just triggered it. So the receipt states the date, and every figure in
+ * it — amount, payer, payee, asset — is read off that transaction rather than off the
+ * record the visitor clicked. The record's price drives the 402 challenge in steps 1-2 and
+ * nothing else; the two are different numbers and pretending otherwise is what the panel
+ * used to do.
  */
 export function PaymentLoop({ rec, runId }: { rec: StellarsightRecord | null; runId: number }) {
   const [stage, setStage] = useState(0)
@@ -74,8 +81,12 @@ export function PaymentLoop({ rec, runId }: { rec: StellarsightRecord | null; ru
 
   const amount = formatAmount(rec.amount ?? rec.maxAmountRequired)
   const tx = txPick(rec.id)
-  const hash = tx?.hash
   const when = settledOn(tx?.settledAt)
+  // Horizon returns a decimal string ("0.0050000"); formatAmount expects stroops and would
+  // turn it into 5.00e-10. Different unit, different formatter.
+  const settledAmount = tx?.amount
+    ? Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })
+    : undefined
   const steps = [
     {
       title: 'Request',
@@ -91,8 +102,11 @@ export function PaymentLoop({ rec, runId }: { rec: StellarsightRecord | null; ru
       title: 'Sign',
       code: <span className="step__code">auth entry</span>,
       note: 'The agent signs a Soroban authorization entry for exactly that amount. Network fees are sponsored by the facilitator, so the agent needs no XLM.',
-      wire: `payer  ${shortKey(rec.payTo, 6, 6)}
-value  ${amount} ${ASSET_CODE}
+      // No `payer` line. It used to print rec.payTo — the seller's payout address, the same
+      // key the step above prints as the destination. A payment cannot have payer == payTo.
+      // Steps 1-2 describe the terms this record advertises; the accounts that actually moved
+      // value belong in the receipt, sourced from the transaction.
+      wire: `value  ${amount} ${ASSET_CODE}
 fees   sponsored (areFeesSponsored: true)`,
     },
     {
@@ -158,53 +172,71 @@ fees   sponsored (areFeesSponsored: true)`,
           })}
         </div>
 
-        {stage >= 4 && (
-          <div className="receipt">
-            <div className="receipt__row">
-              <span>settled</span>
-              <b>
-                {amount} {ASSET_CODE}
-              </b>
-            </div>
-            <div className="receipt__row">
-              <span>network</span>
-              <b>{rec.network}</b>
-            </div>
-            <div className="receipt__row">
-              <span>scheme</span>
-              <b>{rec.scheme} · fees sponsored</b>
-            </div>
-            {when ? (
+        {stage >= 4 &&
+          (tx ? (
+            /*
+             * Every figure here comes from the linked transaction, none from the record.
+             * The record's price and this settlement's amount are different numbers and
+             * always were: seed prices top out at 0.0015 SXT, the smallest demo settlement
+             * moved 0.005, so the two ranges never overlap. Printing the record's price over
+             * a real hash guaranteed that anyone who opened stellar.expert saw the page
+             * contradicted. The terms live in steps 1-2; this block is the settlement.
+             */
+            <div className="receipt">
+              <p className="step__note" style={{ marginBottom: '0.7rem' }}>
+                A settlement that already happened, replayed. Not this record, and not now —
+                every figure below is read off the transaction.
+              </p>
               <div className="receipt__row">
-                <span>settled on</span>
-                <b>{when}</b>
+                <span>moved</span>
+                <b>
+                  {settledAmount} {tx.assetCode ?? ASSET_CODE}
+                </b>
               </div>
-            ) : null}
-            {hash ? (
+              {tx.from ? (
+                <div className="receipt__row">
+                  <span>payer</span>
+                  <b>{shortKey(tx.from, 6, 6)}</b>
+                </div>
+              ) : null}
+              {tx.to ? (
+                <div className="receipt__row">
+                  <span>paid to</span>
+                  <b>{shortKey(tx.to, 6, 6)}</b>
+                </div>
+              ) : null}
+              <div className="receipt__row">
+                <span>network</span>
+                <b>{rec.network}</b>
+              </div>
+              {when ? (
+                <div className="receipt__row">
+                  <span>settled on</span>
+                  <b>{when}</b>
+                </div>
+              ) : null}
               <a
                 className="receipt__hash"
-                href={explorerTx(hash)}
+                href={explorerTx(tx.hash)}
                 target="_blank"
                 rel="noreferrer noopener"
               >
-                {shortHash(hash)} ↗ stellar.expert
+                {shortHash(tx.hash)} ↗ stellar.expert
               </a>
-            ) : null}
-            {hash ? (
               <p className="step__note" style={{ marginTop: '0.7rem' }}>
-                {when ? `Settled on ${when}` : 'Settled earlier'} on Stellar testnet. This panel
-                replays that run step by step — it does not settle a new payment. The hash is real:
-                open it and check. Run <code>npm run dev:all</code> to settle live against your own
-                facilitator.
+                Open it: the amount, the accounts and the date above are what you will find.
+                Fees were paid by the facilitator, not the payer. Run <code>npm run dev:all</code>{' '}
+                to settle live against your own facilitator.
               </p>
-            ) : (
-              <p className="receipt__row">
-                <span>tx</span>
-                <b>pending</b>
+            </div>
+          ) : (
+            <div className="receipt">
+              <p className="step__note">
+                No settled transaction is on file for this resource, so there is nothing to
+                replay. The steps above are the terms it advertises, not a payment.
               </p>
-            )}
-          </div>
-        )}
+            </div>
+          ))}
       </div>
     </section>
   )

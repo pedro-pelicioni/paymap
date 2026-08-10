@@ -107,7 +107,7 @@ $ curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3
   0.8098  Invoice OCR
 
 $ curl -s https://stellarsight.xyz/discovery/health …
-  mode=kv  transport=redis  records=27  writable=false  commit=86ce7a3
+  mode=kv  transport=redis  records=27  writable=true  commit=9f76bb6
 
 $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xyz/discovery/nope
   404 application/json; charset=utf-8
@@ -233,6 +233,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 129 tests are its. Not on npm yet — install from a clone |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |

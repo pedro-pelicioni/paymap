@@ -19,7 +19,28 @@ const FIELD_BOOST: Record<string, number> = {
   url: 0.6,
 }
 
-const WEIGHTS = { bm25: 0.55, metadata: 0.15, settlements: 0.18, recency: 0.12 }
+/**
+ * The index's own blend weights, not a second opinion. packages/index/src/rank.mjs uses
+ * relevance 1.00 / completeness 0.12 / popularity 0.08 / recency 0.05, and the landing page
+ * publishes exactly those as "the formula". This file's header claims to mirror
+ * `scoreHybrid`; with a different set it did not, so a query-less board scored here
+ * contradicted the formula printed on the site and summed to a different ceiling.
+ */
+export const WEIGHTS = { bm25: 1.0, metadata: 0.12, settlements: 0.08, recency: 0.05 }
+
+/** What a total can reach when every part maxes out. The _explain meter's denominator. */
+export const SCORE_MAX = WEIGHTS.bm25 + WEIGHTS.metadata + WEIGHTS.settlements + WEIGHTS.recency
+
+/** Per-part ceilings, so a meter can show each bar against what that part alone can score. */
+export const PART_MAX: Record<string, number> = {
+  bm25: WEIGHTS.bm25,
+  metadata: WEIGHTS.metadata,
+  settlements: WEIGHTS.settlements,
+  recency: WEIGHTS.recency,
+}
+
+/** Matches the index: 14-day half-life. See RECENCY_HALF_LIFE_DAYS in rank.mjs. */
+const RECENCY_HALF_LIFE_DAYS = 14
 
 const K1 = 1.4
 const B = 0.72
@@ -65,9 +86,15 @@ export function metadataScore(r: StellarsightRecord): { score: number; missing: 
 
 const settlementScore = (n: number) => Math.log10(1 + Math.max(0, n)) / Math.log10(1 + 5000)
 
+/**
+ * `Math.exp(-hours / 72)` was here, labelled "72 h half-life" in the _explain panel. It is
+ * an e-folding with a 72-hour time constant, whose actual half-life is 72·ln2 ≈ 50 h — and
+ * the index it claims to mirror decays on a 14-day half-life. Two different curves, and the
+ * label described neither. This is the index's function.
+ */
 const recencyScore = (ts: number) => {
-  const hours = Math.max(0, (Date.now() - ts) / 3_600_000)
-  return Math.exp(-hours / 72)
+  const days = Math.max(0, (Date.now() - ts) / 86_400_000)
+  return Math.pow(0.5, days / RECENCY_HALF_LIFE_DAYS)
 }
 
 export function rank(query: string, docs: StellarsightRecord[]): StellarsightRecord[] {

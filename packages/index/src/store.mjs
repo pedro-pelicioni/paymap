@@ -27,9 +27,9 @@
  *
  *   redis   `KV_REDIS_URL` (or `REDIS_URL`) — `redis://` or `rediss://`. The native
  *           protocol over TCP, spoken through the `redis` package (node-redis, MIT).
- *           This is what the Vercel Marketplace Redis integration hands you: it exposes a
- *           connection URL and NO REST endpoint at all, so without this branch a
- *           Marketplace-provisioned database can never be reached.
+ *           Several Vercel Marketplace Redis providers hand you only a connection URL, so
+ *           without this branch those databases could never be reached. Upstash is not one
+ *           of them — it exposes both, and then the REST branch above wins.
  *
  * Both transports reduce to the same primitive — `command(['HSET', key, field, value])` —
  * so the storage layout, the validation and the failure semantics below are written once.

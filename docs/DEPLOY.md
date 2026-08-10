@@ -121,15 +121,25 @@ Which of these you can use is decided by whoever provisioned the database:
   `rediss://default:<password>@<host>.example.com:6379`. Spoken over TCP through the
   `redis` package.
 
-**The Vercel Marketplace Redis integrations give you the connection URL and no REST
-endpoint at all.** If you provision Redis from the Marketplace, the protocol variable is
-the only one you will have — set it and leave the REST pair unset.
+**Which of the two you get depends on the provider, so read the variables Vercel actually
+created rather than assuming.** Upstash exposes both a REST pair and a protocol URL;
+other Marketplace Redis providers expose only the protocol URL. If both are present the
+REST pair wins, which is the preferred outcome.
 
-> **Custom Prefix tip.** When you connect a Marketplace database to the project, Vercel
-> asks for an environment-variable prefix. Enter **`KV`** and the connection URL lands as
-> `KV_REDIS_URL`, which is exactly what this code reads — no aliasing, no copy-paste of a
-> credential. With a different prefix, add `KV_REDIS_URL` (or `REDIS_URL`) yourself,
-> pointing at the same value.
+> **Prefix tip.** Connecting a Marketplace database asks for an environment-variable
+> prefix. `KV` is the convenient one: the REST pair lands as `KV_REST_API_URL` /
+> `KV_REST_API_TOKEN` and, on providers that expose it, the protocol URL lands as
+> `KV_REDIS_URL` — all three names this code already reads. Whatever prefix you choose,
+> check the generated names against the table above; a URL under any other name (`KV_URL`,
+> `REDIS_TLS_URL`, a provider-specific one) is invisible to this code until you add
+> `KV_REDIS_URL` or `REDIS_URL` yourself pointing at the same value.
+
+> **Adding the variables is not enough on its own.** Vercel binds environment variables at
+> deploy time, so a deployment created before you attached the database keeps running
+> without them and `/discovery/health` will keep reporting `mode: seed` with
+> `durableStore.configured: false`. Redeploy — push a commit, or use *Redeploy* in the
+> dashboard — and check `health` again. This is the single most common reason a correctly
+> configured store appears not to work.
 
 `GET /discovery/health` reports which one is live as `durableStore.transport`
 (`"rest"`, `"redis"`, or `null` when unconfigured). The password never appears there:

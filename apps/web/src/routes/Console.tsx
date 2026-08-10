@@ -5,7 +5,7 @@ import { StellarsightMark } from '../components/Marks'
 import { PaymentLoop } from '../components/PaymentLoop'
 import { SightBoard } from '../components/SightBoard'
 import { Ticker } from '../components/Ticker'
-import { demoCatalog, INDEX_URL, loadCatalog, search } from '../lib/api'
+import { demoCatalog, INDEX_LABEL, loadCatalog, search } from '../lib/api'
 import { rank } from '../lib/rank'
 import type { Catalog, StellarsightRecord } from '../lib/types'
 
@@ -15,11 +15,12 @@ export default function Console() {
   const [cat, setCat] = useState<Catalog>(() => demoCatalog())
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
-  const [items, setItems] = useState<StellarsightRecord[]>(() =>
-    rank('', demoCatalog().items).sort((a, b) => b.settlements - a.settlements),
-  )
+  // No .sort() by settlements. It reordered the board behind the scores the cards print.
+  const [items, setItems] = useState<StellarsightRecord[]>(() => rank('', demoCatalog().items))
   const [busy, setBusy] = useState(false)
-  const [took, setTook] = useState(0)
+  // null until a search has actually been timed. It rendered 0.0 ms on every page load,
+  // which is not a fast measurement — it is the absence of one, shown as a benchmark.
+  const [took, setTook] = useState<number | null>(null)
   const [paying, setPaying] = useState<StellarsightRecord | null>(null)
   const [runId, setRunId] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -29,7 +30,7 @@ export default function Console() {
     loadCatalog().then((c) => {
       if (!alive) return
       setCat(c)
-      setItems(rank('', c.items).sort((a, b) => b.settlements - a.settlements))
+      setItems(rank('', c.items))
     })
     return () => {
       alive = false
@@ -79,7 +80,7 @@ export default function Console() {
           */}
           <span
             className={`source-pill source-pill--${cat.source}`}
-            title={cat.source === 'live' ? `catalog connected to ${INDEX_URL}` : 'index unreachable — baked fixture'}
+            title={cat.source === 'live' ? `catalog connected to ${INDEX_LABEL}` : 'index unreachable — baked fixture'}
           >
             <span className="dot dot--pulse" />
             {cat.source} catalog
@@ -107,7 +108,7 @@ export default function Console() {
               </h1>
             </div>
             <span className="label" style={{ color: 'var(--fg-3)' }}>
-              {cat.source === 'live' ? INDEX_URL : 'baked fixture · no server required'}
+              {cat.source === 'live' ? INDEX_LABEL : 'baked fixture · no server required'}
             </span>
           </div>
 
@@ -166,6 +167,7 @@ export default function Console() {
                   query={query}
                   onPay={onPay}
                   caption={query ? `Results for “${query}”` : 'Full catalog — ranked'}
+                  source={cat.source}
                 />
               ) : (
                 <div className="emptystate">
@@ -173,8 +175,9 @@ export default function Console() {
                 </div>
               )}
               <p className="label" style={{ marginTop: '0.9rem', color: 'var(--fg-3)' }}>
-                {items.length} result{items.length === 1 ? '' : 's'} · ranked in {took.toFixed(1)} ms
-                · BM25 + metadata + settlements + recency
+                {items.length} result{items.length === 1 ? '' : 's'}
+                {took === null ? '' : ` · ranked in ${took.toFixed(1)} ms`} · BM25 + metadata +
+                settlements + recency
               </p>
             </div>
           </div>

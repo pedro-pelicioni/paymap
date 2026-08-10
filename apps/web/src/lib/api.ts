@@ -36,6 +36,14 @@ export const INDEX_URL: string =
       ? ''
       : 'http://localhost:4022'
 
+/**
+ * What to SHOW when naming where the catalog came from. `INDEX_URL` is the fetch base and
+ * is deliberately '' in production (same-origin, no CORS hop) — printing it rendered an
+ * empty string next to the word "live", turning a checkable claim into an unfalsifiable one.
+ */
+export const INDEX_LABEL: string =
+  INDEX_URL || (typeof location !== 'undefined' ? location.origin : 'same origin')
+
 export const ASSET_CODE = 'SXT'
 
 /**
@@ -275,17 +283,15 @@ function sane(r: WireRecord): StellarsightRecord {
 }
 
 /**
- * Fixtures go stale the moment they are written. Slide every timestamp forward so
- * the recency signal still reads as a live catalog during the demo.
+ * Fixture rows keep their own timestamps.
+ *
+ * A `rebase()` here used to slide every one of them forward to now, so the recency signal
+ * "still reads as a live catalog during the demo". The board then printed "seen 0s ago"
+ * beside a pulsing dot for records baked into the bundle, and scored them at maximum
+ * recency. The DEMO pill said the catalog was baked; this said a specific record had been
+ * observed one second ago. The specific claim is the one a reader believes.
  */
-function rebase(items: StellarsightRecord[]): StellarsightRecord[] {
-  const newest = items.reduce((a, r) => Math.max(a, r.lastSeenAt || 0), 0)
-  const delta = Date.now() - newest
-  if (!newest || delta < 60_000) return items
-  return items.map((r) => ({ ...r, lastSeenAt: r.lastSeenAt + delta }))
-}
-
-const fixtureItems = () => rebase(pickItems(fixtureRaw).map(sane))
+const fixtureItems = () => pickItems(fixtureRaw).map(sane)
 
 /**
  * The integrity ledger has exactly one baked source: `integrity.json`. It used to have
@@ -363,7 +369,10 @@ export type SearchOutcome = {
   items: StellarsightRecord[]
   source: 'live' | 'demo'
   partialResults: boolean
+  /** Time spent ranking, not fetching. */
   tookMs: number
+  /** Network time, when there was a request. */
+  fetchMs?: number
 }
 
 /**
@@ -375,10 +384,14 @@ export async function search(
   fallback: StellarsightRecord[],
   live: boolean,
 ): Promise<SearchOutcome> {
+  // Two different durations, kept apart. `fetchMs` is the network; `tookMs` is the ranking
+  // the console labels "ranked in". Timing the fetch and calling the result ranking time
+  // reported ~0.8s of HTTPS as the cost of scoring 27 rows.
   const started = performance.now()
   if (live && query.trim()) {
     try {
       const payload = await getJSON(`/discovery/search?query=${encodeURIComponent(query)}&limit=20`)
+      const rankStart = performance.now()
       const items = pickItems(payload).map(sane)
       if (items.length) {
         // `sane` has already translated any index-supplied `_explain` into the
@@ -390,19 +403,25 @@ export async function search(
           items: explained as StellarsightRecord[],
           source: 'live',
           partialResults: Boolean((payload as { partialResults?: boolean })?.partialResults),
-          tookMs: performance.now() - started,
+          tookMs: performance.now() - rankStart,
+          fetchMs: rankStart - started,
         }
       }
     } catch {
       /* fall through to the local ranker */
     }
   }
+  const rankStart = performance.now()
+  // No re-sort by settlement count. It reordered the board behind the scores printed on
+  // the cards, so rank 3 could score lower than ranks 4 through 10 on a board whose whole
+  // premise is that the ranking explains itself.
   const items = rank(query, fallback)
   return {
-    items: query.trim() ? items : rank('', fallback).sort((a, b) => b.settlements - a.settlements),
+    items,
     source: live ? 'live' : 'demo',
     partialResults: false,
-    tookMs: performance.now() - started,
+    tookMs: performance.now() - rankStart,
+    fetchMs: rankStart - started,
   }
 }
 

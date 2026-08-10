@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { ASSET_CODE } from '../lib/api'
 import { ago, formatAmount, pct, shortKey, sightNumber } from '../lib/format'
-import { tokenize } from '../lib/rank'
+import { PART_MAX, SCORE_MAX, tokenize } from '../lib/rank'
 import type { Explain, ExplainKey, StellarsightRecord } from '../lib/types'
 
 const PART_LABEL: Record<ExplainKey, string> = {
@@ -46,7 +46,10 @@ function ExplainPanel({ ex, id }: { ex: Explain; id: string }) {
             <span className="explain__meter">
               <i
                 style={{
-                  width: `${Math.min(100, (num(p.value) / 0.55) * 100)}%`,
+                  // Against this part's OWN ceiling, not a shared constant. The 0.55 here
+                  // was the old bm25 weight, so recency (max 0.05) painted itself full at
+                  // a tenth of its value and bm25 (max 1.00) saturated at 0.55.
+                  width: `${Math.min(100, (num(p.value) / (PART_MAX[p.key] ?? SCORE_MAX)) * 100)}%`,
                   background: PART_COLOR[p.key] ?? 'var(--fg-3)',
                 }}
               />
@@ -61,7 +64,9 @@ function ExplainPanel({ ex, id }: { ex: Explain; id: string }) {
       <div className="explain__total">
         <span>SCORE</span>
         <b>{total.toFixed(3)}</b>
-        <span>· {pct(total)} of a perfect score</span>
+        {/* Denominator is the sum of the weights (1.25), not 1.00. Dividing this scale by
+            1.00 overstated every result by ~25%. */}
+        <span>· {pct(total / SCORE_MAX)} of a perfect score</span>
       </div>
       {terms.length > 0 ? (
         <div className="explain__terms">
@@ -88,11 +93,13 @@ function Sight({
   index,
   hits,
   onPay,
+  source = 'live',
 }: {
   rec: StellarsightRecord
   index: number
   hits: Set<string>
   onPay?: (r: StellarsightRecord) => void
+  source?: 'live' | 'demo'
 }) {
   const [open, setOpen] = useState(false)
   const ex = rec._explain
@@ -128,16 +135,25 @@ function Sight({
           <small>{ASSET_CODE}</small>
         </span>
         <span
-          className={`source-pill source-pill--${rec.seeded ? 'seed' : 'live'}`}
+          className={`source-pill source-pill--${source === 'demo' || rec.seeded ? 'seed' : 'live'}`}
           style={{ padding: '0.22rem 0.42rem', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}
           title={
-            rec.seeded
-              ? 'Illustrative catalog entry — advertised, not settle-backed'
-              : 'Real resource — payable now, backed by observed settlements'
+            source === 'demo'
+              ? 'Baked fixture row — nothing here is reachable or payable from this page'
+              : rec.seeded
+                ? 'Illustrative catalog entry — advertised, not settle-backed'
+                : 'Real resource — payable now, backed by observed settlements'
           }
         >
+          {/*
+            The index never emits `seeded: false` — a live announcement CLEARS the flag —
+            so absence is correct provenance on the live path and cannot be tightened.
+            It is only misleading in the baked fixture, three of whose rows are localhost
+            dev-server URLs that no visitor can reach, let alone pay. So the distinction is
+            about where the rows came from, not about any field on the record.
+          */}
           <span className="dot" />
-          {rec.seeded ? 'Catalog' : 'Live · Payable'}
+          {source === 'demo' ? 'Fixture' : rec.seeded ? 'Catalog' : 'Live · Payable'}
         </span>
         <span className="sight__seen">seen {ago(rec.lastSeenAt)}</span>
         <span className="sight__seen">pay to {shortKey(rec.payTo, 4, 4)}</span>
@@ -190,11 +206,14 @@ export function SightBoard({
   query = '',
   onPay,
   caption = 'Ranked results',
+  source = 'live',
 }: {
   items: StellarsightRecord[]
   query?: string
   onPay?: (r: StellarsightRecord) => void
   caption?: string
+  /** Where these rows came from. Nothing in the baked fixture is payable by a visitor. */
+  source?: 'live' | 'demo'
 }) {
   const refs = useRef(new Map<string, HTMLElement>())
   const last = useRef(new Map<string, number>())
@@ -240,7 +259,7 @@ export function SightBoard({
             else refs.current.delete(rec.id)
           }}
         >
-          <Sight rec={rec} index={i} hits={hits} onPay={onPay} />
+          <Sight rec={rec} index={i} hits={hits} onPay={onPay}  source={source} />
         </div>
       ))}
     </section>
