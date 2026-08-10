@@ -1,8 +1,8 @@
-/** Brand marks — inline SVG mirrors of /assets/starsight-mark.svg, so the
+/** Brand marks — inline SVG mirrors of /assets/stellarsight-mark.svg, so the
  *  chrome never depends on an image file being present. */
 
 /**
- * The Starsight mark: a star casting a beam of light onto the ground it lights.
+ * The Stellarsight mark: a star casting a beam of light onto the ground it lights.
  *
  * Three shapes, painted back to front — the pool of light, the beam, then the
  * star on top. Two details carry the whole thing and are easy to lose when
@@ -16,7 +16,7 @@
  * The beam is solid rather than a gradient on purpose: a gradient needs `<defs>`,
  * and an id inside `<defs>` collides the moment two marks render on one page.
  */
-export function StarsightMark({ size = 22 }: { size?: number }) {
+export function StellarsightMark({ size = 22 }: { size?: number }) {
   return (
     <svg className="glyph" width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
       <ellipse cx="256" cy="444" rx="238" ry="9" fill="var(--fg-3)" />

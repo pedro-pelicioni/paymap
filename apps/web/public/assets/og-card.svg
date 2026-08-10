@@ -5,7 +5,7 @@
     <path fill="#F5400E" d="M252 256 C 246 338 214 408 150 441 L 362 441 C 298 408 266 338 260 256 Z"/>
     <path fill="#F2EDE3" d="M256 54 Q 264 126 341 143 Q 264 160 256 268 Q 248 160 171 143 Q 248 126 256 54 Z"/>
   </g>
-  <text x="330" y="295" font-family="Helvetica Neue, Helvetica, Arial" font-size="104" font-weight="800" letter-spacing="6" fill="#F2EDE3">STARSIGHT</text>
+  <text x="330" y="295" font-family="Helvetica Neue, Helvetica, Arial" font-size="104" font-weight="800" letter-spacing="6" fill="#F2EDE3">STELLARSIGHT</text>
   <text x="334" y="365" font-family="Menlo, monospace" font-size="30" fill="#9AA0A8">Find what to pay for on Stellar.</text>
   <text x="334" y="425" font-family="Menlo, monospace" font-size="22" fill="#F5400E">x402 facilitator + Bazaar discovery · stellar:testnet</text>
 </svg>

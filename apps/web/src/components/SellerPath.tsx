@@ -3,7 +3,7 @@ import { CopyButton } from './CopyButton'
 import { StarGlyph } from './Marks'
 
 const QUICKSTART =
-  'https://github.com/pedro-pelicioni/starsight/blob/main/docs/QUICKSTART-SELLER.md'
+  'https://github.com/pedro-pelicioni/stellarsight/blob/main/docs/QUICKSTART-SELLER.md'
 
 /** Every shell command on this page is declared exactly once, here, and used
  *  twice below — in the rendered row and in the step's copy payload — so the
@@ -120,7 +120,7 @@ const STEPS: Step[] = [
     title: 'Take a real payment',
     body: (
       <>
-        An <em>unmodified</em> <code>@x402/fetch</code> client — no STARSIGHT code on the path — is
+        An <em>unmodified</em> <code>@x402/fetch</code> client — no STELLARSIGHT code on the path — is
         driven through 402 → sign → settle → 200 against your seller. Settling increments your
         record's settlement count through the bazaar extension.
       </>

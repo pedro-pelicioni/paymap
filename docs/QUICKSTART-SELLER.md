@@ -16,7 +16,7 @@ Below is that path, timed. No API keys, no captcha, no faucet, no wallet extensi
 command is copy-paste and every step ends in something you can check with `curl`.
 
 If you only want to read the catalog rather than publish to it, you do not need any of this —
-[`starsight.dev/discovery/search`](https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3)
+[`stellarsight.xyz/discovery/search`](https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3)
 is public and CORS-open. This document is for the *seller* side.
 
 ---
@@ -27,7 +27,7 @@ is public and CORS-open. This document is for the *seller* side.
 |---|---|
 | Node.js | ≥ 20 |
 | A Stellar account | **No.** `npm run setup` generates every keypair it needs and funds them from Friendbot. |
-| Testnet USDC | **No.** STARSIGHT issues its own SEP-41 asset (`SXT`) and wraps it in a SAC. The Stellar `exact` scheme accepts any SEP-41 token. |
+| Testnet USDC | **No.** STELLARSIGHT issues its own SEP-41 asset (`SXT`) and wraps it in a SAC. The Stellar `exact` scheme accepts any SEP-41 token. |
 | A facilitator API key | **No.** The facilitator is self-hosted from this repo on the Apache-2.0 `@x402/stellar` package. |
 
 ---
@@ -35,7 +35,7 @@ is public and CORS-open. This document is for the *seller* side.
 ## Step 1 — clone and bootstrap · 49 s
 
 ```bash
-git clone https://github.com/pedro-pelicioni/starsight && cd starsight
+git clone https://github.com/pedro-pelicioni/stellarsight && cd stellarsight
 npm install
 npm run setup
 ```
@@ -98,7 +98,7 @@ discovery metadata all come from the same object, so they cannot drift apart.
 }
 ```
 
-`declareDiscoveryExtension` is the stock export from `@x402/extensions` — not a STARSIGHT
+`declareDiscoveryExtension` is the stock export from `@x402/extensions` — not a STELLARSIGHT
 wrapper. The per-parameter `description` fields are the part worth slowing down for: they carry
 ×2 weight in the ranker (see [SEARCH-QUALITY.md](SEARCH-QUALITY.md)), and they are the
 difference between an agent finding your endpoint and finding somebody else's.
@@ -160,7 +160,7 @@ curl -s 'localhost:4022/discovery/resources?limit=50' | jq '.total, .items[].id'
 npm run verify:conformance
 ```
 
-This drives an **unmodified** `@x402/fetch` client — `wrapFetchWithPayment`, no STARSIGHT code
+This drives an **unmodified** `@x402/fetch` client — `wrapFetchWithPayment`, no STELLARSIGHT code
 anywhere on the path — through a real `402 → sign → settle → 200` against your running seller,
 and prints the settled transaction hash. It is the acceptance test the RFP asks for, and it is
 the one that matters: it proves *other people's* agents can pay you, not just ours.
@@ -243,14 +243,14 @@ To appear in the catalog, attach the bazaar extension to your 402 challenge unde
 
 ---
 
-## Publishing to the hosted Bazaar at starsight.dev
+## Publishing to the hosted Bazaar at stellarsight.xyz
 
-Reading `starsight.dev` is open to anyone. **Writing to it is not self-serve today**, and that is
+Reading `stellarsight.xyz` is open to anyone. **Writing to it is not self-serve today**, and that is
 worth stating plainly rather than glossing:
 
 ```bash
-curl -sX POST https://starsight.dev/discovery/resources \
-  -H 'Authorization: Bearer <STARSIGHT_WRITE_TOKEN>' \
+curl -sX POST https://stellarsight.xyz/discovery/resources \
+  -H 'Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>' \
   -H 'content-type: application/json' -d @record.json
 ```
 
@@ -276,8 +276,8 @@ instant and unrestricted; hosted listing needs a token from the operator.
 | `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 3](#step-3--you-are-already-in-the-bazaar--1-min) |
 | `Failed to parse payment requirements` | Your 402 has no `PAYMENT-REQUIRED` header | See [Bringing your own server](#bringing-your-own-server), item 1 |
 | Settle returns `insufficient balance` | The buyer holds no `SXT` | `npm run setup` mints and distributes it |
-| `503` from the hosted API | No durable store attached | Read-only mode. `curl starsight.dev/discovery/health` reports which mode is active |
+| `503` from the hosted API | No durable store attached | Read-only mode. `curl stellarsight.xyz/discovery/health` reports which mode is active |
 
 Every rejection this codebase emits carries a non-null, human-readable `reason` naming what to
 do about it. If you hit one that does not,
-[open an issue](https://github.com/pedro-pelicioni/starsight/issues) — that is a bug.
+[open an issue](https://github.com/pedro-pelicioni/stellarsight/issues) — that is a bug.

@@ -1,5 +1,5 @@
 /**
- * packages/index/src/index.mjs — STARSIGHT bazaar catalog.
+ * packages/index/src/index.mjs — STELLARSIGHT bazaar catalog.
  * "Find what to pay for on Stellar."
  *
  * This is the facilitator-side half of the x402 `bazaar` extension: the catalog and

@@ -1,4 +1,4 @@
-# STARSIGHT — Search Quality
+# STELLARSIGHT — Search Quality
 
 How the bazaar index decides what an agent sees, why it is built this way, and how we
 would prove it works.

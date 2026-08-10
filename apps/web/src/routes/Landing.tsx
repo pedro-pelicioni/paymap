@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AssetImg } from '../components/AssetImg'
 import { CodeSpans, CopyButton, copyText } from '../components/CopyButton'
 import type { CodeSpan } from '../components/CopyButton'
-import { StarsightMark, StarGlyph } from '../components/Marks'
+import { StellarsightMark, StarGlyph } from '../components/Marks'
 import { SellerPath } from '../components/SellerPath'
 import { Ticker } from '../components/Ticker'
 import { DitherField } from '../components/DitherField'
@@ -14,7 +14,7 @@ import { explorerTx, shortHash } from '../lib/format'
 import { RevealGroup } from '../lib/reveal'
 import type { Catalog } from '../lib/types'
 
-const GITHUB = 'https://github.com/pedro-pelicioni/starsight'
+const GITHUB = 'https://github.com/pedro-pelicioni/stellarsight'
 
 /**
  * Three representative verdicts for the bento card — one rejection, then the two most
@@ -44,7 +44,7 @@ const miniLedger = (() => {
 const HERO_CMD: CodeSpan[] = [
   { text: '$ ', className: 't-p', copy: false },
   {
-    text: "curl 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3'",
+    text: "curl 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3'",
     className: 't-cmd',
   },
 ]
@@ -69,7 +69,7 @@ function Terminal() {
           <i />
           <i />
         </span>
-        <span className="terminal__title">starsight.dev — discovery/search</span>
+        <span className="terminal__title">stellarsight.xyz — discovery/search</span>
         <span className="terminal__title" style={{ marginLeft: 'auto' }}>
           x402 v2
         </span>
@@ -187,9 +187,9 @@ export default function Landing() {
 
       <header className={`topbar${scrolled ? ' is-scrolled' : ''}`}>
         <div className="shell topbar__in">
-          <Link className="topbar__mark" to="/" aria-label="STARSIGHT home">
-            <StarsightMark />
-            <span>STARSIGHT</span>
+          <Link className="topbar__mark" to="/" aria-label="STELLARSIGHT home">
+            <StellarsightMark />
+            <span>STELLARSIGHT</span>
           </Link>
           <nav className="topbar__nav" aria-label="Site">
             <a href="#ship">Sell an API</a>
@@ -232,7 +232,7 @@ export default function Landing() {
                   Find <em>what to pay for</em> on Stellar.
                 </h1>
                 <p className="lede hero__sub reveal" style={{ ['--d' as string]: '240ms' }}>
-                  STARSIGHT is the facilitator-side Bazaar discovery layer for x402 — a public,
+                  STELLARSIGHT is the facilitator-side Bazaar discovery layer for x402 — a public,
                   hosted index where agents advertise paid APIs, search them in plain language,
                   and settle in one HTTP round trip.
                 </p>
@@ -305,7 +305,7 @@ export default function Landing() {
               </h2>
               <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
                 An agent that can pay but cannot discover is an agent with a wallet and no map.
-                STARSIGHT is the map — and the whole payment loop around it, end to end on testnet.
+                STELLARSIGHT is the map — and the whole payment loop around it, end to end on testnet.
               </p>
             </RevealGroup>
 
@@ -321,7 +321,7 @@ export default function Landing() {
                 <h3>A public Bazaar any agent can call</h3>
                 <p>
                   The spec's <code>/discovery</code> endpoints, served from the same catalog code
-                  locally and at <code>starsight.dev</code> — readable by the stock{' '}
+                  locally and at <code>stellarsight.xyz</code> — readable by the stock{' '}
                   <code>@x402/extensions</code> client, with CORS open because the point is for
                   other people's agents to call it.
                 </p>
@@ -442,16 +442,16 @@ export default function Landing() {
                 </p>
                 <div className="bento__code">
                   <div className="row">
-                    <span className="path">starsight_search</span>
+                    <span className="path">stellarsight_search</span>
                   </div>
                   <div className="row">
-                    <span className="path">starsight_browse</span>
+                    <span className="path">stellarsight_browse</span>
                   </div>
                   <div className="row">
-                    <span className="path">starsight_describe</span>
+                    <span className="path">stellarsight_describe</span>
                   </div>
                   <div className="row">
-                    <span className="path">starsight_pay</span>
+                    <span className="path">stellarsight_pay</span>
                   </div>
                 </div>
               </article>
@@ -523,7 +523,7 @@ export default function Landing() {
               <p className="lede section__sub rise" style={{ ['--i' as string]: 2 }}>
                 The four MCP tools and the <code>/discovery/*</code> routes are two doors into one
                 index — the same catalog code, the same ranking, the same records, whether it runs
-                on your laptop or at <code>starsight.dev</code>. Nothing is mirrored per client.
+                on your laptop or at <code>stellarsight.xyz</code>. Nothing is mirrored per client.
               </p>
             </RevealGroup>
             <OrbitRing />
@@ -594,8 +594,8 @@ export default function Landing() {
           <div className="footer__top">
             <div>
               <div className="footer__brand">
-                <AssetImg src="/assets/starsight-mark.svg" width={34} height={34} />
-                <p className="footer__mark">STARSIGHT</p>
+                <AssetImg src="/assets/stellarsight-mark.svg" width={34} height={34} />
+                <p className="footer__mark">STELLARSIGHT</p>
               </div>
               <p className="footer__tag">Find what to pay for on Stellar.</p>
             </div>

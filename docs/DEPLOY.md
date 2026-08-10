@@ -1,4 +1,4 @@
-# Deploying STARSIGHT
+# Deploying STELLARSIGHT
 
 The repo deploys as a **single Vercel project**: the Vite site in `apps/web` becomes the
 static output, and the three files in `api/discovery/` become Node.js Vercel Functions
@@ -69,6 +69,74 @@ Everything else is in `vercel.json` and needs no dashboard equivalent.
 
 ---
 
+## The custom domain: `stellarsight.xyz`
+
+The domain is registered at GoDaddy and stays there — only the DNS records move. Do
+**not** switch to Vercel's nameservers unless you want Vercel to own the whole zone; the
+apex `A` + `www` `CNAME` route keeps the existing `_dmarc` and `_domainconnect` records
+working untouched.
+
+### Order of operations
+
+Add the domain in Vercel **first**, then edit DNS. Vercel shows you the exact record
+values only after the domain is attached to the project, and it starts issuing the TLS
+certificate the moment DNS resolves.
+
+1. Vercel → the project → **Settings** → **Domains** → **Add Domain** → `stellarsight.xyz`.
+2. Accept the prompt to also add `www.stellarsight.xyz` (Vercel redirects it to the apex).
+3. Vercel now shows an **A** record for the apex and a **CNAME** target for `www`.
+   **Copy those two values from that screen.**
+
+> **The CNAME target is per-project.** Vercel issues a unique hostname such as
+> `d1d4fc829fe7bc7c.vercel-dns-017.com`. Older guides say `cname.vercel-dns.com` — do not
+> paste that from memory, and do not reuse a value from another project. Same for the apex
+> `A` record IP: read it off the Domains screen rather than trusting a tutorial.
+
+### The GoDaddy edits
+
+GoDaddy → **My Products** → the domain → **DNS** → **Manage DNS**. Starting from the
+default WebsiteBuilder zone, exactly two records change:
+
+| Record | Now | Change to | How |
+|---|---|---|---|
+| `A` `@` | `WebsiteBuilder Site` | the IP Vercel shows | **Edit** (pencil). GoDaddy may make you disconnect the Website Builder site first |
+| `CNAME` `www` | `stellarsight.xyz.` | the `*.vercel-dns-*.com` target Vercel shows | **Edit** (pencil) |
+
+Leave everything else alone:
+
+- **`NS` and `SOA`** — GoDaddy's own, not editable, and not supposed to be.
+- **`CNAME _domainconnect`** — GoDaddy's one-click-setup plumbing. Harmless.
+- **`TXT _dmarc`** — email policy. Deleting it weakens DMARC on the domain; unrelated to
+  hosting.
+
+Set TTL to the shortest GoDaddy offers (600s / 10 min) while you are still changing
+things, then raise it to 1 hour once the domain is verified.
+
+### Waiting, and checking without guessing
+
+Propagation is usually minutes, up to 48h worst case. Check the authoritative answer
+rather than your own cached resolver:
+
+```bash
+# Ask GoDaddy's nameserver directly — no local or ISP cache in the way
+dig @ns55.domaincontrol.com stellarsight.xyz A +short
+dig @ns55.domaincontrol.com www.stellarsight.xyz CNAME +short
+
+# What the rest of the world currently sees
+dig stellarsight.xyz A +short
+
+# End to end, once Vercel says "Valid Configuration"
+curl -sI https://stellarsight.xyz | head -3
+curl -s https://stellarsight.xyz/discovery/health | jq '.mode, .records'
+```
+
+Vercel's Domains page flips to **Valid Configuration** on its own once the records
+resolve; the TLS certificate is issued automatically after that. A domain stuck on
+"Invalid Configuration" for more than an hour is nearly always the apex `A` record still
+pointing at the parked WebsiteBuilder site.
+
+---
+
 ## Environment variables
 
 **None are required.** With an empty environment the API serves a read-only catalog
@@ -83,13 +151,13 @@ nobody has done.
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | no | Accepted as aliases when you wire Upstash up yourself. |
 | `KV_REDIS_URL` | no | Redis **protocol** connection URL, `redis://` or `rediss://` (TLS). Used when no REST pair is set. |
 | `REDIS_URL` | no | Accepted as an alias for `KV_REDIS_URL`. |
-| `STARSIGHT_WRITE_TOKEN` | no | Enables `POST /discovery/resources`. Callers must send `Authorization: Bearer <value>`. |
-| `STARSIGHT_KV_KEY` | no | Redis hash key. Default `starsight:catalog:v1`. |
-| `STARSIGHT_KV_TTL_MS` | no | How long a store snapshot is reused before re-reading. Default `5000`. |
-| `STARSIGHT_KV_TIMEOUT_MS` | no | Per-command timeout against the store. Default `4000`. |
-| `STARSIGHT_REDIS_CONNECT_TIMEOUT_MS` | no | Connect timeout, protocol transport only. Default `2000`. |
-| `STARSIGHT_CACHE_S_MAXAGE` | no | CDN `s-maxage` on the read endpoints. Default `60`. |
-| `STARSIGHT_CACHE_SWR` | no | CDN `stale-while-revalidate`. Default `600`. |
+| `STELLARSIGHT_WRITE_TOKEN` | no | Enables `POST /discovery/resources`. Callers must send `Authorization: Bearer <value>`. |
+| `STELLARSIGHT_KV_KEY` | no | Redis hash key. Default `stellarsight:catalog:v1`. |
+| `STELLARSIGHT_KV_TTL_MS` | no | How long a store snapshot is reused before re-reading. Default `5000`. |
+| `STELLARSIGHT_KV_TIMEOUT_MS` | no | Per-command timeout against the store. Default `4000`. |
+| `STELLARSIGHT_REDIS_CONNECT_TIMEOUT_MS` | no | Connect timeout, protocol transport only. Default `2000`. |
+| `STELLARSIGHT_CACHE_S_MAXAGE` | no | CDN `s-maxage` on the read endpoints. Default `60`. |
+| `STELLARSIGHT_CACHE_SWR` | no | CDN `stale-while-revalidate`. Default `600`. |
 | `SEED_CATALOG` | no | `0` boots an empty catalog instead of the seed corpus. |
 | `VITE_INDEX_URL` | no | Build-time override for where the web console points. Leave unset. |
 
@@ -161,9 +229,9 @@ catalog gains a shared, persistent layer:
   `HSET` on a field is atomic, so two function instances cataloging different resources
   concurrently cannot clobber each other.
 - **Propagation**: a write forces the next read on that instance to reload; other
-  instances pick it up within `STARSIGHT_KV_TTL_MS`.
+  instances pick it up within `STELLARSIGHT_KV_TTL_MS`.
 
-Add `STARSIGHT_WRITE_TOKEN` to open the write path.
+Add `STELLARSIGHT_WRITE_TOKEN` to open the write path.
 
 **Why writes need a token even though the store variables are enough to make them work:**
 an unauthenticated write endpoint on a public discovery index is a spam magnet, and
@@ -176,42 +244,42 @@ silently accepted.
 
 ## Verifying a deployment with curl
 
-Replace `starsight.dev` with your own deployment URL.
+Replace `stellarsight.xyz` with your own deployment URL.
 
 ```bash
 # 1. Which mode is live, how many records, which commit
-curl -s https://starsight.dev/discovery/health | jq
+curl -s https://stellarsight.xyz/discovery/health | jq
 
 # 2. Search — ranked, with the score breakdown. NOTE the array is `resources`, not
 #    `items`: the search and list envelopes differ deliberately (see CONTRACT.md).
-curl -s 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
+curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3' | jq \
   '.resources[] | {resource, name: .serviceName, score: ._score, price: .accepts[0].amount}'
 
 # 3. The full _explain on the top hit
-curl -s 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=1' \
+curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=1' \
   | jq '.resources[0]._explain'
 
 # 4. List with filters — the LIST endpoint uses `items` and offset pagination
-curl -s 'https://starsight.dev/discovery/resources?type=mcp&limit=5' | jq '.total, .items[].resource'
+curl -s 'https://stellarsight.xyz/discovery/resources?type=mcp&limit=5' | jq '.total, .items[].resource'
 
 # 5. Cursor pagination
-CURSOR=$(curl -s 'https://starsight.dev/discovery/search?query=stellar&limit=2' | jq -r .pagination.cursor)
-curl -s "https://starsight.dev/discovery/search?query=stellar&limit=2&cursor=$CURSOR" | jq '.resources[].id'
+CURSOR=$(curl -s 'https://stellarsight.xyz/discovery/search?query=stellar&limit=2' | jq -r .pagination.cursor)
+curl -s "https://stellarsight.xyz/discovery/search?query=stellar&limit=2&cursor=$CURSOR" | jq '.resources[].id'
 
 # 5b. What a stock consumer sees: the payable offer, straight off a search hit
-curl -s 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=1' \
+curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=1' \
   | jq '.resources[0] | {resource, x402Version, lastUpdated, accepts}'
 
 # 6. CORS preflight — must answer 204 with Access-Control-Allow-Origin: *
-curl -s -i -X OPTIONS https://starsight.dev/discovery/resources | head -8
+curl -s -i -X OPTIONS https://stellarsight.xyz/discovery/resources | head -8
 
 # 7. The SPA catch-all must NOT shadow the API: this must be JSON, not text/html
 curl -s -o /dev/null -w '%{http_code} %{content_type}\n' \
-  'https://starsight.dev/discovery/search?query=test'
+  'https://stellarsight.xyz/discovery/search?query=test'
 
-# 8. Write path (kv mode + STARSIGHT_WRITE_TOKEN only)
-curl -s -X POST https://starsight.dev/discovery/resources \
-  -H "Authorization: Bearer $STARSIGHT_WRITE_TOKEN" \
+# 8. Write path (kv mode + STELLARSIGHT_WRITE_TOKEN only)
+curl -s -X POST https://stellarsight.xyz/discovery/resources \
+  -H "Authorization: Bearer $STELLARSIGHT_WRITE_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"resource":{"url":"https://api.example.com/v1/thing","serviceName":"Thing",
         "description":"Does a thing, described well enough to be discoverable.",
@@ -247,7 +315,7 @@ end-to-end round trip skips unless you point it at one:
 
 ```bash
 docker run -d -p 6399:6379 redis:7-alpine
-STARSIGHT_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
+STELLARSIGHT_TEST_REDIS_URL=redis://127.0.0.1:6399 npm test
 ```
 
 ---

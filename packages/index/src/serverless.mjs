@@ -31,7 +31,7 @@
  * Bazaar that answers out of the box beats a write-capable one that needs setup nobody
  * has done. Configuring a durable store — either KV_REST_API_URL + KV_REST_API_TOKEN
  * (Redis REST API) or KV_REDIS_URL (Redis protocol) — upgrades it to a durable, shared
- * catalog; configuring STARSIGHT_WRITE_TOKEN on top of that opens the write path. Every one
+ * catalog; configuring STELLARSIGHT_WRITE_TOKEN on top of that opens the write path. Every one
  * of those is optional and a missing one is never an error.
  */
 
@@ -64,8 +64,8 @@ export const CORS_HEADERS = Object.freeze({
 });
 
 function cacheControl(env = process.env) {
-  const sMaxAge = Number.parseInt(env?.STARSIGHT_CACHE_S_MAXAGE ?? '', 10);
-  const swr = Number.parseInt(env?.STARSIGHT_CACHE_SWR ?? '', 10);
+  const sMaxAge = Number.parseInt(env?.STELLARSIGHT_CACHE_S_MAXAGE ?? '', 10);
+  const swr = Number.parseInt(env?.STELLARSIGHT_CACHE_SWR ?? '', 10);
   const s = Number.isFinite(sMaxAge) && sMaxAge >= 0 ? sMaxAge : DEFAULT_S_MAXAGE;
   const r = Number.isFinite(swr) && swr >= 0 ? swr : DEFAULT_SWR;
   // max-age=0 keeps browsers honest while s-maxage lets the CDN absorb the traffic.
@@ -193,7 +193,7 @@ let cachedState = null;
 let inflight = null;
 
 function storeTtlMs(env = process.env) {
-  const ttl = Number.parseInt(env?.STARSIGHT_KV_TTL_MS ?? '', 10);
+  const ttl = Number.parseInt(env?.STELLARSIGHT_KV_TTL_MS ?? '', 10);
   return Number.isFinite(ttl) && ttl >= 0 ? ttl : DEFAULT_STORE_TTL_MS;
 }
 
@@ -373,7 +373,7 @@ export async function healthHandler(req, res, env = process.env) {
     200,
     {
       ok: true,
-      service: 'starsight-discovery',
+      service: 'stellarsight-discovery',
       x402Version: X402_VERSION,
       extensions: ['bazaar'],
       // "which mode is active": `kv` = durable + writable, `seed` = read-only baseline.
@@ -413,11 +413,11 @@ export async function healthHandler(req, res, env = process.env) {
  * could otherwise fill the Bazaar with records whose `resource` block is chosen to be
  * rendered on other agents' screens. The integrity validator would still soft-drop the
  * hostile FIELDS, but nothing stops volume. So: a durable store makes writes *possible*,
- * STARSIGHT_WRITE_TOKEN makes them *permitted*, and the absence of either is reported
+ * STELLARSIGHT_WRITE_TOKEN makes them *permitted*, and the absence of either is reported
  * plainly instead of silently accepted.
  */
 function writeState(state, env = process.env) {
-  const token = typeof env?.STARSIGHT_WRITE_TOKEN === 'string' ? env.STARSIGHT_WRITE_TOKEN.trim() : '';
+  const token = typeof env?.STELLARSIGHT_WRITE_TOKEN === 'string' ? env.STELLARSIGHT_WRITE_TOKEN.trim() : '';
   if (!state.storeConfigured) {
     return {
       enabled: false,
@@ -432,7 +432,7 @@ function writeState(state, env = process.env) {
     return {
       enabled: false,
       reason:
-        'catalog is read-only: a durable store is configured but STARSIGHT_WRITE_TOKEN is unset, and an unauthenticated public write endpoint is refused by design.',
+        'catalog is read-only: a durable store is configured but STELLARSIGHT_WRITE_TOKEN is unset, and an unauthenticated public write endpoint is refused by design.',
     };
   }
   return { enabled: true, token };
@@ -477,7 +477,7 @@ async function upsertResource(req, res, env = process.env) {
     return sendJson(
       res,
       401,
-      { ok: false, dropped: [], reason: 'a valid `Authorization: Bearer <STARSIGHT_WRITE_TOKEN>` header is required' },
+      { ok: false, dropped: [], reason: 'a valid `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` header is required' },
       { 'Cache-Control': 'no-store', 'WWW-Authenticate': 'Bearer' },
     );
   }

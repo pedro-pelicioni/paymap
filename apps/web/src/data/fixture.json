@@ -9,7 +9,7 @@
       "id": "http://localhost:4023/v1/fx/usd-brl",
       "resource": {
         "url": "http://localhost:4023/v1/fx/usd-brl",
-        "serviceName": "starsight-fx",
+        "serviceName": "stellarsight-fx",
         "description": "USD/BRL exchange rate with bid, ask and mid price.",
         "tags": [
           "fx",
@@ -38,7 +38,7 @@
           "ask": 5.4389,
           "mid": 5.435,
           "asOf": "2026-08-06T12:00:00.000Z",
-          "source": "starsight-mock"
+          "source": "stellarsight-mock"
         }
       },
       "extensions": [
@@ -52,7 +52,7 @@
       "id": "http://localhost:4023/v1/ocr/nota-fiscal",
       "resource": {
         "url": "http://localhost:4023/v1/ocr/nota-fiscal",
-        "serviceName": "starsight-ocr",
+        "serviceName": "stellarsight-ocr",
         "description": "Invoice OCR — Brazilian electronic invoice (NF-e), returning structured line items and totals.",
         "tags": [
           "ocr",
@@ -110,7 +110,7 @@
       "id": "http://localhost:4023/v1/cep/:cep",
       "resource": {
         "url": "http://localhost:4023/v1/cep/:cep",
-        "serviceName": "starsight-postal",
+        "serviceName": "stellarsight-postal",
         "description": "Brazilian postal code lookup returning street, neighborhood, city and state.",
         "tags": [
           "postal-code",
@@ -156,9 +156,9 @@
       "firstSeenAt": 1786043471306
     },
     {
-      "id": "https://fx.starsight.dev/v1/rate",
+      "id": "https://fx.stellarsight.xyz/v1/rate",
       "resource": {
-        "url": "https://fx.starsight.dev/v1/rate",
+        "url": "https://fx.stellarsight.xyz/v1/rate",
         "serviceName": "FX Rate Oracle BRL/USD",
         "tags": [
           "fx",
@@ -168,7 +168,7 @@
           "oracle",
           "quote"
         ],
-        "iconUrl": "https://fx.starsight.dev/icon.png",
+        "iconUrl": "https://fx.stellarsight.xyz/icon.png",
         "description": "Reference PTAX rate and live market spread for BRL/USD with a signed timestamp, for agents that must convert a price before they pay."
       },
       "type": "http",
@@ -199,9 +199,9 @@
       "seeded": true
     },
     {
-      "id": "https://registry.starsight.dev/v1/company/{taxId}",
+      "id": "https://registry.stellarsight.xyz/v1/company/{taxId}",
       "resource": {
-        "url": "https://registry.starsight.dev/v1/company/{taxId}",
+        "url": "https://registry.stellarsight.xyz/v1/company/{taxId}",
         "serviceName": "Company Registry Enrichment",
         "tags": [
           "company",
@@ -211,7 +211,7 @@
           "enrichment",
           "brazil"
         ],
-        "iconUrl": "https://registry.starsight.dev/icon.png",
+        "iconUrl": "https://registry.stellarsight.xyz/icon.png",
         "description": "Resolves a Brazilian CNPJ tax id into registration status, primary and secondary activity codes, ownership structure and registered address. 24 h cache over the federal public registry."
       },
       "type": "http",
@@ -242,9 +242,9 @@
       "seeded": true
     },
     {
-      "id": "https://geo.starsight.dev/v1/postcode/{code}",
+      "id": "https://geo.stellarsight.xyz/v1/postcode/{code}",
       "resource": {
-        "url": "https://geo.starsight.dev/v1/postcode/{code}",
+        "url": "https://geo.stellarsight.xyz/v1/postcode/{code}",
         "serviceName": "Postal Code Geocoder",
         "tags": [
           "geocoding",
@@ -253,7 +253,7 @@
           "address",
           "logistics"
         ],
-        "iconUrl": "https://geo.starsight.dev/icon.png",
+        "iconUrl": "https://geo.stellarsight.xyz/icon.png",
         "description": "Brazilian CEP postal code to street, district, municipality, state and coordinates. National coverage, sub-40 ms response."
       },
       "type": "http",
@@ -283,9 +283,9 @@
       "seeded": true
     },
     {
-      "id": "https://nfe.starsight.dev/v1/parse",
+      "id": "https://nfe.stellarsight.xyz/v1/parse",
       "resource": {
-        "url": "https://nfe.starsight.dev/v1/parse",
+        "url": "https://nfe.stellarsight.xyz/v1/parse",
         "serviceName": "NF-e Invoice Reader",
         "tags": [
           "invoice",
@@ -295,7 +295,7 @@
           "tax",
           "brazil"
         ],
-        "iconUrl": "https://nfe.starsight.dev/icon.png",
+        "iconUrl": "https://nfe.stellarsight.xyz/icon.png",
         "description": "Reads a Brazilian electronic invoice (NF-e XML or DANFE PDF) and returns structured JSON: issuer, recipient, line items, CFOP codes, taxes and the 44-digit access key. Handles scanned invoices down to 150 dpi."
       },
       "type": "http",
@@ -326,9 +326,9 @@
       "seeded": true
     },
     {
-      "id": "https://slip.starsight.dev/v1/bank-slip",
+      "id": "https://slip.stellarsight.xyz/v1/bank-slip",
       "resource": {
-        "url": "https://slip.starsight.dev/v1/bank-slip",
+        "url": "https://slip.stellarsight.xyz/v1/bank-slip",
         "serviceName": "Bank Slip Parser",
         "tags": [
           "boleto",
@@ -337,7 +337,7 @@
           "payments",
           "validation"
         ],
-        "iconUrl": "https://slip.starsight.dev/icon.png",
+        "iconUrl": "https://slip.stellarsight.xyz/icon.png",
         "description": "Decodes a FEBRABAN boleto barcode or typeable line into issuing bank, due date, amount and check digits, with modulo 10/11 validation."
       },
       "type": "http",
@@ -367,9 +367,9 @@
       "seeded": true
     },
     {
-      "id": "https://pix.starsight.dev/mcp#reconcile_statement",
+      "id": "https://pix.stellarsight.xyz/mcp#reconcile_statement",
       "resource": {
-        "url": "https://pix.starsight.dev/mcp",
+        "url": "https://pix.stellarsight.xyz/mcp",
         "serviceName": "PIX Statement Reconciler",
         "tags": [
           "reconciliation",
@@ -379,7 +379,7 @@
           "finance",
           "accounting"
         ],
-        "iconUrl": "https://pix.starsight.dev/icon.png",
+        "iconUrl": "https://pix.stellarsight.xyz/icon.png",
         "description": "MCP tool that matches PIX bank statement lines against open receivables by amount, date and key, returning unmatched entries ranked by confidence."
       },
       "type": "mcp",
@@ -420,9 +420,9 @@
       "seeded": true
     },
     {
-      "id": "https://speech.starsight.dev/v1/transcribe",
+      "id": "https://speech.stellarsight.xyz/v1/transcribe",
       "resource": {
-        "url": "https://speech.starsight.dev/v1/transcribe",
+        "url": "https://speech.stellarsight.xyz/v1/transcribe",
         "serviceName": "Brazilian Speech-to-Text",
         "tags": [
           "audio",
@@ -432,7 +432,7 @@
           "diarization",
           "ai"
         ],
-        "iconUrl": "https://speech.starsight.dev/icon.png",
+        "iconUrl": "https://speech.stellarsight.xyz/icon.png",
         "description": "Brazilian audio to text with speaker diarization, word-level timestamps and a call-centre vocabulary. Accepts wav, mp3 and ogg."
       },
       "type": "http",
@@ -463,9 +463,9 @@
       "seeded": true
     },
     {
-      "id": "https://docs.starsight.dev/v1/ocr",
+      "id": "https://docs.stellarsight.xyz/v1/ocr",
       "resource": {
-        "url": "https://docs.starsight.dev/v1/ocr",
+        "url": "https://docs.stellarsight.xyz/v1/ocr",
         "serviceName": "Identity Document OCR",
         "tags": [
           "ocr",
@@ -474,7 +474,7 @@
           "kyc",
           "vision"
         ],
-        "iconUrl": "https://docs.starsight.dev/icon.png",
+        "iconUrl": "https://docs.stellarsight.xyz/icon.png",
         "description": "Reads national id cards, driving licences and proof-of-address documents, returning normalized fields plus a per-field tamper score."
       },
       "type": "http",
@@ -504,11 +504,11 @@
       "seeded": true
     },
     {
-      "id": "https://mcp.starsight.example/mcp#search_catalog",
+      "id": "https://mcp.stellarsight.example/mcp#search_catalog",
       "resource": {
-        "url": "https://mcp.starsight.example/mcp",
-        "serviceName": "STARSIGHT Catalog MCP",
-        "description": "Search the STARSIGHT bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.",
+        "url": "https://mcp.stellarsight.example/mcp",
+        "serviceName": "STELLARSIGHT Catalog MCP",
+        "description": "Search the STELLARSIGHT bazaar catalog for paid x402 resources on Stellar by natural-language description, returning ranked results with pricing.",
         "tags": [
           "mcp",
           "discovery",
@@ -516,7 +516,7 @@
           "x402",
           "tools"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/starsight.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/stellarsight.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -579,7 +579,7 @@
           "rates",
           "market-data"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/fx.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/fx.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -628,9 +628,9 @@
       "seeded": true
     },
     {
-      "id": "https://legal.starsight.dev/mcp#extract_clauses",
+      "id": "https://legal.stellarsight.xyz/mcp#extract_clauses",
       "resource": {
-        "url": "https://legal.starsight.dev/mcp",
+        "url": "https://legal.stellarsight.xyz/mcp",
         "serviceName": "Contract Clause Extractor",
         "tags": [
           "legal",
@@ -640,7 +640,7 @@
           "nlp",
           "documents"
         ],
-        "iconUrl": "https://legal.starsight.dev/icon.png",
+        "iconUrl": "https://legal.stellarsight.xyz/icon.png",
         "description": "MCP tool that locates termination, penalty, jurisdiction and price-adjustment clauses in long-form contracts, returning the literal span and its offset in the document."
       },
       "type": "mcp",
@@ -691,7 +691,7 @@
           "transactions",
           "tools"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/mcp.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/mcp.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -755,7 +755,7 @@
           "brazil",
           "geo"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/address.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/address.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -815,7 +815,7 @@
           "simulation",
           "tools"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/mcp.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/mcp.svg"
       },
       "type": "mcp",
       "network": "stellar:testnet",
@@ -881,7 +881,7 @@
           "brl",
           "oracle"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/usdc.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/usdc.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -924,9 +924,9 @@
       "seeded": true
     },
     {
-      "id": "https://sped.starsight.dev/v1/validate",
+      "id": "https://sped.stellarsight.xyz/v1/validate",
       "resource": {
-        "url": "https://sped.starsight.dev/v1/validate",
+        "url": "https://sped.stellarsight.xyz/v1/validate",
         "serviceName": "Tax Filing Validator",
         "tags": [
           "tax",
@@ -935,7 +935,7 @@
           "compliance",
           "validation"
         ],
-        "iconUrl": "https://sped.starsight.dev/icon.png",
+        "iconUrl": "https://sped.stellarsight.xyz/icon.png",
         "description": "Validates SPED EFD ICMS/IPI blocks and records, reporting line, record type and violated rule before the file is filed with the tax authority."
       },
       "type": "http",
@@ -978,7 +978,7 @@
           "identity",
           "brazil"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/pix.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/pix.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1078,7 +1078,7 @@
           "climate",
           "brazil"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/weather.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/weather.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1193,7 +1193,7 @@
           "tax",
           "extraction"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/ocr.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/ocr.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1255,7 +1255,7 @@
           "language",
           "ai"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/translate.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/translate.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1321,7 +1321,7 @@
           "price-feed",
           "stellar"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/oracle.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/oracle.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1365,7 +1365,7 @@
           "brazil",
           "compliance"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/company.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/company.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1422,7 +1422,7 @@
           "security",
           "payments"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/risk.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/risk.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1462,7 +1462,7 @@
           "payments",
           "qrcode"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/qrcode.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/qrcode.svg"
       },
       "type": "http",
       "network": "stellar:testnet",
@@ -1661,7 +1661,7 @@
           "address",
           "lookup"
         ],
-        "iconUrl": "https://cdn.starsight.build/icons/geo.svg"
+        "iconUrl": "https://cdn.stellarsight.build/icons/geo.svg"
       },
       "type": "http",
       "network": "stellar:testnet",

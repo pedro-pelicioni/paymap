@@ -348,7 +348,7 @@ function warnAboutUndocumentedPathParams(declaration, path, method, logger) {
 
   const example = missing.map((n) => `${n}: '…'`).join(", ");
   logger.warn(
-    `[starsight] ${method} ${path} takes ${missing.length === 1 ? "a path parameter" : "path parameters"} ` +
+    `[stellarsight] ${method} ${path} takes ${missing.length === 1 ? "a path parameter" : "path parameters"} ` +
       `(${missing.map((n) => `:${n}`).join(", ")}) that this route does not document. ` +
       `\`input\` is published as queryParams, so an agent reading the bazaar would call ` +
       `${path}?${missing.map((n) => `${n}=…`).join("&")} with the placeholder still in the URL. ` +
@@ -368,7 +368,7 @@ function normalizeTags(value, logger) {
   const tags = value.map((t) => String(t));
   if (tags.length > 5) {
     logger.warn(
-      `[starsight] this route declares ${tags.length} tags; the bazaar keeps at most 5, so ${tags.slice(5).join(", ")} will be dropped by the index.`,
+      `[stellarsight] this route declares ${tags.length} tags; the bazaar keeps at most 5, so ${tags.slice(5).join(", ")} will be dropped by the index.`,
     );
   }
   return tags;
@@ -378,7 +378,7 @@ function normalizeServiceName(value, logger) {
   const name = optionalString(value);
   if (name && name.length > 32) {
     logger.warn(
-      `[starsight] serviceName ${JSON.stringify(name)} is ${name.length} characters; the bazaar drops names longer than 32, so this route will be listed without one.`,
+      `[stellarsight] serviceName ${JSON.stringify(name)} is ${name.length} characters; the bazaar drops names longer than 32, so this route will be listed without one.`,
     );
   }
   return name ?? undefined;

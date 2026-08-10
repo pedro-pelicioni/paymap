@@ -1,11 +1,11 @@
 {
-  "name": "@starsight/agent",
+  "name": "@stellarsight/agent",
   "version": "0.1.0",
   "type": "module",
-  "description": "STARSIGHT agent surface — MCP server + x402 payment client for the Stellar Bazaar",
+  "description": "STELLARSIGHT agent surface — MCP server + x402 payment client for the Stellar Bazaar",
   "bin": {
-    "starsight-mcp": "./src/mcp-server.mjs",
-    "starsight": "./src/cli.mjs"
+    "stellarsight-mcp": "./src/mcp-server.mjs",
+    "stellarsight": "./src/cli.mjs"
   },
   "exports": {
     ".": "./src/pay.mjs",
@@ -27,16 +27,16 @@
     "model-context-protocol",
     "agent-payments",
     "bazaar",
-    "starsight"
+    "stellarsight"
   ],
-  "homepage": "https://github.com/pedro-pelicioni/starsight/tree/main/apps/agent#readme",
+  "homepage": "https://github.com/pedro-pelicioni/stellarsight/tree/main/apps/agent#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pedro-pelicioni/starsight.git",
+    "url": "git+https://github.com/pedro-pelicioni/stellarsight.git",
     "directory": "apps/agent"
   },
   "bugs": {
-    "url": "https://github.com/pedro-pelicioni/starsight/issues"
+    "url": "https://github.com/pedro-pelicioni/stellarsight/issues"
   },
   "publishConfig": {
     "access": "public"

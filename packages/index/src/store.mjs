@@ -53,16 +53,16 @@
  *
  * Storage layout — a single Redis HASH, `id -> JSON(record)`:
  *
- *   HGETALL starsight:catalog:v1            read the whole catalog (one round trip)
- *   HSET    starsight:catalog:v1 <id> <json>  upsert one record
- *   HDEL    starsight:catalog:v1 <id>         remove one record
+ *   HGETALL stellarsight:catalog:v1            read the whole catalog (one round trip)
+ *   HSET    stellarsight:catalog:v1 <id> <json>  upsert one record
+ *   HDEL    stellarsight:catalog:v1 <id>         remove one record
  *
  * A hash rather than one JSON blob because HSET on a field is atomic: two lambda
  * instances cataloging different resources at the same moment cannot clobber each other,
  * which a read-modify-write of a single key absolutely would.
  */
 
-export const DEFAULT_STORE_KEY = 'starsight:catalog:v1';
+export const DEFAULT_STORE_KEY = 'stellarsight:catalog:v1';
 const DEFAULT_TIMEOUT_MS = 4000;
 /** Short by design: a hung connect is worse than a seeded fallback. */
 const DEFAULT_CONNECT_TIMEOUT_MS = 2000;
@@ -119,8 +119,8 @@ function scrubbed(value, secrets = []) {
  */
 export function readStoreConfig(env = process.env) {
   const e = env ?? {};
-  const key = trimmed(e.STARSIGHT_KV_KEY) || DEFAULT_STORE_KEY;
-  const timeoutMs = positiveInt(e.STARSIGHT_KV_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
+  const key = trimmed(e.STELLARSIGHT_KV_KEY) || DEFAULT_STORE_KEY;
+  const timeoutMs = positiveInt(e.STELLARSIGHT_KV_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
 
   const restUrl = trimmed(e.KV_REST_API_URL) || trimmed(e.UPSTASH_REDIS_REST_URL);
   const restToken = trimmed(e.KV_REST_API_TOKEN) || trimmed(e.UPSTASH_REDIS_REST_TOKEN);
@@ -155,7 +155,7 @@ export function readStoreConfig(env = process.env) {
         url: redisUrl,
         key,
         timeoutMs,
-        connectTimeoutMs: positiveInt(e.STARSIGHT_REDIS_CONNECT_TIMEOUT_MS, DEFAULT_CONNECT_TIMEOUT_MS),
+        connectTimeoutMs: positiveInt(e.STELLARSIGHT_REDIS_CONNECT_TIMEOUT_MS, DEFAULT_CONNECT_TIMEOUT_MS),
         // `URL.host` is `hostname[:port]` — no scheme, no username, no password.
         host: parsed.host,
         // Held only so error strings can be scrubbed of it; never returned, never logged.

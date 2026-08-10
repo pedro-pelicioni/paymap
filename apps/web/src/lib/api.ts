@@ -8,7 +8,7 @@ import type {
   ExplainKey,
   IntegrityEntry,
   IntegrityProvenance,
-  StarsightRecord,
+  StellarsightRecord,
   TxEntry,
   WireRecord,
 } from './types'
@@ -66,7 +66,7 @@ async function getJSON(path: string): Promise<unknown> {
  *
  * `resources` comes FIRST deliberately: the two discovery envelopes differ on purpose —
  * `SearchDiscoveryResourcesResponse` names the array `resources` while
- * `DiscoveryResourcesResponse` names it `items`. STARSIGHT's search endpoint currently
+ * `DiscoveryResourcesResponse` names it `items`. STELLARSIGHT's search endpoint currently
  * emits both (`items` is a deprecated duplicate alias of the same array for one
  * release), so preferring `resources` reads the spec key wherever it exists and falls
  * back to `items` for the list endpoint and the baked fixture.
@@ -226,14 +226,14 @@ function normalizeExplain(raw: unknown, score?: unknown): Explain | undefined {
  * `PaymentRequirements` calls the price `amount`, not `maxAmountRequired`. The fixture
  * (and any pre-projection record) uses the old block shape. Read whichever is there.
  */
-function sane(r: WireRecord): StarsightRecord {
+function sane(r: WireRecord): StellarsightRecord {
   const block = r?.resource && typeof r.resource === 'object' ? r.resource : undefined
   const url =
     (typeof r?.resource === 'string' ? r.resource : block?.url) || r?.id || 'unknown://resource'
 
   const offer = Array.isArray(r?.accepts) ? (r.accepts[0] ?? {}) : {}
   const tags = r?.tags ?? block?.tags
-  // `lastUpdated` is ISO 8601 (spec); `lastSeenAt` is epoch ms (STARSIGHT-native).
+  // `lastUpdated` is ISO 8601 (spec); `lastSeenAt` is epoch ms (STELLARSIGHT-native).
   const seenAt =
     Number(r?.lastSeenAt) || (r?.lastUpdated ? Date.parse(r.lastUpdated) : NaN) || Date.now()
 
@@ -244,8 +244,8 @@ function sane(r: WireRecord): StarsightRecord {
       : undefined
 
   const explain = normalizeExplain(r?._explain, r?._score)
-  const out: StarsightRecord = {
-    ...(r as Partial<StarsightRecord>),
+  const out: StellarsightRecord = {
+    ...(r as Partial<StellarsightRecord>),
     id: r?.id ?? url,
     resource: {
       url,
@@ -278,7 +278,7 @@ function sane(r: WireRecord): StarsightRecord {
  * Fixtures go stale the moment they are written. Slide every timestamp forward so
  * the recency signal still reads as a live catalog during the demo.
  */
-function rebase(items: StarsightRecord[]): StarsightRecord[] {
+function rebase(items: StellarsightRecord[]): StellarsightRecord[] {
   const newest = items.reduce((a, r) => Math.max(a, r.lastSeenAt || 0), 0)
   const delta = Date.now() - newest
   if (!newest || delta < 60_000) return items
@@ -360,7 +360,7 @@ export async function loadCatalog(): Promise<Catalog> {
 }
 
 export type SearchOutcome = {
-  items: StarsightRecord[]
+  items: StellarsightRecord[]
   source: 'live' | 'demo'
   partialResults: boolean
   tookMs: number
@@ -372,7 +372,7 @@ export type SearchOutcome = {
  */
 export async function search(
   query: string,
-  fallback: StarsightRecord[],
+  fallback: StellarsightRecord[],
   live: boolean,
 ): Promise<SearchOutcome> {
   const started = performance.now()
@@ -387,7 +387,7 @@ export async function search(
           r._explain?.parts?.length ? r : { ...r, ...rank(query, [r])[0], _rank: i },
         )
         return {
-          items: explained as StarsightRecord[],
+          items: explained as StellarsightRecord[],
           source: 'live',
           partialResults: Boolean((payload as { partialResults?: boolean })?.partialResults),
           tookMs: performance.now() - started,

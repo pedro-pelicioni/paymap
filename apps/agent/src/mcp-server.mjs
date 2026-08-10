@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * STARSIGHT — MCP server (stdio).
+ * STELLARSIGHT — MCP server (stdio).
  *
  * Puts the Stellar Bazaar inside an AI agent's runtime: the agent can search for
  * a paid resource, read its full call contract, and actually pay for it over
@@ -15,7 +15,7 @@
  * Contract with the caller:
  *   - Every tool resolves. Nothing throws out of a handler.
  *   - Success  -> { ok:true,  ... }
- *   - Failure  -> { ok:false, code:<STARSIGHT_*>, reason:<non-null human sentence> }
+ *   - Failure  -> { ok:false, code:<STELLARSIGHT_*>, reason:<non-null human sentence> }
  *   - Result carries both `structuredContent` (machine) and a JSON text block (model).
  *
  * stdout is the MCP transport — every diagnostic goes to stderr, never stdout.
@@ -51,7 +51,7 @@ function guarded(toolName, handler) {
       const out = await handler(args ?? {}, extra);
       if (!out || typeof out !== 'object' || typeof out.ok !== 'boolean') {
         return toResult(
-          fail('STARSIGHT_UPSTREAM_ERROR', `${toolName} produced a malformed internal result; nothing was paid.`)
+          fail('STELLARSIGHT_UPSTREAM_ERROR', `${toolName} produced a malformed internal result; nothing was paid.`)
         );
       }
       // Invariant: a rejection always carries a non-null reason.
@@ -59,7 +59,7 @@ function guarded(toolName, handler) {
       return toResult(out);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err ?? 'unknown error');
-      return toResult(fail('STARSIGHT_UPSTREAM_ERROR', `${toolName} threw an unexpected error: ${msg}`));
+      return toResult(fail('STELLARSIGHT_UPSTREAM_ERROR', `${toolName} threw an unexpected error: ${msg}`));
     }
   };
 }
@@ -97,21 +97,21 @@ const resourceSummary = z
  * ------------------------------------------------------------------ */
 export function createServer() {
   const server = new McpServer(
-    { name: 'starsight', version: VERSION, title: 'STARSIGHT — find what to pay for on Stellar' },
+    { name: 'stellarsight', version: VERSION, title: 'STELLARSIGHT — find what to pay for on Stellar' },
     {
       instructions:
-        'STARSIGHT exposes the Stellar Bazaar: a discovery index of x402-priced HTTP and MCP resources on ' +
-        'stellar:testnet. Workflow: starsight_search (natural language) -> starsight_describe ' +
-        '(exact call contract for one id) -> starsight_pay (runs the 402 challenge, signs the Soroban auth ' +
+        'STELLARSIGHT exposes the Stellar Bazaar: a discovery index of x402-priced HTTP and MCP resources on ' +
+        'stellar:testnet. Workflow: stellarsight_search (natural language) -> stellarsight_describe ' +
+        '(exact call contract for one id) -> stellarsight_pay (runs the 402 challenge, signs the Soroban auth ' +
         'entry with the operator PAYER key, retries, returns the unlocked payload plus the settled tx hash). ' +
-        'Use starsight_browse to enumerate the catalogue. Every rejection returns ok:false with a STARSIGHT_* ' +
+        'Use stellarsight_browse to enumerate the catalogue. Every rejection returns ok:false with a STELLARSIGHT_* ' +
         'code and a non-null reason — read the reason before retrying.'
     }
   );
 
-  /* -- starsight_search --------------------------------------------- */
+  /* -- stellarsight_search --------------------------------------------- */
   server.registerTool(
-    'starsight_search',
+    'stellarsight_search',
     {
       title: 'Search the Stellar Bazaar',
       description:
@@ -137,14 +137,14 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('starsight_search', (a) =>
+    guarded('stellarsight_search', (a) =>
       search({ query: a.query, limit: a.limit ?? 5, network: a.network, maxPrice: a.maxPrice })
     )
   );
 
-  /* -- starsight_browse --------------------------------------------- */
+  /* -- stellarsight_browse --------------------------------------------- */
   server.registerTool(
-    'starsight_browse',
+    'stellarsight_browse',
     {
       title: 'Browse the Stellar Bazaar catalogue',
       description:
@@ -167,25 +167,25 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('starsight_browse', (a) =>
+    guarded('stellarsight_browse', (a) =>
       browse({ type: a.type, payTo: a.payTo, network: a.network, limit: a.limit ?? 20, offset: a.offset ?? 0 })
     )
   );
 
-  /* -- starsight_describe ------------------------------------------- */
+  /* -- stellarsight_describe ------------------------------------------- */
   server.registerTool(
-    'starsight_describe',
+    'stellarsight_describe',
     {
       title: 'Describe one bazaar resource',
       description:
         'Full discovery metadata for a single resource id, including every input parameter with its type and ' +
         'description, the output shape, the route template and the price. Enough to construct a valid call ' +
-        'with no external documentation. Call this before starsight_pay when unsure of the parameters.',
+        'with no external documentation. Call this before stellarsight_pay when unsure of the parameters.',
       inputSchema: {
         id: z
           .string()
           .min(1)
-          .describe('Resource id from starsight_search / starsight_browse (the resource URL, or url#toolName for MCP).')
+          .describe('Resource id from stellarsight_search / stellarsight_browse (the resource URL, or url#toolName for MCP).')
       },
       outputSchema: {
         ...errorShape,
@@ -220,22 +220,22 @@ export function createServer() {
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
-    guarded('starsight_describe', (a) => describe({ id: a.id }))
+    guarded('stellarsight_describe', (a) => describe({ id: a.id }))
   );
 
-  /* -- starsight_pay ------------------------------------------------ */
+  /* -- stellarsight_pay ------------------------------------------------ */
   server.registerTool(
-    'starsight_pay',
+    'stellarsight_pay',
     {
       title: 'Pay for and fetch a resource (x402 on Stellar)',
       description:
         'Run the complete x402 loop against a paid URL: request, receive the 402 challenge, sign the Soroban ' +
         'auth entry with the operator PAYER key, retry with the payment header, and return the unlocked body ' +
         'plus the settled transaction hash and its stellar.expert link. Spends real testnet funds. Set ' +
-        'maxPrice to cap what may be spent — the call is refused with STARSIGHT_PRICE_EXCEEDS_BUDGET if the ' +
+        'maxPrice to cap what may be spent — the call is refused with STELLARSIGHT_PRICE_EXCEEDS_BUDGET if the ' +
         'resource asks for more. If the resource turns out to be free, the body is returned with paid:false.',
       inputSchema: {
-        url: z.string().min(1).describe('Absolute URL of the paid resource (from starsight_search / describe).'),
+        url: z.string().min(1).describe('Absolute URL of the paid resource (from stellarsight_search / describe).'),
         params: z
           .record(z.unknown())
           .optional()
@@ -268,7 +268,7 @@ export function createServer() {
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
-    guarded('starsight_pay', async (a) => {
+    guarded('stellarsight_pay', async (a) => {
       const res = await payAndFetch(a.url, {
         params: a.params,
         method: a.method ?? 'GET',
@@ -291,19 +291,19 @@ async function main() {
   const cfg = loadConfig();
   // Diagnostics on stderr only — stdout belongs to the JSON-RPC transport.
   process.stderr.write(
-    `[starsight] mcp server v${VERSION} | network=${cfg.network} | index=${cfg.indexUrl} | ` +
-      `payer=${cfg.payerPublic || (cfg.payerSecret ? 'set' : 'MISSING — starsight_pay will return STARSIGHT_CONFIG_MISSING')}\n`
+    `[stellarsight] mcp server v${VERSION} | network=${cfg.network} | index=${cfg.indexUrl} | ` +
+      `payer=${cfg.payerPublic || (cfg.payerSecret ? 'set' : 'MISSING — stellarsight_pay will return STELLARSIGHT_CONFIG_MISSING')}\n`
   );
 
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write('[starsight] ready on stdio\n');
+  process.stderr.write('[stellarsight] ready on stdio\n');
 }
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   main().catch((err) => {
-    process.stderr.write(`[starsight] fatal: ${err instanceof Error ? err.stack : String(err)}\n`);
+    process.stderr.write(`[stellarsight] fatal: ${err instanceof Error ? err.stack : String(err)}\n`);
     process.exit(1);
   });
 }

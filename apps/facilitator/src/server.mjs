@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * STARSIGHT — self-hosted x402 facilitator (RFP 3.1 "self-facilitation").
+ * STELLARSIGHT — self-hosted x402 facilitator (RFP 3.1 "self-facilitation").
  *
  * We run our OWN facilitator. There is no dependency on any third-party relayer —
  * in particular NOT on the OpenZeppelin Channels relayer, which is AGPL and therefore
@@ -70,7 +70,7 @@ try {
 } catch (e) {
   usingIndexStub = true;
   console.warn(`[facilitator] packages/index unavailable (${e.message}) — using in-memory stub`);
-  // TODO(starsight): remove this stub once packages/index ships. Same public API,
+  // TODO(stellarsight): remove this stub once packages/index ships. Same public API,
   // naive substring matching instead of BM25.
   indexPkg = {
     createCatalog() {
@@ -324,7 +324,7 @@ function toCatalogRecord(paymentPayload, paymentRequirements, discovery) {
     id,
     resource: {
       url,
-      serviceName: resourceInfo.serviceName ?? meta.serviceName ?? "starsight-seller",
+      serviceName: resourceInfo.serviceName ?? meta.serviceName ?? "stellarsight-seller",
       tags: resourceInfo.tags ?? discovery?.tags ?? meta.tags ?? [],
       iconUrl: resourceInfo.iconUrl ?? discovery?.iconUrl ?? meta.iconUrl,
       description: resourceInfo.description ?? paymentRequirements?.description ?? "",
@@ -357,7 +357,7 @@ app.use(express.json({ limit: "2mb" }));
 app.get("/health", (_req, res) => {
   res.json({
     ok: true,
-    service: "starsight-facilitator",
+    service: "stellarsight-facilitator",
     network: NETWORK,
     asset: ASSET_SAC,
     assetCode: ASSET_CODE,
@@ -570,7 +570,7 @@ indexApp.use(express.json({ limit: "2mb" }));
 indexApp.get("/health", (_req, res) =>
   res.json({
     ok: true,
-    service: "starsight-index",
+    service: "stellarsight-index",
     backend: usingIndexStub ? "stub" : "packages/index",
     size: catalog.size(),
   }),

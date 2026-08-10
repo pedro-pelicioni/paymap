@@ -1,7 +1,7 @@
 {
-  "name": "starsight",
+  "name": "stellarsight",
   "version": "1.0.0",
-  "description": "STARSIGHT — find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
+  "description": "STELLARSIGHT — find what to pay for on Stellar. Self-hosted x402 facilitator, paid API seller and a bazaar discovery index.",
   "type": "module",
   "private": true,
   "license": "Apache-2.0",

@@ -1,24 +1,24 @@
-# @starsight/express
+# @stellarsight/express
 
 x402 paywall middleware for Express. Put a price on any route, take payment in a Stellar
-token, and have the route listed in the STARSIGHT bazaar **before** its first payment.
+token, and have the route listed in the STELLARSIGHT bazaar **before** its first payment.
 
 You do not need to fork anything. This is a package you install into your own repo.
 
 ```bash
-npm install @starsight/express express @x402/core @x402/extensions
+npm install @stellarsight/express express @x402/core @x402/extensions
 ```
 
 ## 60 seconds
 
 ```js
 import express from 'express'
-import { starsightPaywall } from '@starsight/express'
+import { stellarsightPaywall } from '@stellarsight/express'
 
 const app = express()
 app.use(express.json())
 
-const pay = starsightPaywall({
+const pay = stellarsightPaywall({
   facilitator: 'http://localhost:4021',   // where /verify and /settle live
   payTo:   process.env.SELLER_PUBLIC,     // G... — who gets the money
   asset:   process.env.ASSET_SAC,         // C... — the SEP-41 / SAC token you price in
@@ -42,7 +42,7 @@ app.get('/v1/weather/:city', pay('/v1/weather/:city', {
   },
   output: { example: { city: 'sao-paulo', tempC: 21.4 } },
 }), (req, res) => {
-  res.json({ city: req.params.city, tempC: 21.4, paidWith: req.starsight.transaction })
+  res.json({ city: req.params.city, tempC: 21.4, paidWith: req.stellarsight.transaction })
 })
 
 // Your machine-readable catalogue, served from your own server.
@@ -80,12 +80,12 @@ somebody happens to hit the route", and a parameterised path is also used as the
    server's own requirements.
 5. `POST {facilitator}/verify`, then `POST {facilitator}/settle`.
 6. On success, forwards `PAYMENT-RESPONSE` (plus the v1 `X-PAYMENT-RESPONSE`) and any
-   `EXTENSION-RESPONSES` header, populates `req.starsight` and `req.x402`, and calls `next()`.
+   `EXTENSION-RESPONSES` header, populates `req.stellarsight` and `req.x402`, and calls `next()`.
 
 **Every rejection carries a non-null, human-readable `error`.** When the facilitator rejects
 without saying why, the middleware substitutes a sentence rather than emitting `null`.
 
-## `req.starsight`
+## `req.stellarsight`
 
 ```js
 {
@@ -101,7 +101,7 @@ without saying why, the middleware substitutes a sentence rather than emitting `
 ```
 
 `req.x402` is the raw settle response, kept for compatibility with handlers written against
-the STARSIGHT reference seller.
+the STELLARSIGHT reference seller.
 
 ## Discovery
 
@@ -165,7 +165,7 @@ app.post('/v1/ocr', pay('/v1/ocr', { method: 'POST', price: '0.05', input: { ima
 | `extra` | `{}` | merged into `PaymentRequirements.extra` |
 | `mimeType` | `'application/json'` | advertised response type |
 | `facilitatorTimeoutMs` / `indexTimeoutMs` | `15000` / `5000` | request timeouts |
-| `onSettled(starsight, req)` | – | called after a successful settlement; throwing is logged, never fails the request |
+| `onSettled(stellarsight, req)` | – | called after a successful settlement; throwing is logged, never fails the request |
 | `onRejected({reason, route}, req)` | – | called on every 402 |
 | `fetch` | `globalThis.fetch` | injectable, for tests |
 | `logger` | `console` | pass `false` to silence |
@@ -197,7 +197,7 @@ Browser agents can only read the x402 headers if they are explicitly exposed:
 
 ```js
 import cors from 'cors'
-import { x402CorsOptions } from '@starsight/express'
+import { x402CorsOptions } from '@stellarsight/express'
 app.use(cors(x402CorsOptions()))
 ```
 

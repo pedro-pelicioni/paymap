@@ -159,7 +159,7 @@ function main() {
 
   const files = discover(targets);
 
-  console.log(`\nSTARSIGHT test runner — discovered ${files.length} test file(s):`);
+  console.log(`\nSTELLARSIGHT test runner — discovered ${files.length} test file(s):`);
   for (const file of files) console.log(`  • ${path.relative(ROOT, file)}`);
   console.log('');
 
@@ -172,7 +172,7 @@ function main() {
 
   if (listOnly) process.exit(0);
 
-  const reportDir = mkdtempSync(path.join(tmpdir(), 'starsight-test-'));
+  const reportDir = mkdtempSync(path.join(tmpdir(), 'stellarsight-test-'));
   const reportPath = path.join(reportDir, 'results.tap');
 
   const args = [
@@ -204,7 +204,7 @@ function main() {
 
     if (counts) {
       console.log(
-        `\nSTARSIGHT totals across ${files.length} file(s): ` +
+        `\nSTELLARSIGHT totals across ${files.length} file(s): ` +
           `${counts.tests} test(s) — ${counts.passed} passed, ` +
           `${counts.failures} failed, ${counts.skipped} skipped.`,
       );
@@ -219,7 +219,7 @@ function main() {
       exitCode = 1;
     }
 
-    console.log(exitCode === 0 ? 'STARSIGHT test run: PASS\n' : 'STARSIGHT test run: FAIL\n');
+    console.log(exitCode === 0 ? 'STELLARSIGHT test run: PASS\n' : 'STELLARSIGHT test run: FAIL\n');
     process.exit(exitCode);
   });
 }

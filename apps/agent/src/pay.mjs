@@ -1,5 +1,5 @@
 /**
- * STARSIGHT — reusable x402 payment client for AI agent runtimes.
+ * STELLARSIGHT — reusable x402 payment client for AI agent runtimes.
  *
  * Wraps the full discover -> 402 -> sign -> retry -> settle loop behind one call.
  * Never throws for protocol/network failure: always resolves to a structured
@@ -35,23 +35,23 @@ export const REPO_ROOT = path.resolve(HERE, '..', '..', '..');
  * Every rejection carries a NON-NULL `reason` (RFP acceptance criterion).
  * ------------------------------------------------------------------ */
 export const ERROR_CODES = Object.freeze({
-  STARSIGHT_CONFIG_MISSING: 'STARSIGHT_CONFIG_MISSING',
-  STARSIGHT_BAD_REQUEST: 'STARSIGHT_BAD_REQUEST',
-  STARSIGHT_INDEX_UNREACHABLE: 'STARSIGHT_INDEX_UNREACHABLE',
-  STARSIGHT_INDEX_ERROR: 'STARSIGHT_INDEX_ERROR',
-  STARSIGHT_NO_RESULTS: 'STARSIGHT_NO_RESULTS',
-  STARSIGHT_NOT_FOUND: 'STARSIGHT_NOT_FOUND',
-  STARSIGHT_RESOURCE_UNREACHABLE: 'STARSIGHT_RESOURCE_UNREACHABLE',
-  STARSIGHT_402_MALFORMED: 'STARSIGHT_402_MALFORMED',
-  STARSIGHT_UNSUPPORTED_NETWORK: 'STARSIGHT_UNSUPPORTED_NETWORK',
-  STARSIGHT_PRICE_EXCEEDS_BUDGET: 'STARSIGHT_PRICE_EXCEEDS_BUDGET',
-  STARSIGHT_SIGN_FAILED: 'STARSIGHT_SIGN_FAILED',
-  STARSIGHT_INSUFFICIENT_BALANCE: 'STARSIGHT_INSUFFICIENT_BALANCE',
-  STARSIGHT_REPLAY_REJECTED: 'STARSIGHT_REPLAY_REJECTED',
-  STARSIGHT_AUTH_EXPIRED: 'STARSIGHT_AUTH_EXPIRED',
-  STARSIGHT_SETTLE_FAILED: 'STARSIGHT_SETTLE_FAILED',
-  STARSIGHT_UPSTREAM_ERROR: 'STARSIGHT_UPSTREAM_ERROR',
-  STARSIGHT_TIMEOUT: 'STARSIGHT_TIMEOUT'
+  STELLARSIGHT_CONFIG_MISSING: 'STELLARSIGHT_CONFIG_MISSING',
+  STELLARSIGHT_BAD_REQUEST: 'STELLARSIGHT_BAD_REQUEST',
+  STELLARSIGHT_INDEX_UNREACHABLE: 'STELLARSIGHT_INDEX_UNREACHABLE',
+  STELLARSIGHT_INDEX_ERROR: 'STELLARSIGHT_INDEX_ERROR',
+  STELLARSIGHT_NO_RESULTS: 'STELLARSIGHT_NO_RESULTS',
+  STELLARSIGHT_NOT_FOUND: 'STELLARSIGHT_NOT_FOUND',
+  STELLARSIGHT_RESOURCE_UNREACHABLE: 'STELLARSIGHT_RESOURCE_UNREACHABLE',
+  STELLARSIGHT_402_MALFORMED: 'STELLARSIGHT_402_MALFORMED',
+  STELLARSIGHT_UNSUPPORTED_NETWORK: 'STELLARSIGHT_UNSUPPORTED_NETWORK',
+  STELLARSIGHT_PRICE_EXCEEDS_BUDGET: 'STELLARSIGHT_PRICE_EXCEEDS_BUDGET',
+  STELLARSIGHT_SIGN_FAILED: 'STELLARSIGHT_SIGN_FAILED',
+  STELLARSIGHT_INSUFFICIENT_BALANCE: 'STELLARSIGHT_INSUFFICIENT_BALANCE',
+  STELLARSIGHT_REPLAY_REJECTED: 'STELLARSIGHT_REPLAY_REJECTED',
+  STELLARSIGHT_AUTH_EXPIRED: 'STELLARSIGHT_AUTH_EXPIRED',
+  STELLARSIGHT_SETTLE_FAILED: 'STELLARSIGHT_SETTLE_FAILED',
+  STELLARSIGHT_UPSTREAM_ERROR: 'STELLARSIGHT_UPSTREAM_ERROR',
+  STELLARSIGHT_TIMEOUT: 'STELLARSIGHT_TIMEOUT'
 });
 
 /** Shape every failure takes. `reason` is never null and never empty. */
@@ -134,23 +134,23 @@ const clientCache = new Map();
 export function buildPaymentClient(cfg) {
   if (!cfg.payerSecret) {
     return fail(
-      'STARSIGHT_CONFIG_MISSING',
+      'STELLARSIGHT_CONFIG_MISSING',
       'PAYER_SECRET is not set. Run scripts/setup-testnet.mjs or export PAYER_SECRET=S... before paying.'
     );
   }
   if (!/^S[A-Z2-7]{55}$/.test(cfg.payerSecret)) {
     return fail(
-      'STARSIGHT_CONFIG_MISSING',
+      'STELLARSIGHT_CONFIG_MISSING',
       'PAYER_SECRET is not a valid Stellar ed25519 secret seed (expected 56 chars starting with S).'
     );
   }
   if (!String(cfg.network).startsWith('stellar:')) {
-    return fail('STARSIGHT_UNSUPPORTED_NETWORK', `Only Stellar CAIP-2 networks are supported, got "${cfg.network}".`);
+    return fail('STELLARSIGHT_UNSUPPORTED_NETWORK', `Only Stellar CAIP-2 networks are supported, got "${cfg.network}".`);
   }
   if (cfg.network === 'stellar:pubnet') {
     return fail(
-      'STARSIGHT_UNSUPPORTED_NETWORK',
-      'STARSIGHT is testnet-only in this build; refusing to sign on stellar:pubnet.'
+      'STELLARSIGHT_UNSUPPORTED_NETWORK',
+      'STELLARSIGHT is testnet-only in this build; refusing to sign on stellar:pubnet.'
     );
   }
 
@@ -167,7 +167,7 @@ export function buildPaymentClient(cfg) {
     clientCache.set(key, built);
     return built;
   } catch (err) {
-    return fail('STARSIGHT_CONFIG_MISSING', `Could not build the Stellar signer: ${errText(err)}`);
+    return fail('STELLARSIGHT_CONFIG_MISSING', `Could not build the Stellar signer: ${errText(err)}`);
   }
 }
 
@@ -209,10 +209,10 @@ export function requirementAmount(req) {
 /** Map a facilitator/seller failure string onto our enum. Always yields a code. */
 export function classifySettleFailure(reasonText) {
   const r = String(reasonText || '').toLowerCase();
-  if (/replay|already (used|paid|settled|attempted)|duplicate|nonce/.test(r)) return 'STARSIGHT_REPLAY_REJECTED';
-  if (/expire|expired|too late|ledger bounds|timebound|time bound|stale/.test(r)) return 'STARSIGHT_AUTH_EXPIRED';
-  if (/insufficient|balance|underfunded|trustline|no trust/.test(r)) return 'STARSIGHT_INSUFFICIENT_BALANCE';
-  return 'STARSIGHT_SETTLE_FAILED';
+  if (/replay|already (used|paid|settled|attempted)|duplicate|nonce/.test(r)) return 'STELLARSIGHT_REPLAY_REJECTED';
+  if (/expire|expired|too late|ledger bounds|timebound|time bound|stale/.test(r)) return 'STELLARSIGHT_AUTH_EXPIRED';
+  if (/insufficient|balance|underfunded|trustline|no trust/.test(r)) return 'STELLARSIGHT_INSUFFICIENT_BALANCE';
+  return 'STELLARSIGHT_SETTLE_FAILED';
 }
 
 const looksLikeTxHash = (s) => typeof s === 'string' && /^[0-9a-f]{64}$/i.test(s.trim());
@@ -257,13 +257,13 @@ export async function payAndFetch(url, opts = {}) {
   const timeoutMs = Number(opts.timeoutMs ?? 30000);
 
   if (!url || typeof url !== 'string') {
-    return done(fail('STARSIGHT_BAD_REQUEST', 'A `url` string is required.'));
+    return done(fail('STELLARSIGHT_BAD_REQUEST', 'A `url` string is required.'));
   }
   let target;
   try {
     target = withParams(url, opts.params, method);
   } catch {
-    return done(fail('STARSIGHT_BAD_REQUEST', `"${url}" is not a valid absolute URL.`));
+    return done(fail('STELLARSIGHT_BAD_REQUEST', `"${url}" is not a valid absolute URL.`));
   }
 
   const cfg = loadConfig(opts.config || {});
@@ -294,7 +294,7 @@ export async function payAndFetch(url, opts = {}) {
     const to = /abort|timeout/i.test(errText(err));
     return done(
       fail(
-        to ? 'STARSIGHT_TIMEOUT' : 'STARSIGHT_RESOURCE_UNREACHABLE',
+        to ? 'STELLARSIGHT_TIMEOUT' : 'STELLARSIGHT_RESOURCE_UNREACHABLE',
         to
           ? `The resource did not answer within ${timeoutMs}ms: ${target}`
           : `Could not reach the resource at ${target}: ${errText(err)}`
@@ -308,11 +308,11 @@ export async function payAndFetch(url, opts = {}) {
     if (first.status >= 400) {
       const hint =
         first.status === 404 || first.status === 405
-          ? ` The route may require a different HTTP method — call starsight_describe on this resource and use ` +
+          ? ` The route may require a different HTTP method — call stellarsight_describe on this resource and use ` +
             `howToCall.method (this request used ${method}).`
           : '';
       return done(
-        fail('STARSIGHT_UPSTREAM_ERROR', `Resource returned HTTP ${first.status} instead of a 402 challenge.${hint}`, {
+        fail('STELLARSIGHT_UPSTREAM_ERROR', `Resource returned HTTP ${first.status} instead of a 402 challenge.${hint}`, {
           status: first.status,
           body
         })
@@ -338,7 +338,7 @@ export async function payAndFetch(url, opts = {}) {
   } catch (err) {
     return done(
       fail(
-        'STARSIGHT_402_MALFORMED',
+        'STELLARSIGHT_402_MALFORMED',
         `The 402 response carried no decodable PAYMENT-REQUIRED header: ${errText(err)}. x402 v2 puts the ` +
           `PaymentRequired object in that header; a JSON body is only read when it declares x402Version 1.`,
         { status: 402, body: challengeBody }
@@ -349,7 +349,7 @@ export async function payAndFetch(url, opts = {}) {
   const accepts = Array.isArray(paymentRequired?.accepts) ? paymentRequired.accepts : [];
   if (accepts.length === 0) {
     return done(
-      fail('STARSIGHT_402_MALFORMED', 'The 402 challenge listed no `accepts` payment requirements.', { status: 402 })
+      fail('STELLARSIGHT_402_MALFORMED', 'The 402 challenge listed no `accepts` payment requirements.', { status: 402 })
     );
   }
 
@@ -357,7 +357,7 @@ export async function payAndFetch(url, opts = {}) {
   if (usable.length === 0) {
     return done(
       fail(
-        'STARSIGHT_UNSUPPORTED_NETWORK',
+        'STELLARSIGHT_UNSUPPORTED_NETWORK',
         `The resource accepts [${accepts.map((a) => `${a?.scheme}@${a?.network}`).join(', ')}] but this agent is ` +
           `configured for exact@${cfg.network}.`,
         { status: 402 }
@@ -386,12 +386,12 @@ export async function payAndFetch(url, opts = {}) {
     try {
       over = BigInt(price) > BigInt(String(opts.maxPrice));
     } catch {
-      return done(fail('STARSIGHT_BAD_REQUEST', `maxPrice "${opts.maxPrice}" is not an integer atomic amount.`));
+      return done(fail('STELLARSIGHT_BAD_REQUEST', `maxPrice "${opts.maxPrice}" is not an integer atomic amount.`));
     }
     if (over) {
       return done(
         fail(
-          'STARSIGHT_PRICE_EXCEEDS_BUDGET',
+          'STELLARSIGHT_PRICE_EXCEEDS_BUDGET',
           `The resource asks ${price} atomic units of ${chosen.asset} but the caller's budget is ${opts.maxPrice}.`,
           { status: 402, price, maxPrice: String(opts.maxPrice) }
         )
@@ -416,7 +416,7 @@ export async function payAndFetch(url, opts = {}) {
       paymentHeaders = { ...encoded, 'X-PAYMENT': value };
     } catch (err) {
       const msg = errText(err);
-      const code = /insufficient|balance|trustline/i.test(msg) ? 'STARSIGHT_INSUFFICIENT_BALANCE' : 'STARSIGHT_SIGN_FAILED';
+      const code = /insufficient|balance|trustline/i.test(msg) ? 'STELLARSIGHT_INSUFFICIENT_BALANCE' : 'STELLARSIGHT_SIGN_FAILED';
       timings.signMs = Date.now() - tSign;
       return done(
         fail(code, `Could not build/sign the Soroban auth entry for ${price} ${chosen.asset}: ${msg}`, { status: 402 })
@@ -444,7 +444,7 @@ export async function payAndFetch(url, opts = {}) {
     const to = /abort|timeout/i.test(errText(err));
     return done(
       fail(
-        to ? 'STARSIGHT_TIMEOUT' : 'STARSIGHT_RESOURCE_UNREACHABLE',
+        to ? 'STELLARSIGHT_TIMEOUT' : 'STELLARSIGHT_RESOURCE_UNREACHABLE',
         to
           ? `Settlement did not complete within ${timeoutMs}ms.`
           : `The paid retry could not reach ${target}: ${errText(err)}`
@@ -500,7 +500,7 @@ export async function payAndFetch(url, opts = {}) {
 
   if (second.status >= 400) {
     return done(
-      fail('STARSIGHT_UPSTREAM_ERROR', `The paid call returned HTTP ${second.status}.`, {
+      fail('STELLARSIGHT_UPSTREAM_ERROR', `The paid call returned HTTP ${second.status}.`, {
         status: second.status,
         body,
         settle,

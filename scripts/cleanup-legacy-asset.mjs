@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * STARSIGHT — legacy asset cleanup.
+ * STELLARSIGHT — legacy asset cleanup.
  *
  * An earlier run of scripts/setup-testnet.mjs issued a test asset under the
  * project's former name (PREGO). The project asset is now SXT, but the stale
@@ -237,7 +237,7 @@ function appendTxDoc() {
     const prev = readFileSync(TX_DOC_PATH, "utf8").trimEnd();
     writeFileSync(TX_DOC_PATH, `${prev}\n${rows}\n`, "utf8");
   } else {
-    const header = `# STARSIGHT — testnet transactions
+    const header = `# STELLARSIGHT — testnet transactions
 
 All transactions below are on **Stellar testnet**.
 
@@ -256,7 +256,7 @@ All transactions below are on **Stellar testnet**.
 const ROLES = ["ISSUER", "SELLER", "PAYER", "FEEPAYER"];
 
 async function main() {
-  log(`\nSTARSIGHT — legacy asset cleanup (keeping ${KEEP_CODE}, removing everything else)\n`);
+  log(`\nSTELLARSIGHT — legacy asset cleanup (keeping ${KEEP_CODE}, removing everything else)\n`);
   log(`   horizon ${HORIZON_URL}`);
   log(`   network ${NETWORK_PASSPHRASE}\n`);
 

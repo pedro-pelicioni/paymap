@@ -1,7 +1,7 @@
 {
-  "name": "@starsight/index",
+  "name": "@stellarsight/index",
   "version": "1.0.0",
-  "description": "STARSIGHT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
+  "description": "STELLARSIGHT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {

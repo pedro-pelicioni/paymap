@@ -1,5 +1,5 @@
 /**
- * packages/index/src/integrity.mjs — STARSIGHT: the catalog is a TRUST BOUNDARY.
+ * packages/index/src/integrity.mjs — STELLARSIGHT: the catalog is a TRUST BOUNDARY.
  *
  * Per the bazaar spec, the client echoes the `bazaar` extension (including the whole
  * `resource` block) from `PaymentRequired` into its `PaymentPayload`. The facilitator

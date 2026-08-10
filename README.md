@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="apps/web/public/assets/starsight-mark.svg" width="96" alt="STARSIGHT">
+<img src="apps/web/public/assets/stellarsight-mark.svg" width="96" alt="STELLARSIGHT">
 
-# STARSIGHT
+# STELLARSIGHT
 
 ### Find *what to pay for* on Stellar.
 
@@ -55,24 +55,24 @@ payment demo around it** so you can watch the missing part work.
 | `@x402/extensions/bazaar` implements them | ❌ **its own README states it ships only client and server helpers, and no facilitator-side catalog implementation** |
 | Stellar has a Bazaar | ❌ [`stellar/x402-stellar#50`](https://github.com/stellar/x402-stellar/issues/50) — *"Explore Bazaar support for Stellar"* — **open and unassigned since April 2026**. The SDF repo's Dockerfile still reads `bazaar not used` |
 
-An agent that can pay but cannot discover is an agent with a wallet and no map. STARSIGHT is
+An agent that can pay but cannot discover is an agent with a wallet and no map. STELLARSIGHT is
 the map.
 
 ---
 
 ## The public discovery API
 
-**Live at [`starsight.dev`](https://starsight.dev).** The same catalog that `packages/index`
+**Live at [`stellarsight.xyz`](https://stellarsight.xyz).** The same catalog that `packages/index`
 serves on `:4022` also deploys as Vercel functions, so the Bazaar is a **public, hosted
 endpoint any agent can call** — which is what the RFP asks for, and what does not exist for
 Stellar anywhere else. Run the commands below and they answer.
 
 | Method | Endpoint | What it does |
 |---|---|---|
-| `GET` | [`/discovery/resources`](https://starsight.dev/discovery/resources?limit=3) | Paginated catalog, with the spec's `type`, `payTo`, `scheme`, `network`, `extensions`, `limit`, `offset` filters |
-| `GET` | [`/discovery/search`](https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3) | Natural-language search. Results arrive under `resources`, with `partialResults`, `pagination { limit, cursor }`, and `_explain` per result |
-| `GET` | [`/discovery/health`](https://starsight.dev/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
-| `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <STARSIGHT_WRITE_TOKEN>` |
+| `GET` | [`/discovery/resources`](https://stellarsight.xyz/discovery/resources?limit=3) | Paginated catalog, with the spec's `type`, `payTo`, `scheme`, `network`, `extensions`, `limit`, `offset` filters |
+| `GET` | [`/discovery/search`](https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3) | Natural-language search. Results arrive under `resources`, with `partialResults`, `pagination { limit, cursor }`, and `_explain` per result |
+| `GET` | [`/discovery/health`](https://stellarsight.xyz/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
+| `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` |
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
 
 CORS is `*`, because the point is for *other people's* agents to call it. Every rejection —
@@ -81,33 +81,33 @@ a non-null, human-readable `reason` that names what to do about it.
 
 ```bash
 # Natural-language search over the catalog, ranked
-curl -s 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3' | jq \
+curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3' | jq \
   '.resources[] | {resource, score: ._score, name: .serviceName}'
 
 # The full score breakdown on the top hit — BM25 / completeness / settlements / recency
-curl -s 'https://starsight.dev/discovery/search?query=convert%20dollars%20to%20reais&limit=1' \
+curl -s 'https://stellarsight.xyz/discovery/search?query=convert%20dollars%20to%20reais&limit=1' \
   | jq '.resources[0]._explain'
 
 # List, with the spec filters. Note the envelopes differ deliberately: the list
 # endpoint returns `items` with offset pagination, search returns `resources`
 # with a cursor — that asymmetry is the spec's, not ours.
-curl -s 'https://starsight.dev/discovery/resources?type=mcp&limit=5' \
+curl -s 'https://stellarsight.xyz/discovery/resources?type=mcp&limit=5' \
   | jq '.total, .items[].resource'
 
 # Which mode the catalog is in, how many records, which commit is serving them
-curl -s https://starsight.dev/discovery/health | jq
+curl -s https://stellarsight.xyz/discovery/health | jq
 ```
 
 Real output, at the time of writing:
 
 ```
-$ curl -s 'https://starsight.dev/discovery/search?query=invoice%20ocr&limit=3' …
+$ curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3' …
   0.8098  Invoice OCR
 
-$ curl -s https://starsight.dev/discovery/health …
+$ curl -s https://stellarsight.xyz/discovery/health …
   mode=kv  transport=redis  records=27  writable=true  commit=c32e43d
 
-$ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://starsight.dev/discovery/nope
+$ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xyz/discovery/nope
   404 application/json; charset=utf-8
 ```
 
@@ -185,7 +185,7 @@ sentence nobody rechecked. `npm test` runs the 66 adversarial cases the corpus i
 
 ## Scoped against SCF #45, RFP Track
 
-STARSIGHT is built against the RFP *"X402 Facilitator with Bazaar (discovery) support"*, which
+STELLARSIGHT is built against the RFP *"X402 Facilitator with Bazaar (discovery) support"*, which
 names the Bazaar discovery layer as the highest-value part of the scope and says it should
 carry the largest share of the budget. Every component maps to a numbered requirement:
 
@@ -213,7 +213,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 ## Architecture
 
 ```
- seller ──declares metadata──►  STARSIGHT INDEX  ◄──natural-language search──  agent
+ seller ──declares metadata──►  STELLARSIGHT INDEX  ◄──natural-language search──  agent
     │                                  ▲                                           │
     │                                  │ auto-cataloged on settle (bazaar ext)     │
     └──────────►  SELF-HOSTED FACILITATOR  ◄────── 402 → sign → settle ────────────┘
@@ -238,7 +238,7 @@ The two things that normally stall an x402 setup on Stellar were eliminated — 
 shortcut, but by decisions that are also architecturally better.
 
 **1. No faucet, no captcha.** Rather than depending on Circle's web faucet for testnet USDC,
-STARSIGHT **issues its own SEP-41 asset** (`SXT`) and wraps it in a SAC. The Stellar `exact`
+STELLARSIGHT **issues its own SEP-41 asset** (`SXT`) and wraps it in a SAC. The Stellar `exact`
 scheme accepts any SEP-41 token — USDC is only the default. `npm run setup` therefore runs
 start to finish with no web forms and no API keys.
 
@@ -342,7 +342,7 @@ the fallback in our client**, so the bug cannot return quietly. The v1 spellings
 body are still emitted for backward compatibility; nothing depends on them.
 
 `npm run verify:conformance` is that test, kept. It drives an unmodified `@x402/fetch` client
-— `wrapFetchWithPayment`, no STARSIGHT code anywhere on the path — through a real
+— `wrapFetchWithPayment`, no STELLARSIGHT code anywhere on the path — through a real
 402 → sign → settle → 200 against a running seller, and prints the settled hash:
 
 ```
@@ -402,7 +402,7 @@ Apache-2.0, public from the first commit.
 
 <div align="center">
 
-**[github.com/pedro-pelicioni/starsight](https://github.com/pedro-pelicioni/starsight)**
+**[github.com/pedro-pelicioni/stellarsight](https://github.com/pedro-pelicioni/stellarsight)**
 
 Built in São Paulo, Brazil.
 
