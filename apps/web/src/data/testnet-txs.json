@@ -34,42 +34,60 @@
     "label": "demo: postal code lookup",
     "source": "live",
     "settledAt": "2026-08-06T18:51:16Z",
-    "amount": "0.0050000"
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6",
     "label": "demo: fx usd brl",
     "source": "live",
     "settledAt": "2026-08-06T18:51:26Z",
-    "amount": "0.0100000"
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "d02095096d1e6bb2b035250de1e653957a7b00e796ce949d5eff041ae3a4c810",
     "label": "demo: ocr invoice",
     "source": "live",
     "settledAt": "2026-08-06T18:51:36Z",
-    "amount": "0.0500000"
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "ebd60b594283aa9787b0bcfed361f57154b9bd69d1392762519c0ba2455d6703",
     "label": "demo: postal code lookup",
     "source": "live",
     "settledAt": "2026-08-06T18:53:11Z",
-    "amount": "0.0050000"
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "2e3e1a84d788d22c91097ca5b09cdf4549f247b3551e76d73cdafcff96312582",
     "label": "demo: fx usd brl",
     "source": "live",
     "settledAt": "2026-08-06T18:53:21Z",
-    "amount": "0.0100000"
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "bcabce960c29bec4821013aa80c3cbef974854488bf767fcc5ef84e96ded942d",
     "label": "demo: ocr invoice",
     "source": "live",
     "settledAt": "2026-08-06T18:53:26Z",
-    "amount": "0.0500000"
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "01fee0b5c53a4f94cf9b76ff8155aa8b126d4f6fbff92328d800534c3d6a4f76",
@@ -94,55 +112,79 @@
     "label": "demo: postal code lookup",
     "source": "live",
     "settledAt": "2026-08-06T19:11:33Z",
-    "amount": "0.0050000"
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "4b4336dd58d871453f11606ba37ace4f12f8c244d9bc2e10ce8d94663a2c12e5",
     "label": "demo: fx usd brl",
     "source": "live",
     "settledAt": "2026-08-06T19:11:43Z",
-    "amount": "0.0100000"
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "5e49e77232de345a5f5fed5d5b4fd5925b305c00bf35ec2ea272d1493306ca2e",
     "label": "demo: ocr invoice",
     "source": "live",
     "settledAt": "2026-08-06T19:11:53Z",
-    "amount": "0.0500000"
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "3bfd5ee6428b80c65272f6592e3e6a70b49f506b25a97390e343b28e45fcc6ce",
     "label": "demo: postal code lookup",
     "source": "live",
     "settledAt": "2026-08-06T19:22:29Z",
-    "amount": "0.0050000"
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "c5d50781df8abbb0cf97e20af7b93488e087d9e2d554057e1c9521e897ca13cf",
     "label": "demo: fx usd brl",
     "source": "live",
     "settledAt": "2026-08-06T19:22:34Z",
-    "amount": "0.0100000"
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "895801b0447e023fe3a86c5a68986197def54c0d7a62d0968e8464b348de5468",
     "label": "demo: ocr invoice",
     "source": "live",
     "settledAt": "2026-08-06T19:22:44Z",
-    "amount": "0.0500000"
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726",
     "label": "conformance: stock @x402/fetch fx usd brl",
     "source": "live",
     "settledAt": "2026-08-07T16:25:13Z",
-    "amount": "0.0100000"
+    "amount": "0.0100000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   },
   {
     "hash": "cbc0397a851a3adbf5f97dbea0e9fd6edf2df56f7a7841f32251bbae0878b671",
     "label": "conformance: stock @x402/fetch postal code lookup",
     "source": "live",
     "settledAt": "2026-08-07T16:25:48Z",
-    "amount": "0.0050000"
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   }
 ]

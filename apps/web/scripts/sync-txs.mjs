@@ -22,8 +22,8 @@ function known() {
     const prev = JSON.parse(readFileSync(out, 'utf8'))
     return new Map(
       prev
-        .filter((r) => r?.hash && (r.settledAt || r.amount))
-        .map((r) => [r.hash, { settledAt: r.settledAt, amount: r.amount }]),
+        .filter((r) => r?.hash)
+        .map(({ hash, label, source, ...facts }) => [hash, facts]),
     )
   } catch {
     return new Map()
@@ -61,7 +61,19 @@ async function fromHorizon(hash) {
         .flatMap((op) => op?.asset_balance_changes ?? [])
         .filter((c) => c?.type === 'transfer' && c?.amount)
       // Exactly one transfer, or we cannot say "this settlement moved X" without picking.
-      if (moves.length === 1) amount = String(moves[0].amount)
+      if (moves.length === 1) {
+        const m = moves[0]
+        amount = String(m.amount)
+        // Already in the response we just fetched — no extra Horizon call. The parties
+        // matter because the panel used to label the seller's payout address "payer".
+        return {
+          settledAt,
+          amount,
+          ...(m.asset_code ? { assetCode: String(m.asset_code) } : {}),
+          ...(m.from ? { from: String(m.from) } : {}),
+          ...(m.to ? { to: String(m.to) } : {}),
+        }
+      }
     }
     return { settledAt, amount }
   } catch {
@@ -102,11 +114,13 @@ try {
   const cached = known()
   const enriched = await Promise.all(
     rows.map(async (row) => {
-      const prev = cached.get(row.hash)
-      const fresh = prev?.settledAt && prev?.amount ? prev : await fromHorizon(row.hash)
-      const settledAt = prev?.settledAt ?? fresh.settledAt
-      const amount = prev?.amount ?? fresh.amount
-      return { ...row, ...(settledAt ? { settledAt } : {}), ...(amount ? { amount } : {}) }
+      // Ask Horizon; fall back to what is already on disk only when it cannot answer.
+      // Not the reverse: a cache hit that predates a new field would freeze the file at
+      // the old shape forever, which is how assetCode/from/to silently failed to appear.
+      const fresh = await fromHorizon(row.hash)
+      const prev = cached.get(row.hash) ?? {}
+      const merged = { ...prev, ...Object.fromEntries(Object.entries(fresh).filter(([, v]) => v)) }
+      return { ...row, ...merged }
     }),
   )
   const withDate = enriched.filter((r) => r.settledAt).length
