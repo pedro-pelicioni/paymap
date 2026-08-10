@@ -15,11 +15,15 @@
     "./seed": "./src/seed.mjs"
   },
   "files": [
-    "src"
+    "src",
+    "LICENSE"
   ],
   "scripts": {
     "test": "node --test ../../test/",
     "seed": "node ./src/seed.mjs"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  }
 }
