@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <title>Starsight</title>
-  <path fill="#F5400E" d="M256 486 C 196 400 100 330 100 218 a 156 156 0 1 1 312 0 C 412 330 316 400 256 486 Z"/>
-  <circle cx="256" cy="218" r="98" fill="#121215"/>
-  <path fill="#FFFFFF" d="M256 84 Q 278 192 364 218 Q 278 244 256 352 Q 234 244 148 218 Q 234 192 256 84 Z"/>
+  <path fill="#F5400E" fill-opacity="0.26" d="M234 208 L134 402 L378 402 L278 208 Z"/>
+  <path fill="#F2EDE3" d="M256 52 Q 274 140 340 162 Q 274 184 256 272 Q 238 184 172 162 Q 238 140 256 52 Z"/>
+  <rect x="110" y="394" width="292" height="22" rx="11" fill="#7D818F"/>
 </svg>

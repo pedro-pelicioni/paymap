@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <title>Starsight</title>
-  <path fill="#F5400E" d="M256 486 C 196 400 100 330 100 218 a 156 156 0 1 1 312 0 C 412 330 316 400 256 486 Z"/>
-  <circle cx="256" cy="218" r="98" fill="#121215"/>
-  <path fill="#FFFFFF" d="M256 84 Q 278 192 364 218 Q 278 244 256 352 Q 234 244 148 218 Q 234 192 256 84 Z"/>
+  <!--
+    The favicon is the mark REDUCED, not the mark shrunk. At 16px the light cone
+    (26% opacity) is a smudge and the ground rail is a sub-pixel line the browser
+    aliases inconsistently, so both are dropped and the star is scaled to fill the
+    canvas. It carries the accent rather than the cream, because a tab strip may be
+    light or dark and the accent is the only tone legible on both.
+  -->
+  <path fill="#F5400E" d="M256 80 Q 285 220 390 256 Q 285 292 256 432 Q 227 292 122 256 Q 227 220 256 80 Z"/>
 </svg>
