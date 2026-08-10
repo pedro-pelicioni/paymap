@@ -76,8 +76,10 @@ Stellar anywhere else. Run the commands below and they answer.
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
 
 CORS is `*`, because the point is for *other people's* agents to call it. Every rejection —
-`401` without a write token, `404` on an unknown path, `503` with no durable store — carries
-a non-null, human-readable `reason` that names what to do about it.
+`404` on an unknown path, `503` when writes are not enabled (no durable store, or a store
+with no `STELLARSIGHT_WRITE_TOKEN` set), `401` when writes are enabled and the caller did
+not present that token — carries a non-null, human-readable `reason` that names what to do
+about it.
 
 ```bash
 # Natural-language search over the catalog, ranked
@@ -105,7 +107,7 @@ $ curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3
   0.8098  Invoice OCR
 
 $ curl -s https://stellarsight.xyz/discovery/health …
-  mode=seed  transport=null  records=27  writable=false  commit=5463792
+  mode=kv  transport=redis  records=27  writable=false  commit=86ce7a3
 
 $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xyz/discovery/nope
   404 application/json; charset=utf-8
@@ -114,10 +116,16 @@ $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xy
 `/discovery/health` reports the commit it is serving, so a claim in this README can always
 be checked against the code that is actually deployed.
 
-`mode: seed` is what the public deployment currently reports: no Redis is attached, so the
-same code runs read-only from the seeded catalog and says so on `/discovery/health` rather
-than failing. Attach a store and it reports `mode: kv`, where auto-catalogued resources
-survive cold starts. Both paths are the same code; only the environment differs.
+Read that output as a snapshot, not a standing claim — it is the answer at the commit named
+in it, and `commit` is there so you can tell whether what you are reading still describes
+what is deployed. Run the command yourself for the current one.
+
+`mode: kv` means a durable Redis store is attached, so auto-catalogued resources survive
+cold starts. With no store configured the same code runs read-only from the seeded catalog
+and says so on `/discovery/health` rather than failing. `writable: false` alongside `kv` is
+the deliberate third state: the store makes writes possible, `STELLARSIGHT_WRITE_TOKEN`
+makes them permitted, and an unauthenticated write endpoint on a public discovery index is
+a spam magnet. See [docs/DEPLOY.md](docs/DEPLOY.md) for the reasoning.
 
 Both endpoints are **validated against the shipped `@x402/extensions` types** by
 `npm run verify:api`, which drives the real `withBazaar()` client at them and re-checks every

@@ -235,10 +235,17 @@ curl -s -X POST https://stellarsight.xyz/discovery/resources \
        "extensions":["bazaar"]}' | jq
 ```
 
-Expected on a healthy read-only deployment: `health` reports `"mode": "seed"`,
-`"writable": false`, `durableStore.transport: null` and a non-zero `records`; step 7
-prints `200 application/json`. With a store attached it reports `"mode": "kv"` and
-`durableStore.transport` of `"rest"` or `"redis"`.
+There are three healthy states, not two, and `/discovery/health` names which one you are in:
+
+| `mode` | `writable` | `durableStore.transport` | What it means |
+|---|---|---|---|
+| `seed` | `false` | `null` | No store configured. Reads work off the seed corpus; `POST` is `503`. |
+| `kv` | `false` | `redis` / `rest` | Store attached, but no `STELLARSIGHT_WRITE_TOKEN`. Reads work and survive cold starts; `POST` is still `503`, with a reason saying so. |
+| `kv` | `true` | `redis` / `rest` | Both set. `POST` is `401` until the caller presents the token. |
+
+`records` is non-zero in all three, and step 7 prints `200 application/json` in all three.
+The middle row is the easiest to misread as broken: a store really is attached, and writes
+really are refused, on purpose.
 
 ---
 
