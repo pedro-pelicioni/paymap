@@ -110,7 +110,7 @@
   position: relative;
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
-  background: #0d0e11;
+  background: var(--bg-2);
   box-shadow:
     0 1px 0 rgba(242, 237, 227, 0.04) inset,
     0 30px 70px -40px rgba(0, 0, 0, 0.9);
@@ -891,7 +891,7 @@
   flex: none;
 }
 .search__go:hover {
-  background: #ff5a24;
+  background: color-mix(in srgb, var(--accent) 88%, #fff);
 }
 .search__spin {
   width: 13px;

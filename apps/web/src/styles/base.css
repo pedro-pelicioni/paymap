@@ -6,24 +6,32 @@
 
 :root {
   /* --- brand pigments (anchored on the mark) ------------------ */
-  --accent: #f5400e; /* the pin */
+  /* The mark is a star casting light onto ground. That only reads if the
+     light is WARM and everything it falls on is COOL — on a neutral black the
+     accent stopped being light and became just an orange shape. So the ground
+     is night blue and the accent is unchanged: the contrast between them is
+     the whole idea, and it is a temperature contrast, not a value one. */
+  --accent: #f5400e; /* the light */
   --accent-soft: rgba(245, 64, 14, 0.14);
-  --ink: #0b0c0e; /* page ground */
-  --surface: #121215; /* card ground — the pin's inner circle */
-  --cream: #f2ede3; /* text */
+  --ink: #070b14; /* page ground — night sky */
+  --surface: #0d1220; /* card ground */
+  --cream: #f2ede3; /* text — kept warm, it is starlight */
 
-  /* --- gray ramp (cool-neutral over ink) ---------------------- */
-  --g-950: #0b0c0e;
-  --g-900: #121215;
-  --g-850: #17181c;
-  --g-800: #1d1e24;
-  --g-700: #292b33;
-  --g-600: #3a3d47;
-  --g-500: #575b68;
-  --g-400: #7d818f;
-  --g-300: #a4a7b2;
-  --g-200: #cbccd3;
-  --g-100: #e6e4de;
+  /* --- blue ramp (night sky over ink) -------------------------
+     Hue holds near 222° the whole way up, saturation falling as it lightens so
+     the pale end stays a neutral you can set text in. --g-50 is the exception
+     and stays the warm cream: it is the light in the mark, not part of the sky. */
+  --g-950: #070b14;
+  --g-900: #0d1220;
+  --g-850: #111726;
+  --g-800: #161d2e;
+  --g-700: #222a3e;
+  --g-600: #333c52;
+  --g-500: #4e5871;
+  --g-400: #767f96;
+  --g-300: #9ea6ba;
+  --g-200: #c6cbd8;
+  --g-100: #e4e6ec;
   --g-50: #f2ede3;
 
   /* --- status ------------------------------------------------- */
@@ -32,7 +40,7 @@
 
   /* --- semantic mapping (what every component reads) ---------- */
   --bg: var(--ink);
-  --bg-2: #0e0f12;
+  --bg-2: #0a0f1b;
   --plate: var(--surface);
   --fg: var(--cream);
   --fg-2: rgba(242, 237, 227, 0.68);

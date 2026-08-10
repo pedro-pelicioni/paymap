@@ -146,7 +146,7 @@ const E_B = 0.17
  *  proof strip's box are painted. It does not matter: `.proof` grounds itself
  *  on an opaque `--surface` and `.hero__in` is z-index 2 over this z-index 0,
  *  so every one of those blocks is occluded. Same for the terminal card, on
- *  opaque #0d0e11. The release is what gives the field somewhere to live
+ *  opaque --bg-2. The release is what gives the field somewhere to live
  *  underneath the fold without ever reaching live text. */
 const CARVE_FEATHER = 0.085
 const CARVE_BOTTOM = 0.78

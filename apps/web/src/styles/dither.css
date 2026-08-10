@@ -24,7 +24,7 @@
 .dither {
   /* --- what the canvas paints with — tokens only -------------------------
      Front sits close to --g-800 / --rule *after* the opacity below is
-     applied: --g-700 at 0.58 over --ink composites to about #1c1e23.
+     applied: --g-700 at 0.58 over --ink composites to about #1b2233.
      The accent is the third tone. It fires only where the field's own
      crest and a fine third octave coincide — a measured mean of
      3.8-4.3% of the blocks that reach the front tone, and never more
