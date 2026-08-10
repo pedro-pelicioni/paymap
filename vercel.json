@@ -6,10 +6,7 @@
   "framework": null,
   "functions": {
     "api/**/*.mjs": {
-      "includeFiles": "packages/index/src/**"
-    },
-    "api/facilitator.mjs": {
-      "includeFiles": "{packages/index/src/**,apps/facilitator/src/**}",
+      "includeFiles": "packages/index/src/**",
       "maxDuration": 60
     }
   },
