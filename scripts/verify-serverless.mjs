@@ -547,6 +547,9 @@ async function main() {
     for (const path of ['/supported', '/verify', '/settle', '/health', '/events']) {
       eq(resolve(path), '/api/facilitator', `${path} reaches the facilitator, not index.html`);
     }
+    // The seller's paid routes and its x402 well-known document.
+    eq(resolve('/v1/fx/usd-brl'), '/api/seller', '/v1/* reaches the seller, not index.html');
+    eq(resolve('/.well-known/x402'), '/api/seller', 'the x402 well-known doc reaches the seller');
     eq(resolve('/console'), '/index.html', 'the SPA still catches its own routes');
     eq(resolve('/'), '/index.html', 'the landing page still resolves');
   });
@@ -561,9 +564,9 @@ async function main() {
       readFileSync(fileURLToPath(new URL(`.${rule.destination}.mjs`, ROOT)), 'utf8');
       checked++;
     }
-    // 9 = the three discovery endpoints + the /discovery/:path* guard + the five
-    // facilitator routes (all five target the one api/facilitator.mjs).
-    eq(checked, 9, 'expected nine concrete function routes (discovery x4 + facilitator x5)');
+    // 11 = three discovery endpoints + the /discovery/:path* guard + five facilitator
+    // routes + the seller's two (/v1/:path* and /.well-known/x402, both api/seller.mjs).
+    eq(checked, 11, 'expected eleven concrete function routes (discovery x4 + facilitator x5 + seller x2)');
   });
 
   await check('the functions glob in vercel.json matches the files that exist', () => {

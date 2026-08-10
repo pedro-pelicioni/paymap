@@ -40,7 +40,7 @@
  * Port: 4023
  */
 
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
@@ -585,9 +585,16 @@ async function preRegister({ quiet = false } = {}) {
       settlements: 0,
     };
     try {
+      // The hosted index refuses unauthenticated writes by design (see DEPLOY.md). The
+      // local index on :4022 has no token and ignores the header. One announce path for
+      // both worlds: send the bearer when the environment carries one.
+      const token = process.env.STELLARSIGHT_WRITE_TOKEN;
       const res = await fetch(`${INDEX_URL}/discovery/resources`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(record),
       });
       if (!quiet) console.log(`[seller] pre-registered ${route.path} -> ${res.status}`);
@@ -597,18 +604,28 @@ async function preRegister({ quiet = false } = {}) {
   }
 }
 
-app.listen(PORT, async () => {
-  console.log(`\n[seller] STELLARSIGHT paid API  http://localhost:${PORT}`);
-  for (const r of ROUTES) {
-    console.log(
-      `[seller]   ${r.method.padEnd(4)} ${r.path.padEnd(24)} ${r.priceSxt} ${ASSET_CODE}`,
-    );
-  }
-  console.log(`[seller]   asset ${ASSET_CODE} ${ASSET_SAC}`);
-  console.log(`[seller]   payTo ${SELLER_PUBLIC}\n`);
-  // Give the facilitator/index a moment if they booted together.
-  setTimeout(preRegister, 1200);
-  // The index is in-memory, so it empties whenever the facilitator restarts.
-  // Re-announce ourselves periodically to heal that without any manual step.
-  setInterval(() => preRegister({ quiet: true }), 30_000).unref?.();
-});
+// Boot only when executed directly. Imported — api/seller.mjs serves this same app on
+// the public domain — the caller owns announce timing, because a fire-and-forget POST at
+// module load can be frozen mid-flight when a serverless runtime suspends the instance.
+const runDirect =
+  process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (runDirect) {
+  app.listen(PORT, async () => {
+    console.log(`\n[seller] STELLARSIGHT paid API  http://localhost:${PORT}`);
+    for (const r of ROUTES) {
+      console.log(
+        `[seller]   ${r.method.padEnd(4)} ${r.path.padEnd(24)} ${r.priceSxt} ${ASSET_CODE}`,
+      );
+    }
+    console.log(`[seller]   asset ${ASSET_CODE} ${ASSET_SAC}`);
+    console.log(`[seller]   payTo ${SELLER_PUBLIC}\n`);
+    // Give the facilitator/index a moment if they booted together.
+    setTimeout(preRegister, 1200);
+    // The index is in-memory, so it empties whenever the facilitator restarts.
+    // Re-announce ourselves periodically to heal that without any manual step.
+    setInterval(() => preRegister({ quiet: true }), 30_000).unref?.();
+  });
+}
+
+export { app, preRegister };

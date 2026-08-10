@@ -48,6 +48,14 @@
       "destination": "/api/facilitator"
     },
     {
+      "source": "/v1/:path*",
+      "destination": "/api/seller"
+    },
+    {
+      "source": "/.well-known/x402",
+      "destination": "/api/seller"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
