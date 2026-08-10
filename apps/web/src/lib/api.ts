@@ -310,13 +310,14 @@ const fixtureIntegrity = (): IntegrityProvenance => {
   const raw = integrityRaw as {
     generatedAt?: string
     commit?: string | null
-    entries?: ({ minutesAgo: number } & Omit<IntegrityEntry, 'at'>)[]
+    entries?: ({ minutesAgo?: number } & Omit<IntegrityEntry, 'at'>)[]
   }
   const anchor = raw.generatedAt ? Date.parse(raw.generatedAt) : Date.now()
   return {
     entries: (raw.entries ?? []).map((e) => ({
       ...(e as unknown as IntegrityEntry),
-      at: anchor - e.minutesAgo * 60_000,
+      // One run, one timestamp. Older files carried staged minutesAgo offsets.
+      at: anchor - (e.minutesAgo ?? 0) * 60_000,
     })),
     live: false,
     generatedAt: raw.generatedAt,

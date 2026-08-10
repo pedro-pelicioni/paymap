@@ -22,6 +22,22 @@ export function IntegrityLedger({ ledger }: { ledger: IntegrityProvenance }) {
   const { entries, live, generatedAt, commit } = ledger
   const rejected = entries.filter((e) => e.verdict === 'rejected').length
 
+  /*
+   * A replay runs in one pass, so its verdicts share one timestamp. The panel used to
+   * print a distinct wall-clock per row — the generator staged them 7 minutes apart —
+   * and sixteen evenly-spaced "events" trailing the viewer's own clock read as an
+   * attack log from the last two hours. Live verdicts keep their real, varying times;
+   * a single-run replay gets ordinals, and the one true time goes in the lead line.
+   */
+  const oneRun = entries.length > 1 && entries.every((e) => e.at === entries[0].at)
+  const runClock = generatedAt
+    ? new Date(generatedAt).toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+      })
+    : null
+
   return (
     <section className="plate" aria-labelledby="integrity-h">
       <header className="plate__cap">
@@ -40,10 +56,11 @@ export function IntegrityLedger({ ledger }: { ledger: IntegrityProvenance }) {
           </>
         ) : (
           <>
-            <span className="dot" /> Replay of the hostile corpus through the validator
-            {day(generatedAt) ? ` on ${day(generatedAt)}` : null}
-            {commit ? ` at ${commit}` : null}. Every verdict below is the validator's own
-            output — run <code>npm test</code> for the cases behind them.
+            <span className="dot" /> Replay of the hostile corpus through the validator, in
+            one run{day(generatedAt) ? ` on ${day(generatedAt)}` : null}
+            {runClock ? ` at ${runClock} UTC` : null}
+            {commit ? ` (commit ${commit})` : null}. Every verdict below is the validator's
+            own output — run <code>npm test</code> for the cases behind them.
           </>
         )}
       </p>
@@ -56,9 +73,13 @@ export function IntegrityLedger({ ledger }: { ledger: IntegrityProvenance }) {
         )}
         {entries.slice(0, 12).map((e, i) => (
           <article className="ledger__row" key={`${e.rule}-${i}`}>
-            <time className="ledger__t" dateTime={new Date(e.at).toISOString()}>
-              {clock(e.at)}
-            </time>
+            {oneRun ? (
+              <span className="ledger__t">{String(i + 1).padStart(2, '0')}</span>
+            ) : (
+              <time className="ledger__t" dateTime={new Date(e.at).toISOString()}>
+                {clock(e.at)}
+              </time>
+            )}
             <div>
               <div>
                 <span className={`verdict verdict--${e.verdict}`}>

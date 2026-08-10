@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T14:19:45.742Z",
+  "generatedAt": "2026-08-10T19:17:09.402Z",
   "generator": "apps/web/scripts/gen-integrity.mjs",
   "validator": "packages/index/src/integrity.mjs (via createCatalog().upsert)",
   "commit": "0a10bfc",
@@ -11,8 +11,7 @@
       "field": "resource.url",
       "input": "javascript:alert(1)",
       "reason": "resource.url is missing or invalid",
-      "survived": null,
-      "minutesAgo": 3
+      "survived": null
     },
     {
       "verdict": "rejected",
@@ -20,8 +19,7 @@
       "field": "type",
       "input": "grpc",
       "reason": "type must be one of http|mcp",
-      "survived": null,
-      "minutesAgo": 10
+      "survived": null
     },
     {
       "verdict": "soft-drop",
@@ -29,8 +27,7 @@
       "field": "routeTemplate",
       "input": "/v1/parse/:id/../../admin/keys",
       "reason": "routeTemplate contains path traversal \"..\" after decoding",
-      "survived": "record kept",
-      "minutesAgo": 17
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -38,8 +35,7 @@
       "field": "routeTemplate",
       "input": "/v1/%252e%252e/thing",
       "reason": "routeTemplate contains path traversal \"..\" after decoding",
-      "survived": "record kept",
-      "minutesAgo": 24
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -47,8 +43,7 @@
       "field": "routeTemplate",
       "input": "/v1/redirect/https%3A%2F%2Fexfil.example",
       "reason": "routeTemplate contains \"://\" after decoding",
-      "survived": "record kept",
-      "minutesAgo": 31
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -56,8 +51,7 @@
       "field": "resource.iconUrl",
       "input": "http://169.254.169.254/latest/meta-data/",
       "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
-      "survived": "record kept",
-      "minutesAgo": 38
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -65,8 +59,7 @@
       "field": "resource.iconUrl",
       "input": "http://2130706433/i.png",
       "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
-      "survived": "record kept",
-      "minutesAgo": 45
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -74,8 +67,7 @@
       "field": "resource.iconUrl",
       "input": "http://0177.0.0.1/i.png",
       "reason": "iconUrl host rejected: IP literal host (decimal/octal/hex)",
-      "survived": "record kept",
-      "minutesAgo": 52
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -83,8 +75,7 @@
       "field": "resource.iconUrl",
       "input": "http://[::1]/i.png",
       "reason": "iconUrl host rejected: IPv6 / bracketed host literal",
-      "survived": "record kept",
-      "minutesAgo": 59
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -92,8 +83,7 @@
       "field": "resource.iconUrl",
       "input": "https://user:pass@cdn.example.com/i.png",
       "reason": "iconUrl must not contain userinfo",
-      "survived": "record kept",
-      "minutesAgo": 66
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -101,8 +91,7 @@
       "field": "resource.iconUrl",
       "input": "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
       "reason": "iconUrl scheme \"data:\" is not http/https",
-      "survived": "record kept",
-      "minutesAgo": 73
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -110,8 +99,7 @@
       "field": "resource.tags",
       "input": "[\"invoice\",\"inv\",\"invoices\", … 96 more]",
       "reason": "99 tags submitted, catalog keeps 5 — overflow dropped to contain index pollution",
-      "survived": "record kept",
-      "minutesAgo": 80
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -119,8 +107,7 @@
       "field": "resource.tags",
       "input": "[\"inv\\u0000oice\"]",
       "reason": "tag contains control characters",
-      "survived": "record kept",
-      "minutesAgo": 87
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -128,8 +115,7 @@
       "field": "resource.description",
       "input": "\"best api in the world …\" (18,204 chars)",
       "reason": "description is 18,204 characters, catalog keeps 512 — truncated before BM25 indexing",
-      "survived": "record kept",
-      "minutesAgo": 94
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -137,8 +123,7 @@
       "field": "resource.serviceName",
       "input": "payment-service\\u202Egnp.exe",
       "reason": "serviceName contains non-printable-ASCII characters",
-      "survived": "record kept",
-      "minutesAgo": 101
+      "survived": "record kept"
     },
     {
       "verdict": "soft-drop",
@@ -146,8 +131,7 @@
       "field": "input.schema",
       "input": "{ \"$ref\": \"https://exfil.example/schema.json\" }",
       "reason": "external reference not allowed: $.$ref = https://exfil.example/schema.json",
-      "survived": "record kept",
-      "minutesAgo": 108
+      "survived": "record kept"
     }
   ]
 }

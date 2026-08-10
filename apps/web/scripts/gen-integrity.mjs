@@ -210,9 +210,13 @@ try {
   // every unrelated commit, so this file would be rewritten by the next `npm run dev`
   // and dirty the tree forever. The validator's own commit is also the provenance that
   // actually matters: it identifies the code that produced these verdicts.
-  let commit = null
+  // On Vercel the checkout is shallow, so `git log -- <paths>` can only answer from the
+  // truncated window and quietly returns the boundary commit — the deployed panel spent a
+  // day attributing the replay to a commit that never touched the validator. The platform
+  // already knows the build's SHA; trust it there, and use git's answer locally.
+  let commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null
   try {
-    commit = execFileSync(
+    commit ??= execFileSync(
       'git',
       ['log', '-1', '--format=%h', '--', 'packages/index/src/integrity.mjs', 'packages/index/src/index.mjs'],
       { cwd: ROOT },
@@ -277,7 +281,11 @@ try {
   // Spread the rows over a plausible window so the console reads as a log rather than
   // a table. These are display offsets for a REPLAY of the corpus, not observations —
   // src/lib/api.ts turns them into wall-clock times, and the panel says so.
-  const entries = rows.map((r, i) => ({ ...r, minutesAgo: 3 + i * 7 }))
+  // No synthetic minutesAgo offsets. The corpus replays in one script run measured in
+  // milliseconds; spreading 16 verdicts over a staged two-hour timeline invented a
+  // history that never happened, and the uniform 7-minute gaps were the tell. The run's
+  // one real timestamp is generatedAt.
+  const entries = rows
   const body = {
     generator: 'apps/web/scripts/gen-integrity.mjs',
     validator: 'packages/index/src/integrity.mjs (via createCatalog().upsert)',
