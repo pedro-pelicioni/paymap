@@ -31,3 +31,5 @@ through the whole 402 → sign → settle → 200 loop against `apps/seller`.
 | demo: ocr invoice | `895801b0447e023fe3a86c5a68986197def54c0d7a62d0968e8464b348de5468` | https://stellar.expert/explorer/testnet/tx/895801b0447e023fe3a86c5a68986197def54c0d7a62d0968e8464b348de5468 |
 | conformance: stock `@x402/fetch` -> fx usd-brl | `15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726` | https://stellar.expert/explorer/testnet/tx/15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726 |
 | conformance: stock `@x402/fetch` -> postal-code lookup | `cbc0397a851a3adbf5f97dbea0e9fd6edf2df56f7a7841f32251bbae0878b671` | https://stellar.expert/explorer/testnet/tx/cbc0397a851a3adbf5f97dbea0e9fd6edf2df56f7a7841f32251bbae0878b671 |
+| demo: postal-code lookup | `dbb099c87704b0db9cd555f3edc67b10c3b00a3e3ab67e8ae2fc6d166f4c7e3d` | https://stellar.expert/explorer/testnet/tx/dbb099c87704b0db9cd555f3edc67b10c3b00a3e3ab67e8ae2fc6d166f4c7e3d |
+| demo: ocr invoice | `0932e567e21813d7af706529140df3bb264545a60c3ec56b9beffc86769d2c29` | https://stellar.expert/explorer/testnet/tx/0932e567e21813d7af706529140df3bb264545a60c3ec56b9beffc86769d2c29 |

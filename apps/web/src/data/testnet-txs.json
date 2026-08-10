@@ -186,5 +186,25 @@
     "assetCode": "SXT",
     "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
     "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "dbb099c87704b0db9cd555f3edc67b10c3b00a3e3ab67e8ae2fc6d166f4c7e3d",
+    "label": "demo: postal code lookup",
+    "source": "live",
+    "settledAt": "2026-08-10T19:07:39Z",
+    "amount": "0.0050000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
+  },
+  {
+    "hash": "0932e567e21813d7af706529140df3bb264545a60c3ec56b9beffc86769d2c29",
+    "label": "demo: ocr invoice",
+    "source": "live",
+    "settledAt": "2026-08-10T19:07:49Z",
+    "amount": "0.0500000",
+    "assetCode": "SXT",
+    "from": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "to": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O"
   }
 ]
