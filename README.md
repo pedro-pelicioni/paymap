@@ -8,7 +8,7 @@
 
 **The facilitator-side Bazaar discovery layer for x402 — the piece that does not exist in public code today — and the whole payment loop around it, running end to end on Stellar testnet.**
 
-`Apache-2.0` · `stellar:testnet` · **14 settled x402 payments** · **84 tests, 0 failing**
+`Apache-2.0` · `stellar:testnet` · **14 settled x402 payments** · **129 tests, 0 failing**
 
 </div>
 
@@ -25,7 +25,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 |---|---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
-| Catalog integrity is real, not decorative | `npm test` → 84 tests, 0 failing (66 of them adversarial) | 30s |
+| Catalog integrity is real, not decorative | `npm test` → 129 tests, 0 failing (66 of them adversarial) | 30s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
 | A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
 
@@ -105,7 +105,7 @@ $ curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3
   0.8098  Invoice OCR
 
 $ curl -s https://stellarsight.xyz/discovery/health …
-  mode=kv  transport=redis  records=27  writable=true  commit=c32e43d
+  mode=seed  transport=null  records=27  writable=false  commit=5463792
 
 $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xyz/discovery/nope
   404 application/json; charset=utf-8
@@ -114,9 +114,10 @@ $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xy
 `/discovery/health` reports the commit it is serving, so a claim in this README can always
 be checked against the code that is actually deployed.
 
-`mode: kv` means a durable Redis store is attached and auto-catalogued resources survive
-cold starts; with no store configured the same code runs read-only from the seeded catalog
-and says so, rather than failing.
+`mode: seed` is what the public deployment currently reports: no Redis is attached, so the
+same code runs read-only from the seeded catalog and says so on `/discovery/health` rather
+than failing. Attach a store and it reports `mode: kv`, where auto-catalogued resources
+survive cold starts. Both paths are the same code; only the environment differs.
 
 Both endpoints are **validated against the shipped `@x402/extensions` types** by
 `npm run verify:api`, which drives the real `withBazaar()` client at them and re-checks every
@@ -127,7 +128,7 @@ deliberately, and that asymmetry is the spec's rather than ours: the list endpoi
 That claim used to read "spec-exact — the same field names", asserted by reading the field
 names this repo emits. It was false: search returned `items`, no item carried `accepts`, and
 `withBazaar(client).search()` handed a stock consumer `undefined`. See
-[Conformance findings](#conformance-findings). The assertion now observes what the client
+[Where we had drifted](#where-we-had-drifted). The assertion now observes what the client
 returns instead of restating what the server believes.
 
 CORS is `*` because the point is for *other people's* agents to call it.
@@ -259,7 +260,7 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 84 tests
+npm test           # 129 tests
 npm run verify:api # 46 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 ```

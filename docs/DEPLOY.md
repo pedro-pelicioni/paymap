@@ -47,16 +47,8 @@ moves the catch-all up, that check fails.
 
 ## First deploy
 
-```bash
-npm i -g vercel     # or use npx
-vercel login
-vercel link         # from the repo root
-vercel --prod
-```
-
-Or connect the GitHub repo in the Vercel dashboard and push to `main`.
-
-**Project settings that must be right:**
+Connect the repo in the Vercel dashboard, or `vercel link && vercel --prod` from the repo
+root. **Project settings that must be right:**
 
 - **Root Directory** — the repository root (*not* `apps/web`). The `api/` directory and
   `packages/index` both live above `apps/web`; pointing the root at `apps/web` hides them
@@ -69,71 +61,25 @@ Everything else is in `vercel.json` and needs no dashboard equivalent.
 
 ---
 
-## The custom domain: `stellarsight.xyz`
+## The custom domain
 
-The domain is registered at GoDaddy and stays there — only the DNS records move. Do
-**not** switch to Vercel's nameservers unless you want Vercel to own the whole zone; the
-apex `A` + `www` `CNAME` route keeps the existing `_dmarc` and `_domainconnect` records
-working untouched.
-
-### Order of operations
-
-Add the domain in Vercel **first**, then edit DNS. Vercel shows you the exact record
-values only after the domain is attached to the project, and it starts issuing the TLS
-certificate the moment DNS resolves.
-
-1. Vercel → the project → **Settings** → **Domains** → **Add Domain** → `stellarsight.xyz`.
-2. Accept the prompt to also add `www.stellarsight.xyz` (Vercel redirects it to the apex).
-3. Vercel now shows an **A** record for the apex and a **CNAME** target for `www`.
-   **Copy those two values from that screen.**
+`stellarsight.xyz` is served from an apex `A` record and a `www` `CNAME` at the registrar,
+with the registrar's own nameservers left in place. Vercel's nameserver option is the
+alternative, not an addition — taking it moves the whole zone, so every unrelated record
+(`_dmarc`, and anything for email) has to be recreated on the Vercel side. It is only
+required for wildcard domains, which this project does not use.
 
 > **The CNAME target is per-project.** Vercel issues a unique hostname such as
 > `d1d4fc829fe7bc7c.vercel-dns-017.com`. Older guides say `cname.vercel-dns.com` — do not
-> paste that from memory, and do not reuse a value from another project. Same for the apex
-> `A` record IP: read it off the Domains screen rather than trusting a tutorial.
+> paste that from memory, and do not reuse a value from another project. The same goes for
+> the apex `A` record: read both off the project's Domains screen.
 
-### The GoDaddy edits
-
-GoDaddy → **My Products** → the domain → **DNS** → **Manage DNS**. Starting from the
-default WebsiteBuilder zone, exactly two records change:
-
-| Record | Now | Change to | How |
-|---|---|---|---|
-| `A` `@` | `WebsiteBuilder Site` | the IP Vercel shows | **Edit** (pencil). GoDaddy may make you disconnect the Website Builder site first |
-| `CNAME` `www` | `stellarsight.xyz.` | the `*.vercel-dns-*.com` target Vercel shows | **Edit** (pencil) |
-
-Leave everything else alone:
-
-- **`NS` and `SOA`** — GoDaddy's own, not editable, and not supposed to be.
-- **`CNAME _domainconnect`** — GoDaddy's one-click-setup plumbing. Harmless.
-- **`TXT _dmarc`** — email policy. Deleting it weakens DMARC on the domain; unrelated to
-  hosting.
-
-Set TTL to the shortest GoDaddy offers (600s / 10 min) while you are still changing
-things, then raise it to 1 hour once the domain is verified.
-
-### Waiting, and checking without guessing
-
-Propagation is usually minutes, up to 48h worst case. Check the authoritative answer
-rather than your own cached resolver:
+Check the authoritative answer rather than a cached resolver, then the deployment itself:
 
 ```bash
-# Ask GoDaddy's nameserver directly — no local or ISP cache in the way
-dig @ns55.domaincontrol.com stellarsight.xyz A +short
-dig @ns55.domaincontrol.com www.stellarsight.xyz CNAME +short
-
-# What the rest of the world currently sees
-dig stellarsight.xyz A +short
-
-# End to end, once Vercel says "Valid Configuration"
-curl -sI https://stellarsight.xyz | head -3
-curl -s https://stellarsight.xyz/discovery/health | jq '.mode, .records'
+dig @<registrar-ns> stellarsight.xyz A +short
+curl -s https://stellarsight.xyz/discovery/health | jq '.mode, .records, .build.commitShort'
 ```
-
-Vercel's Domains page flips to **Valid Configuration** on its own once the records
-resolve; the TLS certificate is issued automatically after that. A domain stuck on
-"Invalid Configuration" for more than an hour is nearly always the apex `A` record still
-pointing at the parked WebsiteBuilder site.
 
 ---
 

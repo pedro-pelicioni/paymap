@@ -125,7 +125,7 @@ order to pay it.
 
 **Auto-cataloging on settle.** When a payment settles, the facilitator reads the bazaar
 extension off the payload and upserts the resource, incrementing its settlement count
-([`facilitator/server.mjs:457`](../apps/facilitator/src/server.mjs)). This is the spec's
+([`facilitator/server.mjs:493`](../apps/facilitator/src/server.mjs)). This is the spec's
 `bazaar` extension doing what it is for, and the settle response carries an
 `EXTENSION-RESPONSES` header reporting whether the catalog accepted or rejected your record.
 
@@ -239,7 +239,7 @@ drift from what a stock client decodes.
 
 To appear in the catalog, attach the bazaar extension to your 402 challenge under
 `extensions`, exactly as `apps/seller` does at
-[`server.mjs:307`](../apps/seller/src/server.mjs). The facilitator picks it up on settle.
+[`server.mjs:347`](../apps/seller/src/server.mjs). The facilitator picks it up on settle.
 
 ---
 
@@ -273,7 +273,7 @@ instant and unrestricted; hosted listing needs a token from the operator.
 |---|---|---|
 | `ASSET_SAC / SELLER_PUBLIC missing` | `npm run setup` has not run, or `.env` was deleted | `npm run setup` |
 | Search returns nothing | Index restarted and lost its in-memory catalog | Wait 30 s for the seller's next re-announce, or restart the seller |
-| `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 3](#step-3--you-are-already-in-the-bazaar--1-min) |
+| `Cannot GET /discovery/health` locally | That route is hosted-only | Use `/discovery/resources` locally — see the note in [Step 3](#step-3--you-are-already-in-the-bazaar--one-curl) |
 | `Failed to parse payment requirements` | Your 402 has no `PAYMENT-REQUIRED` header | See [Bringing your own server](#bringing-your-own-server), item 1 |
 | Settle returns `insufficient balance` | The buyer holds no `SXT` | `npm run setup` mints and distributes it |
 | `503` from the hosted API | No durable store attached | Read-only mode. `curl stellarsight.xyz/discovery/health` reports which mode is active |

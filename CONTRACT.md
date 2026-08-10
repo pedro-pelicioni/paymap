@@ -3,8 +3,6 @@
 Monorepo, plain npm workspaces, Node 22, ESM (`"type": "module"`). No TypeScript build step
 anywhere except `apps/web` (Vite). Everything must run with `node <file>.mjs` or `npm run dev`.
 
-Deadline is hard. Prefer WORKING over COMPLETE. Never leave a broken import.
-
 ## Ports (fixed, do not change)
 
 | Service | Port | Owner |
@@ -90,7 +88,7 @@ of the three transport adapters go through it:
 |---|---|---|
 | `packages/index/src/serverless.mjs` (via `api/discovery/*.mjs`) | `stellarsight.xyz` | yes |
 | `packages/index/src/http.mjs` (`mountDiscoveryRoutes`) | any Express host | yes |
-| `apps/facilitator/src/server.mjs:559,584` | the local index on `:4022` | **no — KNOWN DRIFT** |
+| `apps/facilitator/src/server.mjs:579,604` | the local index on `:4022` | **no — KNOWN DRIFT** |
 
 The facilitator hand-rolls its own `/discovery/resources` and `/discovery/search` and
 returns `catalog.list()` / `catalog.search()` verbatim, so **the local index on `:4022`
