@@ -130,7 +130,13 @@ export type IntegrityProvenance = {
   commit?: string
 }
 
-export type TxEntry = { hash: string; label: string; source?: 'live' | 'demo' }
+export type TxEntry = {
+  hash: string
+  label: string
+  source?: 'live' | 'demo'
+  /** Horizon `created_at` for the settlement, ISO-8601. Absent when it could not be read. */
+  settledAt?: string
+}
 
 export type Source = 'live' | 'demo'
 

@@ -30,6 +30,30 @@ export function ago(ts: number): string {
   return `${Math.round(h / 24)} d ago`
 }
 
+/**
+ * An absolute UTC stamp — "6 Aug 2026, 19:22 UTC" — for things that happened once, on a
+ * date, and are being shown again later. Deliberately not `ago()`: a relative string
+ * ("4 d ago") drifts with the reader's clock, and next to a replayed settlement the whole
+ * point is to pin it to a date that is plainly not now.
+ */
+export function settledOn(iso: string | undefined): string | undefined {
+  if (!iso) return undefined
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return undefined
+  const date = d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+  const time = d.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  })
+  return `${date}, ${time} UTC`
+}
+
 export const sightNumber = (i: number) => String(i + 1).padStart(2, '0')
 
 export const explorerTx = (hash: string) =>

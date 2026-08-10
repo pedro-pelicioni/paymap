@@ -2,111 +2,133 @@
   {
     "hash": "6737943f906ac4fea7c94e5b832fcfce182244d492081c02110b213e0ff0a124",
     "label": "Issuer setOptions home domain",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:47:26Z"
   },
   {
     "hash": "4d3cfc2b2311df4b8ba0cde79f502a81239295ec5c2698ceb316c4b4f84e18c6",
     "label": "changeTrust SELLER SXT",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:47:31Z"
   },
   {
     "hash": "a6df9c5e3fa064f95e68768ba9b242cd87a1d63ac0dab109082308877b9f95b1",
     "label": "changeTrust PAYER SXT",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:47:36Z"
   },
   {
     "hash": "35733092507e109d0d6d22710dc31f4ec9d5cd1ca004c8fa17346fa77c90168a",
     "label": "Payment ISSUER PAYER 10000 SXT",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:47:41Z"
   },
   {
     "hash": "b361e1693490952b48ef314d381ba0d6513aa68c047da092f7858e1d73e855f3",
     "label": "Deploy SAC createStellarAssetContract",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:47:46Z"
   },
   {
     "hash": "dafe82019577f725426e46f8dcfa9e2dd2867b0987663dfb1db2af41d3c36884",
     "label": "demo: postal code lookup",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:51:16Z"
   },
   {
     "hash": "c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6",
     "label": "demo: fx usd brl",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:51:26Z"
   },
   {
     "hash": "d02095096d1e6bb2b035250de1e653957a7b00e796ce949d5eff041ae3a4c810",
     "label": "demo: ocr invoice",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:51:36Z"
   },
   {
     "hash": "ebd60b594283aa9787b0bcfed361f57154b9bd69d1392762519c0ba2455d6703",
     "label": "demo: postal code lookup",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:53:11Z"
   },
   {
     "hash": "2e3e1a84d788d22c91097ca5b09cdf4549f247b3551e76d73cdafcff96312582",
     "label": "demo: fx usd brl",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:53:21Z"
   },
   {
     "hash": "bcabce960c29bec4821013aa80c3cbef974854488bf767fcc5ef84e96ded942d",
     "label": "demo: ocr invoice",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T18:53:26Z"
   },
   {
     "hash": "01fee0b5c53a4f94cf9b76ff8155aa8b126d4f6fbff92328d800534c3d6a4f76",
     "label": "cleanup: remove legacy PREGO trustline SELLER",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:01:32Z"
   },
   {
     "hash": "b5a8fd3b5239a2eb8ae026046dff453c6f1a665091a58da31b026fe123b8258b",
     "label": "cleanup: return 10000.0000000 PREGO to issuer PAYER",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:01:37Z"
   },
   {
     "hash": "412d5840441e415f19298c22d2653c1db779220191e3f0bd4c13f49b760a3c58",
     "label": "cleanup: remove legacy PREGO trustline PAYER",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:01:42Z"
   },
   {
     "hash": "43af892d31c2a961b21f99eba43f4f7da14af36656fb5c0b81a6e49ee86c2787",
     "label": "demo: postal code lookup",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:11:33Z"
   },
   {
     "hash": "4b4336dd58d871453f11606ba37ace4f12f8c244d9bc2e10ce8d94663a2c12e5",
     "label": "demo: fx usd brl",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:11:43Z"
   },
   {
     "hash": "5e49e77232de345a5f5fed5d5b4fd5925b305c00bf35ec2ea272d1493306ca2e",
     "label": "demo: ocr invoice",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:11:53Z"
   },
   {
     "hash": "3bfd5ee6428b80c65272f6592e3e6a70b49f506b25a97390e343b28e45fcc6ce",
     "label": "demo: postal code lookup",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:22:29Z"
   },
   {
     "hash": "c5d50781df8abbb0cf97e20af7b93488e087d9e2d554057e1c9521e897ca13cf",
     "label": "demo: fx usd brl",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:22:34Z"
   },
   {
     "hash": "895801b0447e023fe3a86c5a68986197def54c0d7a62d0968e8464b348de5468",
     "label": "demo: ocr invoice",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-06T19:22:44Z"
   },
   {
     "hash": "15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726",
     "label": "conformance: stock @x402/fetch fx usd brl",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-07T16:25:13Z"
   },
   {
     "hash": "cbc0397a851a3adbf5f97dbea0e9fd6edf2df56f7a7841f32251bbae0878b671",
     "label": "conformance: stock @x402/fetch postal code lookup",
-    "source": "live"
+    "source": "live",
+    "settledAt": "2026-08-07T16:25:48Z"
   }
 ]

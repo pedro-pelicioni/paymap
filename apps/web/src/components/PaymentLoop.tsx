@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ASSET_CODE, testnetTxs } from '../lib/api'
-import { explorerTx, formatAmount, shortHash, shortKey } from '../lib/format'
-import type { StellarsightRecord } from '../lib/types'
+import { explorerTx, formatAmount, settledOn, shortHash, shortKey } from '../lib/format'
+import type { StellarsightRecord, TxEntry } from '../lib/types'
 
 const DURATIONS = [1100, 1200, 1500, 800]
 
@@ -15,12 +15,12 @@ const DURATIONS = [1100, 1200, 1500, 800]
 const paymentTxs = testnetTxs.filter((t) => /^demo:/i.test(t.label ?? ''))
 
 /** deterministic pick so the same sight always shows the same settled payment */
-function hashPick(id: string): string | undefined {
+function txPick(id: string): TxEntry | undefined {
   const pool = paymentTxs.length ? paymentTxs : []
   if (!pool.length) return undefined
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return pool[h % pool.length]?.hash
+  return pool[h % pool.length]
 }
 
 /**
@@ -73,7 +73,9 @@ export function PaymentLoop({ rec, runId }: { rec: StellarsightRecord | null; ru
   }
 
   const amount = formatAmount(rec.amount ?? rec.maxAmountRequired)
-  const hash = hashPick(rec.id)
+  const tx = txPick(rec.id)
+  const hash = tx?.hash
+  const when = settledOn(tx?.settledAt)
   const steps = [
     {
       title: 'Request',
@@ -172,6 +174,12 @@ fees   sponsored (areFeesSponsored: true)`,
               <span>scheme</span>
               <b>{rec.scheme} · fees sponsored</b>
             </div>
+            {when ? (
+              <div className="receipt__row">
+                <span>settled on</span>
+                <b>{when}</b>
+              </div>
+            ) : null}
             {hash ? (
               <a
                 className="receipt__hash"
@@ -184,8 +192,10 @@ fees   sponsored (areFeesSponsored: true)`,
             ) : null}
             {hash ? (
               <p className="step__note" style={{ marginTop: '0.7rem' }}>
-                Hash from a real settled run on Stellar testnet — open it and check. Run{' '}
-                <code>npm run dev:all</code> to settle live against your own facilitator.
+                {when ? `Settled on ${when}` : 'Settled earlier'} on Stellar testnet. This panel
+                replays that run step by step — it does not settle a new payment. The hash is real:
+                open it and check. Run <code>npm run dev:all</code> to settle live against your own
+                facilitator.
               </p>
             ) : (
               <p className="receipt__row">

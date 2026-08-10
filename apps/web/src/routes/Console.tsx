@@ -72,12 +72,25 @@ export default function Console() {
             <a href="#board">Results</a>
             <a href="#loop-panel">Payment loop</a>
           </nav>
+          {/*
+            Two claims, kept apart on purpose. The catalog really is live; the payment
+            loop never is. One unqualified LIVE in the corner was reading as a warranty
+            over the whole page, replayed settlement included.
+          */}
           <span
             className={`source-pill source-pill--${cat.source}`}
-            title={cat.source === 'live' ? `connected to ${INDEX_URL}` : 'index unreachable — baked fixture'}
+            title={cat.source === 'live' ? `catalog connected to ${INDEX_URL}` : 'index unreachable — baked fixture'}
           >
             <span className="dot dot--pulse" />
-            {cat.source}
+            {cat.source} catalog
+          </span>
+          <span
+            className="source-pill source-pill--seed"
+            style={{ marginLeft: '0.5rem' }}
+            title="The payment loop traces a settlement that already happened on testnet. Nothing settles from this page — the resource server and facilitator run locally."
+          >
+            <span className="dot" />
+            replay payments
           </span>
         </div>
       </header>
