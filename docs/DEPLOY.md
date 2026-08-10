@@ -19,6 +19,17 @@ Nothing about local development changes. `npm run dev:all` still runs the index 
 | `POST /discovery/resources` | `api/discovery/resources.mjs` | auto-cataloging — off unless configured |
 | `GET /discovery/search` | `api/discovery/search.mjs` | ranked, results under `resources`, `partialResults`, cursor |
 | `GET /discovery/health` | `api/discovery/health.mjs` | mode, record count, commit |
+| `GET /supported` | `api/facilitator.mjs` | the facilitator's x402 v2 advertisement — scheme, network, sponsored fees, asset |
+| `POST /verify` | `api/facilitator.mjs` | payment verification; a rejection carries a non-null `invalidReason` |
+| `POST /settle` | `api/facilitator.mjs` | wraps the settlement in a fee-bump, submits to Stellar RPC, inside the function's 60s budget |
+| `GET /health` | `api/facilitator.mjs` | facilitator health: network, asset, fee payer, catalog backend |
+| `GET /events` | `api/facilitator.mjs` | SSE; a stream ends when the function's clock does and the client reconnects |
+
+`api/facilitator.mjs` is the same Express app `npm run dev:facilitator` binds to `:4021` —
+imported, not reimplemented — so both halves of "facilitator with Bazaar support" answer on
+one origin. It needs `FEEPAYER_SECRET`, `ASSET_SAC`, `ASSET_CODE` and `SELLER_PUBLIC` in
+the deployment environment; the signer derives at module load, so a missing secret fails
+at boot rather than on the first settle.
 
 Everything under `/discovery/*` belongs to the API. An unknown path there returns 404
 rather than the single-page app.
