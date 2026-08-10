@@ -542,6 +542,11 @@ async function main() {
     // falls through to the NEXT rule, which is the SPA catch-all, so /discovery/nope
     // answered 200 text/html. The guard now targets one concrete function instead.
     eq(resolve('/discovery/nope'), '/api/discovery/unknown', 'unknown /discovery paths stay in the API');
+    // The facilitator half of the RFP title. These five ride the same first-match rule:
+    // each must land on the facilitator function, not fall through to the SPA.
+    for (const path of ['/supported', '/verify', '/settle', '/health', '/events']) {
+      eq(resolve(path), '/api/facilitator', `${path} reaches the facilitator, not index.html`);
+    }
     eq(resolve('/console'), '/index.html', 'the SPA still catches its own routes');
     eq(resolve('/'), '/index.html', 'the landing page still resolves');
   });
@@ -556,7 +561,9 @@ async function main() {
       readFileSync(fileURLToPath(new URL(`.${rule.destination}.mjs`, ROOT)), 'utf8');
       checked++;
     }
-    eq(checked, 4, 'expected four concrete function routes (three endpoints + the guard)');
+    // 9 = the three discovery endpoints + the /discovery/:path* guard + the five
+    // facilitator routes (all five target the one api/facilitator.mjs).
+    eq(checked, 9, 'expected nine concrete function routes (discovery x4 + facilitator x5)');
   });
 
   await check('the functions glob in vercel.json matches the files that exist', () => {

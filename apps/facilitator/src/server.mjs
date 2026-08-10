@@ -16,7 +16,7 @@
  * Ports: 4021 facilitator, 4022 bazaar index (packages/index mounted here).
  */
 
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
@@ -630,18 +630,32 @@ indexApp.post("/discovery/resources", (req, res) => {
 
 // ---------------------------------------------------------------------------
 // Boot
+//
+// Only when executed directly (`node apps/facilitator/src/server.mjs`). When this module
+// is imported — api/facilitator.mjs wraps `app` as a Vercel function so /supported,
+// /verify and /settle answer on the public domain — binding ports would crash the
+// runtime. The hand-rolled indexApp stays local-only either way: the deployed discovery
+// API is api/discovery/*, which serves the same packages/index without the KNOWN DRIFT
+// documented in CONTRACT.md.
 // ---------------------------------------------------------------------------
 
-app.listen(FACILITATOR_PORT, () => {
-  console.log(`\n[facilitator] x402 facilitator  http://localhost:${FACILITATOR_PORT}`);
-  console.log(`[facilitator]   GET  /supported  /health  /events`);
-  console.log(`[facilitator]   POST /verify     /settle`);
-  console.log(`[facilitator]   asset   ${ASSET_CODE} ${ASSET_SAC}`);
-  console.log(`[facilitator]   feePayer ${feePayerSigner.address} (fees sponsored)`);
-});
+const runDirect =
+  process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-indexApp.listen(INDEX_PORT, () => {
-  console.log(`[index]       bazaar index    http://localhost:${INDEX_PORT}`);
-  console.log(`[index]         GET /discovery/resources  /discovery/search`);
-  console.log(`[index]         backend: ${usingIndexStub ? "in-memory stub" : "packages/index"}\n`);
-});
+if (runDirect) {
+  app.listen(FACILITATOR_PORT, () => {
+    console.log(`\n[facilitator] x402 facilitator  http://localhost:${FACILITATOR_PORT}`);
+    console.log(`[facilitator]   GET  /supported  /health  /events`);
+    console.log(`[facilitator]   POST /verify     /settle`);
+    console.log(`[facilitator]   asset   ${ASSET_CODE} ${ASSET_SAC}`);
+    console.log(`[facilitator]   feePayer ${feePayerSigner.address} (fees sponsored)`);
+  });
+
+  indexApp.listen(INDEX_PORT, () => {
+    console.log(`[index]       bazaar index    http://localhost:${INDEX_PORT}`);
+    console.log(`[index]         GET /discovery/resources  /discovery/search`);
+    console.log(`[index]         backend: ${usingIndexStub ? "in-memory stub" : "packages/index"}\n`);
+  });
+}
+
+export { app, indexApp };

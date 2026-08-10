@@ -7,6 +7,10 @@
   "functions": {
     "api/**/*.mjs": {
       "includeFiles": "packages/index/src/**"
+    },
+    "api/facilitator.mjs": {
+      "includeFiles": "{packages/index/src/**,apps/facilitator/src/**}",
+      "maxDuration": 60
     }
   },
   "rewrites": [
@@ -25,6 +29,26 @@
     {
       "source": "/discovery/:path*",
       "destination": "/api/discovery/unknown"
+    },
+    {
+      "source": "/supported",
+      "destination": "/api/facilitator"
+    },
+    {
+      "source": "/verify",
+      "destination": "/api/facilitator"
+    },
+    {
+      "source": "/settle",
+      "destination": "/api/facilitator"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/facilitator"
+    },
+    {
+      "source": "/events",
+      "destination": "/api/facilitator"
     },
     {
       "source": "/(.*)",

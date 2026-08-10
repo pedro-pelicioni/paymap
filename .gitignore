@@ -10,3 +10,5 @@ coverage/
 _probe_tmp.mjs
 
 .claude/
+.vercel
+.env*
