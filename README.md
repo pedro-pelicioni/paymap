@@ -235,7 +235,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
-| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 129 tests are its. Not on npm yet — install from a clone |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 129 tests are its. On npm: `npm i @stellarsight/express` |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |
