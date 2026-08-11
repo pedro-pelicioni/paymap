@@ -1,7 +1,8 @@
 {
   "name": "@stellarsight/express",
   "version": "1.0.0",
-  "description": "x402 paywall middleware for Express — sell any endpoint for a Stellar token and have it listed in the STELLARSIGHT bazaar before its first payment.",
+  "description": "x402 paywall middleware for Express \u2014 sell any endpoint for a Stellar token and have it listed in the STELLARSIGHT bazaar before its first payment.",
+  "author": "Pedro Pelicioni",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {

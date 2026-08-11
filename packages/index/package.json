@@ -2,6 +2,7 @@
   "name": "@stellarsight/index",
   "version": "1.0.0",
   "description": "STELLARSIGHT \u2014 facilitator-side x402 bazaar catalog and search index for Stellar",
+  "author": "Pedro Pelicioni",
   "type": "module",
   "main": "./src/index.mjs",
   "exports": {
@@ -28,5 +29,14 @@
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedro-pelicioni/stellarsight.git",
+    "directory": "packages/index"
+  },
+  "homepage": "https://github.com/pedro-pelicioni/stellarsight/tree/main/packages/index#readme",
+  "bugs": {
+    "url": "https://github.com/pedro-pelicioni/stellarsight/issues"
   }
 }

@@ -3,13 +3,11 @@
 x402 paywall middleware for Express. Put a price on any route, take payment in a Stellar
 token, and have the route listed in the STELLARSIGHT bazaar **before** its first payment.
 
-You do not need to fork the whole project — this is a self-contained package that drops
-into your own repo. **It is not on npm yet**, so install it from a clone of this
-repository until it is published:
+You do not need to fork anything. This is a self-contained package that drops into your
+own repo:
 
 ```bash
-git clone https://github.com/pedro-pelicioni/stellarsight
-npm install ./stellarsight/packages/express express @x402/core @x402/extensions
+npm install @stellarsight/express express @x402/core @x402/extensions
 ```
 
 ## 60 seconds
