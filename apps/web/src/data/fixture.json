@@ -3,12 +3,12 @@
   "network": "stellar:testnet",
   "asset": "CSQ5WYWQEBHJ7WVLID432OI2BY6ZDKUBIQYIQASRUW32H2N5E3JAPAE5",
   "assetCode": "SXT",
-  "facilitator": "http://localhost:4021",
+  "facilitator": "https://stellarsight.xyz",
   "items": [
     {
-      "id": "http://localhost:4023/v1/fx/usd-brl",
+      "id": "https://stellarsight.xyz/v1/fx/usd-brl",
       "resource": {
-        "url": "http://localhost:4023/v1/fx/usd-brl",
+        "url": "https://stellarsight.xyz/v1/fx/usd-brl",
         "serviceName": "stellarsight-fx",
         "description": "USD/BRL exchange rate with bid, ask and mid price.",
         "tags": [
@@ -49,9 +49,9 @@
       "firstSeenAt": 1786043471267
     },
     {
-      "id": "http://localhost:4023/v1/ocr/nota-fiscal",
+      "id": "https://stellarsight.xyz/v1/ocr/nota-fiscal",
       "resource": {
-        "url": "http://localhost:4023/v1/ocr/nota-fiscal",
+        "url": "https://stellarsight.xyz/v1/ocr/nota-fiscal",
         "serviceName": "stellarsight-ocr",
         "description": "Invoice OCR — Brazilian electronic invoice (NF-e), returning structured line items and totals.",
         "tags": [
@@ -107,9 +107,9 @@
       "firstSeenAt": 1786043471309
     },
     {
-      "id": "http://localhost:4023/v1/cep/:cep",
+      "id": "https://stellarsight.xyz/v1/cep/:cep",
       "resource": {
-        "url": "http://localhost:4023/v1/cep/:cep",
+        "url": "https://stellarsight.xyz/v1/cep/:cep",
         "serviceName": "stellarsight-postal",
         "description": "Brazilian postal code lookup returning street, neighborhood, city and state.",
         "tags": [

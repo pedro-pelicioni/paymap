@@ -88,7 +88,7 @@ export default function Console() {
           <span
             className="source-pill source-pill--seed"
             style={{ marginLeft: '0.5rem' }}
-            title="The payment loop traces a settlement that already happened on testnet. Nothing settles from this page — the resource server and facilitator run locally."
+            title="The payment loop traces a settlement that already happened on testnet. It does not settle one at click time, though the facilitator that settled it answers on this origin."
           >
             <span className="dot" />
             replay payments
