@@ -31,8 +31,9 @@ function txPick(id: string): TxEntry | undefined {
  *
  * This is a REPLAY, and the UI says so. It walks the four stages on a timer and lands on
  * a real settled testnet transaction drawn from docs/TESTNET-TXS.md — it does not settle
- * a payment at click time. Settling live needs the resource server and the facilitator,
- * which run locally (`npm run dev:all`); only the discovery index is deployed publicly.
+ * a payment at click time. The facilitator is deployed — /supported, /verify and /settle
+ * answer on this origin — so what this panel withholds is the click-time settlement, not
+ * the service.
  *
  * The hash is genuine, which is exactly why the labelling matters: a viewer who clicks
  * through to stellar.expert sees `successful: true` and would otherwise reasonably
@@ -113,7 +114,7 @@ fees   sponsored (areFeesSponsored: true)`,
       title: 'Settle',
       code: <span className="step__code">POST /settle</span>,
       note: 'The facilitator verifies the entry and submits it to Stellar testnet.',
-      wire: `POST http://localhost:4021/settle
+      wire: `POST https://stellarsight.xyz/settle
 → verify  isValid: true
 → submit  stellar:testnet`,
     },
@@ -135,7 +136,7 @@ fees   sponsored (areFeesSponsored: true)`,
         <span
           className="source-pill"
           style={{ marginLeft: '0.6rem' }}
-          title="This traces a settled payment step by step. It does not settle one now — the resource server and facilitator run locally. The hash below is from a real testnet run."
+          title="This traces a settled payment step by step. It does not settle one at click time. The hash below is from a real testnet run, and the facilitator that settled it answers on this origin."
         >
           <span className="dot" />
           replay
@@ -225,8 +226,8 @@ fees   sponsored (areFeesSponsored: true)`,
               </a>
               <p className="step__note" style={{ marginTop: '0.7rem' }}>
                 Open it: the amount, the accounts and the date above are what you will find.
-                Fees were paid by the facilitator, not the payer. Run <code>npm run dev:all</code>{' '}
-                to settle live against your own facilitator.
+                Fees were paid by the facilitator, not the payer. Run <code>npm run demo</code>{' '}
+                to drive a fresh payment through this same hosted stack.
               </p>
             </div>
           ) : (

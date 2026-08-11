@@ -142,7 +142,7 @@ function Sight({
               ? 'Baked fixture row — nothing here is reachable or payable from this page'
               : rec.seeded
                 ? 'Illustrative catalog entry — advertised, not settle-backed'
-                : 'Real resource — payable now, backed by observed settlements'
+                : 'Live registration — announced by a reachable seller, payable now'
           }
         >
           {/*

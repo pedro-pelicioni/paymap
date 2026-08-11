@@ -112,7 +112,7 @@ function Terminal() {
           {'\n    '}
           <span className="t-key">"_score"</span>
           <span className="t-dim">: </span>
-          <span className="t-num">0.8098</span>
+          <span className="t-num">0.7736</span>
           <span className="t-dim">,</span>
           {'\n    '}
           <span className="t-key">"accepts"</span>
@@ -281,9 +281,12 @@ export default function Landing() {
               >
                 <div className="proof__cell">
                   <span className="proof__n">
-                    <em>14</em>
+                    <em>16</em>
                   </span>
-                  <span className="proof__l">settled x402 payments on Stellar testnet</span>
+                  <span className="proof__l">
+                    settled x402 payments on Stellar testnet — the two newest through the
+                    hosted stack
+                  </span>
                 </div>
                 <div className="proof__cell">
                   <span className="proof__n">{TEST_COUNT}</span>

@@ -121,8 +121,9 @@ const STEPS: Step[] = [
     body: (
       <>
         An <em>unmodified</em> <code>@x402/fetch</code> client — no STELLARSIGHT code on the path — is
-        driven through 402 → sign → settle → 200 against your seller. Settling increments your
-        record's settlement count through the bazaar extension.
+        driven through 402 → sign → settle → 200 against your seller. The bazaar extension
+        reports the settlement back, and the facilitator's index counts it; persisting those
+        counts to the hosted catalog is on the funded roadmap.
       </>
     ),
     code: (

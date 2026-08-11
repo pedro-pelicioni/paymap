@@ -8,7 +8,7 @@
 
 **The facilitator-side Bazaar discovery layer for x402 — the piece that does not exist in public code today — and the whole payment loop around it, running end to end on Stellar testnet.**
 
-`Apache-2.0` · `stellar:testnet` · **14 settled x402 payments** · **129 tests, 0 failing**
+`Apache-2.0` · `stellar:testnet` · **16 settled x402 payments** · **129 tests, 0 failing**
 
 </div>
 
@@ -65,7 +65,9 @@ the map.
 **Live at [`stellarsight.xyz`](https://stellarsight.xyz).** The same catalog that `packages/index`
 serves on `:4022` also deploys as Vercel functions, so the Bazaar is a **public, hosted
 endpoint any agent can call** — which is what the RFP asks for, and what does not exist for
-Stellar anywhere else. Run the commands below and they answer.
+Stellar anywhere else. The facilitator answers on the same origin (`/supported`, `/verify`,
+`/settle`) and so does a real paid API under `/v1/*`, which announces itself into the catalog:
+discovery, payment and settlement are one deployment. Run the commands below and they answer.
 
 | Method | Endpoint | What it does |
 |---|---|---|
@@ -104,10 +106,10 @@ Real output, at the time of writing:
 
 ```
 $ curl -s 'https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3' …
-  0.8098  Invoice OCR
+  0.7736  Invoice OCR
 
 $ curl -s https://stellarsight.xyz/discovery/health …
-  mode=kv  transport=redis  records=27  writable=true  commit=9f76bb6
+  mode=kv  transport=redis  records=30  writable=true  commit=608080b
 
 $ curl -s -o /dev/null -w '%{http_code} %{content_type}' https://stellarsight.xyz/discovery/nope
   404 application/json; charset=utf-8
@@ -399,10 +401,11 @@ Each test cites the spec rule it enforces.
 Real hashes produced by this code, with explorer links:
 [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md).
 
-Twenty-two in total, and the split matters: **14 are x402 payments** — the demo loop, the MCP
-agent, and the stock-client conformance run — and 8 are setup and cleanup, meaning trustlines,
-the SAC deploy, minting the test asset, and returning a legacy balance. Only the first 14 are
-evidence that the payment path works.
+Twenty-four in total, and the split matters: **16 are x402 payments** — the demo loop and the
+stock-client conformance run — and 8 are setup and cleanup, meaning trustlines, the SAC
+deploy, minting the test asset, and returning a legacy balance. Only the 16 payment rows are
+evidence that the payment path works; the two newest of them settled entirely through the
+hosted stack.
 
 ## License
 

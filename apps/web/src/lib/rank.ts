@@ -165,7 +165,7 @@ export function rank(query: string, docs: StellarsightRecord[]): StellarsightRec
         value: settle * WEIGHTS.settlements,
         detail: `${(doc.settlements ?? 0).toLocaleString('en-US')} settlements observed (log-scaled)`,
       },
-      { key: 'recency', value: rec * WEIGHTS.recency, detail: '72 h half-life since lastSeenAt' },
+      { key: 'recency', value: rec * WEIGHTS.recency, detail: '14-day half-life since lastSeenAt' },
     ]
 
     const total = parts.reduce((a, p) => a + p.value, 0)

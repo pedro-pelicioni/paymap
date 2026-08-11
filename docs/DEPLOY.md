@@ -1,8 +1,9 @@
 # Deploying STELLARSIGHT
 
 The repo deploys as a **single Vercel project**: the Vite site in `apps/web` becomes the
-static output, and the three files in `api/discovery/` become Node.js Vercel Functions
-that serve the public x402 Bazaar discovery API.
+static output, and the `.mjs` files under `api/` become Node.js Vercel Functions: four
+discovery handlers, plus `facilitator.mjs` and `seller.mjs`. Together they serve the Bazaar
+discovery API, the x402 facilitator and a real paid API on one origin.
 
 Nothing about local development changes. `npm run dev:all` still runs the index on
 `:4022` out of `apps/facilitator`, and the serverless handlers import the same
@@ -24,10 +25,13 @@ Nothing about local development changes. `npm run dev:all` still runs the index 
 | `POST /settle` | `api/facilitator.mjs` | wraps the settlement in a fee-bump, submits to Stellar RPC, inside the function's 60s budget |
 | `GET /health` | `api/facilitator.mjs` | facilitator health: network, asset, fee payer, catalog backend |
 | `GET /events` | `api/facilitator.mjs` | SSE; a stream ends when the function's clock does and the client reconnects |
+| `GET /v1/:path*` | `api/seller.mjs` | the example paid API: three priced routes answering 402 with their terms |
+| `GET /.well-known/x402` | `api/seller.mjs` | the seller's x402 discovery document |
 
-`api/facilitator.mjs` is the same Express app `npm run dev:facilitator` binds to `:4021` —
-imported, not reimplemented — so both halves of "facilitator with Bazaar support" answer on
-one origin. It needs `FEEPAYER_SECRET`, `ASSET_SAC`, `ASSET_CODE` and `SELLER_PUBLIC` in
+`api/facilitator.mjs` and `api/seller.mjs` are the same Express apps
+`npm run dev:facilitator` and `npm run dev:seller` bind to `:4021` and `:4023` — imported,
+not reimplemented — so both halves of "facilitator with Bazaar support" answer on one origin,
+and the seller announces itself into the catalog through the authenticated write path. It needs `FEEPAYER_SECRET`, `ASSET_SAC`, `ASSET_CODE` and `SELLER_PUBLIC` in
 the deployment environment; the signer derives at module load, so a missing secret fails
 at boot rather than on the first settle.
 
@@ -46,10 +50,15 @@ are therefore listed first and the catch-all is last:
   { "source": "/discovery/resources", "destination": "/api/discovery/resources" },
   { "source": "/discovery/search",    "destination": "/api/discovery/search" },
   { "source": "/discovery/health",    "destination": "/api/discovery/health" },
-  { "source": "/discovery/:path*",    "destination": "/api/discovery/:path*" },
+  { "source": "/discovery/:path*",    "destination": "/api/discovery/unknown" },
+  … 5 facilitator rules (/supported, /verify, /settle, /health, /events) → /api/facilitator
+  … 2 seller rules (/v1/:path*, /.well-known/x402)                      → /api/seller
   { "source": "/(.*)",                "destination": "/index.html" }
 ]
 ```
+
+Twelve rules in total; the elided seven are shown in full in `vercel.json`. What matters here
+is the ordering, not the count: every API rule precedes the catch-all.
 
 `npm run verify:api` asserts that ordering against the real `vercel.json` — if anyone ever
 moves the catch-all up, that check fails.
@@ -177,11 +186,11 @@ nothing in the catalog ever claims a payment that did not happen.
 
 Reads work. Writes return `503` with a reason naming the variables to set.
 
-The three real seller routes (`/v1/fx/usd-brl`, `/v1/cep/:cep`, `/v1/ocr/nota-fiscal`)
-are **not** seeded into the deployment: `apps/seller` binds to `localhost:4023` and there
-is no publicly reachable instance of it. Baking `http://localhost:4023/...` into a public
-Bazaar would advertise resources nobody can reach. When a public seller exists, it enters
-the catalog through the write path below.
+The three real seller routes (`/v1/fx/usd-brl`, `/v1/cep/:cep`, `/v1/ocr/nota-fiscal`) are
+**not** seeded. They never were: baking a `localhost:4023` URL into a public Bazaar would
+advertise resources nobody can reach. They enter through the write path instead, which is
+what `api/seller.mjs` now does on its first request — `/discovery/health` reports them as
+`liveRecords: 3`, distinct from the 27 seeded ones.
 
 ### `kv` — durable and shared
 
