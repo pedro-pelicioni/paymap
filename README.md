@@ -26,6 +26,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
 | Catalog integrity is real, not decorative | `npm test` → 129 tests, 0 failing (66 of them adversarial) | 30s |
+| It stays that way | [CI](../../actions) runs the suite, the 46 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
 | A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
 

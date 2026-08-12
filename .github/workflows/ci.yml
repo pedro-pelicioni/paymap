@@ -1,0 +1,69 @@
+# Runs what a reviewer would run, on the versions the project actually claims to support.
+#
+# The floor is Node 22 (package.json engines); the deployment runs 24. Testing both is the
+# point: an engines field nobody exercises is a promise, and CONTRACT.md's "Node 22" was
+# stated three different ways across the docs before anyone checked.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push supersedes an in-flight run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+
+    # Two store-transport tests skip themselves without a real Redis, so a bare `npm test`
+    # reports 126 passed / 3 skipped. CI supplies one and takes that to 128 / 1: the round
+    # trip and the error-reply path are exactly the parts worth exercising against a real
+    # server rather than a mock. The last skip is the agent's live-replay check, which
+    # wants a facilitator on localhost:4021 and stays skipped here by design — booting the
+    # full stack inside CI would test the boot, not the guard.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tests
+        run: npm test
+        env:
+          STELLARSIGHT_TEST_REDIS_URL: redis://127.0.0.1:6379
+
+      # Drives the real api/discovery handlers with mock and real node req/res objects,
+      # asserts every response shape, both pagination styles, CORS, the write path in all
+      # four of its states, and the vercel.json rewrite ordering that keeps the SPA
+      # catch-all from swallowing the API.
+      - name: API conformance
+        run: npm run verify:api
+
+      # What Vercel builds. Catches a type error or a broken import before the deployment
+      # does. The prebuild scripts reach Horizon and are written to never fail the build,
+      # so a network blip degrades the data rather than the run.
+      - name: Build the site
+        run: npm run build --workspace apps/web
