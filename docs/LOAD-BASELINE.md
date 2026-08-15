@@ -1,0 +1,78 @@
+# Load baseline — one fee-payer, before the channel pool
+
+Produced by `npm run load:baseline -- -n 10 --report` on 2026-08-15T15:58:31.518Z.
+Raw results: [`eval/load-baseline.json`](../eval/load-baseline.json).
+
+This is the **"before"**. The facilitator currently signs and fee-bumps every settlement
+from a single `FEEPAYER` account, and a Stellar account has one sequence number, so
+concurrent settlements queue behind each other by construction. Tranche 1 replaces this
+with a channel-account pool; these are the numbers it has to beat.
+
+## Configuration under test
+
+| | |
+|---|---|
+| Fee-payer accounts | 1 |
+| Channel pool | no |
+| Network | stellar:testnet |
+| Concurrency | 10 |
+
+## The controlled experiment
+
+The same payment, against the same stack, issued two ways:
+
+| | Attempted | Succeeded | Success rate |
+|---|---|---|---|
+| **Serial** (one at a time) | 4 | 4 | **100%** |
+| **Concurrent** | 10 | 1 | **10%** |
+
+Identical payments succeed serially and fail in parallel. The difference is contention on the single fee-payer sequence number, which is what a channel-account pool removes.
+
+Nothing about the payment changed between the two rows — same asset, same seller, same
+signer, same facilitator, same network. Only the timing did. That is what makes the
+failure attributable to the single fee-payer's sequence number rather than to the
+payment, and it is why the pool is the first thing Tranche 1 buys.
+
+`@x402/stellar` reports these as `settle_exact_stellar_transaction_submission_failed`
+without surfacing the underlying Stellar result code, so the control group is the only way
+to attribute them honestly. The message alone would not let anyone — including us — tell a
+sequence collision from a genuinely bad payment.
+
+## Result
+
+| Measure | Value |
+|---|---|
+| Uncontended payment (warm-up, serial) | 6977ms |
+| Serial control, p50 | 5665ms |
+| p50 under load | 5898ms |
+| p95 under load | 5898ms |
+| Max under load | 5898ms |
+| **Contention factor at p50** | **0.85×** |
+| Succeeded | 1/10 |
+| Sequence-number contention failures | 8 |
+| Other failures | 1 |
+| Throughput | ~2 settlements/min |
+
+## How to read the contention factor
+
+It is p50-under-load divided by the same payment made alone. A value near 1 means
+concurrency is free; anything well above 1 is the sequence number serialising work that
+had no reason to be serial. It is the single number Tranche 1 is accountable for.
+
+Sequence-contention failures are counted separately from every other failure on purpose:
+a channel pool removes the first category and does nothing about the second, so folding
+them together would overstate what the deliverable buys.
+
+## What this does NOT show
+
+The latency numbers under load are computed over the payments that **succeeded**. When
+most of the run fails, that sample is small and survivorship-biased — a fast p50 next to a
+low success rate means "the ones that got through were fine", not "the system was fine".
+The success rate is the headline here; the latency is context.
+
+## Tranche 1 target
+
+- A pool of channel accounts, round-robin leased, each with its own sequence number.
+- 25–50 concurrent settlements with **zero** sequence-number failures.
+- Sequence-drift quarantine and reconciliation demonstrated by fault injection.
+- This same script re-run and published as the "after", against this file.

@@ -1,0 +1,102 @@
+{
+  "generatedAt": "2026-08-15T15:58:31.518Z",
+  "configuration": {
+    "feePayers": 1,
+    "channelPool": false,
+    "note": "single FEEPAYER account signs and fee-bumps every settlement; one sequence number for all of them",
+    "facilitator": "http://localhost:4021",
+    "network": "stellar:testnet"
+  },
+  "warmup": {
+    "totalMs": 6977,
+    "settleMs": 5368,
+    "tx": "1d159d8ec41c6e7dd159c02832ed43eac6aa3f3a63f3f84dd68c6efb48c24a0e"
+  },
+  "serialControl": {
+    "attempted": 4,
+    "succeeded": 4,
+    "successRate": 1,
+    "wallClockMs": 29673,
+    "p50Ms": 5665,
+    "transactions": [
+      "8bf55ec5a5181f4d107d90dad0bd2c0a3f6ecc80e103e005b40a63921b27ab3a",
+      "fd1f951cee0b89c759837564d9ef6705e6ced1a5bd4858a4e35bbb79af58b014",
+      "e2aca44959e2b7e6b31dd1005d1350a93622be96fb2837c6681864628a80e3ae",
+      "42329f694a08a77d4468e2bc5255d88860e14c2ee05c5b6c63333a2610d92ba1"
+    ]
+  },
+  "run": {
+    "concurrency": 10,
+    "wallClockMs": 31406,
+    "succeeded": 1,
+    "failed": 9,
+    "sequenceContention": 8,
+    "otherFailures": 1,
+    "throughputPerMin": 2,
+    "successRate": 0.1
+  },
+  "attribution": {
+    "serialSuccessRate": 1,
+    "concurrentSuccessRate": 0.1,
+    "concurrencyPenalty": 0.9,
+    "conclusion": "Identical payments succeed serially and fail in parallel. The difference is contention on the single fee-payer sequence number, which is what a channel-account pool removes."
+  },
+  "latencyMs": {
+    "p50": 5898,
+    "p95": 5898,
+    "max": 5898,
+    "settleP50": 4553,
+    "settleP95": 4553
+  },
+  "contentionFactor": 0.85,
+  "failures": [
+    {
+      "i": 1,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 2,
+      "code": "STELLARSIGHT_TIMEOUT",
+      "reason": "Settlement did not complete within 30000ms."
+    },
+    {
+      "i": 3,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 4,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 5,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 6,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 7,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 8,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    },
+    {
+      "i": 9,
+      "code": "STELLARSIGHT_SETTLE_FAILED",
+      "reason": "The seller rejected the payment: Settle exact stellar transaction submission failed [settle_exact_stellar_transaction_submission_failed]"
+    }
+  ],
+  "transactions": [
+    "b2835270977c36aa45fa7d9d0d8c543f6c84d4f28f3feeec6d2231e9cd3ce85c"
+  ]
+}
