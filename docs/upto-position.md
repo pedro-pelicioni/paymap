@@ -67,10 +67,66 @@ count, which is materially harder to fake.
   transaction they signed rather than by an expiry they have to track. Stated as a
   preference, not a finding — we have implemented neither.
 
+## How the thread answered
+
+Posted 15 August; @Iam0TI, who authored the Stellar binding in
+[x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134), replied the
+same day ([thread](https://github.com/stellar/x402-stellar/issues/72#issuecomment-5304348824)).
+Two of our points were corrected and one was accepted, and the acceptance is the one that
+matters here:
+
+**Corrected, and withdrawn on the thread.**
+
+- `validAfter` is already bound. It sits in the `require_auth_for_args` tuple and is
+  enforced with `if now < valid_after` inside `settle`. Our point had been handled before we
+  made it, which we should have checked in the diff rather than inferring from the thread.
+- Allowance hygiene: the atomic pull-max, pay-actual, refund-remainder shape we preferred
+  makes the contract take custody of money the payer never intended to spend, purely to hand
+  most of it back. `approve` → `transfer_from` → revoke with `autoRevoke` always true closes
+  the same exposure window without the custody hop. Better argument, position withdrawn.
+
+**Accepted, and it defines the scope of our work.**
+
+Pricing metadata belongs at the discovery layer, not in the payment scheme:
+`PaymentRequirements.amount` stays unambiguously the authorization ceiling, and discovery
+decides how the settled amount is used. The reasoning is that `upto` spans per-token,
+per-second, per-byte, per-call, storage and multi-dimensional pricing, which share no unit,
+so a single `unitPrice` in the scheme would be wrong for most products.
+
+That is a spec author publicly delegating the problem to the layer this project builds. What
+we proposed back, and would open as a separate PR against the bazaar extension so #3134 stays
+narrow:
+
+```
+extensions.bazaar.pricing = {
+  model:   "per-call" | "per-token" | "per-second" | "per-byte" | "tiered" | "custom",
+  unit:    { amount: "12", per: "1000 tokens" },   // optional, omitted when meaningless
+  typical: "350",                                  // optional, what a median call settles
+  note:    "free-form, for models that fit none of the above"
+}
+```
+
+`model` and `note` are always expressible; `unit` and `typical` are optional precisely
+because the product types listed above show they are not universal. A catalog that receives
+none of them falls back to the ceiling and says so.
+
+The part that only a catalog can do: a seller-declared `typical` is a claim, and the catalog
+is the sole party positioned to check it. Once the settled actual amount is exposed
+consistently, a catalog holding a resource's settlement history compares declared-typical
+against observed-median and down-ranks the gap. That makes the field self-correcting instead
+of another number sellers optimise, and no settlement contract could enforce it even in
+principle — which is further evidence the metadata belongs where the thread put it.
+
 ## What this commits us to
 
 Implement whatever #3134 converges on rather than a variant of it, and say so publicly when
-we do. The funded work (Tranche 2) is the discovery-side notes upstream, a **second
-conformant implementation with a published interop report** — three implementations exist on
-Stellar and no two have been tested against each other, so interoperability is currently an
-assertion — and the catalog-side implementation of the three points above.
+we do. The funded work (Tranche 2) is the pricing metadata the thread delegated to discovery,
+proposed upstream as its own PR against the bazaar extension; a **second conformant
+implementation with a published interop report** — three implementations exist on Stellar and
+no two have been tested against each other, so interoperability is currently an assertion
+rather than a measured property; and the catalog-side implementation of the same shape.
+
+One process note, recorded because it is the more useful half of this exchange: we were
+wrong twice in public and said so in the thread within hours, rather than defending the
+positions. A design document that only preserves the arguments its author won is not
+evidence of judgement.
