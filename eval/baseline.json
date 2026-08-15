@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-08-15T15:47:03.490Z",
+  "corpus": {
+    "records": 27,
+    "source": "packages/index/src/seed.mjs",
+    "kind": "known-item"
+  },
+  "queries": {
+    "total": 50,
+    "judged": 48,
+    "noMatch": 2
+  },
+  "metrics": {
+    "ndcgAt10": 0.864,
+    "recallAt20": 0.9045,
+    "mrrAt10": 0.9201,
+    "noMatchSilence": 0.5,
+    "precisionAt1": 0.8958
+  },
+  "method": {
+    "gain": "2^rel - 1",
+    "ndcgK": 10,
+    "recallK": 20,
+    "mrrK": 10,
+    "relevantAtGrade": 2,
+    "tolerance": 0.02
+  }
+}
