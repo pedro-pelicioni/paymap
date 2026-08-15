@@ -10,9 +10,11 @@
  * serverless binding in packages/index/src/serverless.mjs — including the projection of
  * an internal catalog record onto the spec's `DiscoveryResource`.
  *
- * KNOWN DRIFT: apps/facilitator/src/server.mjs does NOT use this module. It hand-rolls
- * the same two routes and returns catalog.list()/search() verbatim, so the local index on
- * :4022 still serves the internal record shape. See CONTRACT.md.
+ * apps/facilitator/src/server.mjs mounts this module too, so the local index on :4022 and
+ * the deployed API serve byte-identical envelopes. That was not always true — the
+ * facilitator used to hand-roll the same two routes and return catalog.list()/search()
+ * verbatim, i.e. the internal record shape, and CONTRACT.md carried the difference as
+ * KNOWN DRIFT. One definition, two bindings, no drift to track.
  *
  * Query parameter names and response field names are checked against the installed
  * `@x402/extensions` / `@x402/core` declarations by `npm run verify:api`, which drives

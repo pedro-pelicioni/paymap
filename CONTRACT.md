@@ -81,21 +81,26 @@ It is **not** what goes on the wire — see the next section.
 ### The WIRE shape — `DiscoveryResource`
 
 `packages/index/src/discovery.mjs` (`toDiscoveryResource`) projects the internal record
-onto the type the shipped SDK declares (`@x402/extensions/dist/esm/index-*.d.mts`). Two
-of the three transport adapters go through it:
+onto the type the shipped SDK declares (`@x402/extensions/dist/esm/index-*.d.mts`). **All
+three** transport adapters go through it:
 
 | Adapter | Serves | Goes through `discovery.mjs`? |
 |---|---|---|
 | `packages/index/src/serverless.mjs` (via `api/discovery/*.mjs`) | `stellarsight.xyz` | yes |
 | `packages/index/src/http.mjs` (`mountDiscoveryRoutes`) | any Express host | yes |
-| `apps/facilitator/src/server.mjs:579,604` | the local index on `:4022` | **no — KNOWN DRIFT** |
+| `apps/facilitator/src/server.mjs` (mounts `mountDiscoveryRoutes`) | the local index on `:4022` | yes |
 
-The facilitator hand-rolls its own `/discovery/resources` and `/discovery/search` and
-returns `catalog.list()` / `catalog.search()` verbatim, so **the local index on `:4022`
-still serves the INTERNAL record shape** while the deployed API serves the wire shape
-above. It should call `mountDiscoveryRoutes(indexApp, catalog)` instead. That change also
-requires updating `apps/agent/src/bazaar.mjs` (`summarise`, `describeRecord`), which reads
-`rec.resource.url`. Until both land, do not assume `:4022` and `stellarsight.xyz` agree.
+This register previously carried a **KNOWN DRIFT** here: the facilitator hand-rolled its
+own `/discovery/resources` and `/discovery/search` and returned `catalog.list()` /
+`catalog.search()` verbatim, so `:4022` served the INTERNAL record shape while the
+deployment served the wire shape. It is closed. The facilitator now calls
+`mountDiscoveryRoutes(indexApp, catalog)`, and `apps/agent/src/bazaar.mjs` reads either
+shape through one `fieldsOf()` accessor rather than reaching for `rec.resource.url`.
+
+`GET /health` on `:4022` reports `wireShape: "spec"` when the shared routes are mounted,
+and `"internal-stub"` in the one degraded case that remains — `packages/index` failing to
+import at all, where the facilitator falls back to its in-memory stub and says so rather
+than pretending to be spec-shaped.
 
 ```js
 {

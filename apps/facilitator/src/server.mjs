@@ -124,6 +124,85 @@ try {
 const catalog = indexPkg.createCatalog();
 
 // ---------------------------------------------------------------------------
+// Durable store — the difference between "this instance saw a settlement" and
+// "the public catalog holds it".
+//
+// A settle that only ever reached `catalog` above lives in THIS process's heap. Run the
+// facilitator as a Vercel function (api/facilitator.mjs) and that heap is per-invocation:
+// a third-party seller could settle through the hosted endpoint, watch the
+// EXTENSION-RESPONSES header say `success`, and still never appear in the public
+// /discovery/resources — because the instance that catalogued it is gone. Auto-cataloging
+// that does not survive the process is a demo, not a Bazaar.
+//
+// So the same durable store that packages/index/src/serverless.mjs reads is written here,
+// keyed by record id, with the POST-VALIDATION record (never the raw request body) so the
+// store can never be used to smuggle a field past integrity.mjs.
+//
+// Optional by design: with no store configured this is null, every write is a no-op that
+// reports `durable: false`, and the in-memory catalog behaves exactly as before.
+// ---------------------------------------------------------------------------
+
+// The Express binding for the discovery wire format, shared with the deployment.
+let indexHttp = null;
+try {
+  indexHttp = await import("../../../packages/index/src/http.mjs");
+} catch (e) {
+  console.warn(`[index] packages/index/src/http.mjs unavailable (${e.message}) — discovery falls back to raw catalog output`);
+}
+
+let durableStore = null;
+let storeStatus = { configured: false, reason: "no durable store configured" };
+
+try {
+  const storeMod = await import("../../../packages/index/src/store.mjs");
+  durableStore = storeMod.createStore(process.env) ?? null;
+  if (durableStore) {
+    storeStatus = { configured: true, transport: durableStore.transport, key: durableStore.key };
+    // Load what is already durable so the local index and the deployment agree from boot.
+    const loaded = await durableStore.load();
+    if (loaded.ok) {
+      let restored = 0;
+      for (const rec of loaded.records) {
+        try {
+          if (catalog.upsert(rec).ok) restored++;
+        } catch {
+          /* one bad stored record must not break the boot */
+        }
+      }
+      console.log(
+        `[index] durable store ${durableStore.transport}:${durableStore.host} — restored ${restored} record(s)`,
+      );
+    } else {
+      storeStatus.error = loaded.reason;
+      console.warn(`[index] durable store unreachable (${loaded.reason}) — catalog is in-memory only`);
+    }
+  }
+} catch (e) {
+  storeStatus = { configured: false, reason: `store module unavailable: ${e.message}` };
+  console.warn(`[index] durable store disabled (${e.message})`);
+}
+
+/**
+ * Persist a record the catalog has ALREADY validated and stored.
+ *
+ * Never throws and never blocks the caller's success path: a settlement that moved money
+ * on Stellar is not retroactively a failure because Redis blinked. The outcome is
+ * returned so the settle handler can report it honestly in EXTENSION-RESPONSES rather
+ * than claiming a durability it did not get.
+ */
+async function persistRecord(id) {
+  if (!durableStore) return { durable: false, reason: storeStatus.reason ?? "no durable store configured" };
+  const stored = catalog.get?.(id);
+  if (!stored) return { durable: false, reason: `record ${id} is not in the catalog` };
+  try {
+    const r = await durableStore.put(stored);
+    return r.ok ? { durable: true } : { durable: false, reason: r.reason };
+  } catch (e) {
+    return { durable: false, reason: reasonOf(e, "durable write threw") };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Catalog seeding — a bazaar index with three entries makes discovery look like a toy
 // and makes the ranker invisible. Load the demo corpus from packages/index/src/seed.mjs
 // BEFORE any route is mounted, so the index is never observed in a half-seeded state.
@@ -365,6 +444,15 @@ app.get("/health", (_req, res) => {
     areFeesSponsored: true,
     indexBackend: usingIndexStub ? "stub" : "packages/index",
     catalogSize: catalog.size(),
+    // Whether a settlement through THIS facilitator ends up in the durable public
+    // catalog or only in this process's heap. A reviewer settling against the hosted
+    // endpoint should be able to read the answer, not infer it.
+    durableCataloging: {
+      enabled: Boolean(durableStore),
+      transport: durableStore?.transport ?? null,
+      ...(storeStatus.error ? { error: storeStatus.error } : {}),
+      ...(durableStore ? {} : { reason: storeStatus.reason }),
+    },
   });
 });
 
@@ -492,13 +580,23 @@ app.post("/settle", async (req, res) => {
 
           const up = catalog.upsert(record);
           if (up?.ok) {
-            bazaarResponse = { status: "success" };
+            // Durability is part of cataloging, not an afterthought: a seller who settles
+            // through the hosted facilitator must still be discoverable after this
+            // process is gone. `durable` is reported rather than assumed — a store that
+            // rejected the write says so here instead of in a support thread later.
+            const persisted = await persistRecord(up.id ?? record.id);
+            bazaarResponse = persisted.durable
+              ? { status: "success" }
+              : durableStore
+                ? { status: "success", note: `cataloged, but the durable write failed: ${persisted.reason}` }
+                : { status: "success" };
             emit({
               type: "catalog",
               ok: true,
               id: record.id,
               settlements: record.settlements,
-              detail: `cataloged ${record.id}`,
+              durable: persisted.durable,
+              detail: `cataloged ${record.id}${persisted.durable ? " (durable)" : ""}`,
             });
           } else {
             bazaarResponse = {
@@ -573,58 +671,104 @@ indexApp.get("/health", (_req, res) =>
     service: "stellarsight-index",
     backend: usingIndexStub ? "stub" : "packages/index",
     size: catalog.size(),
+    // `spec` means these routes come from packages/index/src/discovery.mjs, i.e. the same
+    // wire format the deployment serves. `internal-stub` is the degraded fallback.
+    wireShape: discoveryMounted ? "spec" : "internal-stub",
+    durableStore: durableStore ? { transport: durableStore.transport, key: durableStore.key } : null,
   }),
 );
 
-indexApp.get("/discovery/resources", (req, res) => {
+/**
+ * GET /discovery/resources and GET /discovery/search.
+ *
+ * These used to be hand-rolled here, returning `catalog.list()` / `catalog.search()`
+ * verbatim — i.e. the INTERNAL record shape, where `resource` is a `{ url, serviceName }`
+ * block and there is no `accepts` array. The deployment (api/discovery/*) meanwhile served
+ * the spec wire shape through packages/index/src/discovery.mjs, so :4022 and
+ * stellarsight.xyz disagreed about the format of the same catalog. CONTRACT.md carried
+ * that as KNOWN DRIFT.
+ *
+ * Both surfaces now funnel through the same `mountDiscoveryRoutes`, so there is exactly
+ * one definition of the wire format and a stock `withBazaar()` client reads either one.
+ */
+const discoveryMounted = (() => {
+  if (usingIndexStub) return false; // the stub has no wire projection to mount
+  if (typeof indexHttp?.mountDiscoveryRoutes !== "function") return false;
   try {
-    const { type, payTo, scheme, network, extensions } = req.query;
-    const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
-    const offset = Number(req.query.offset ?? 0) || 0;
-    const out = catalog.list({
-      type,
-      payTo,
-      scheme,
-      network,
-      extensions: extensions
-        ? String(extensions)
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : undefined,
-      limit,
-      offset,
-    });
-    res.json(out);
+    const { paths } = indexHttp.mountDiscoveryRoutes(indexApp, catalog);
+    console.log(`[index] discovery routes mounted from packages/index: ${paths.join(", ")}`);
+    return true;
   } catch (e) {
-    res.status(500).json({ items: [], total: 0, error: reasonOf(e, "list failed") });
+    console.warn(`[index] mountDiscoveryRoutes failed (${e.message}) — falling back to raw catalog output`);
+    return false;
   }
-});
+})();
 
-indexApp.get("/discovery/search", (req, res) => {
-  try {
-    const { query = "", cursor, type, payTo, scheme, network } = req.query;
-    const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
-    const out = catalog.search({ query, limit, cursor, type, payTo, scheme, network });
-    res.json(out);
-  } catch (e) {
-    res.status(500).json({
-      items: [],
-      partialResults: true,
-      pagination: { limit: 20, cursor: null },
-      error: reasonOf(e, "search failed"),
-    });
-  }
-});
+if (!discoveryMounted) {
+  // Fallback ONLY for the in-memory stub (packages/index absent). Serves the internal
+  // shape and says so, rather than pretending to be spec-shaped.
+  indexApp.get("/discovery/resources", (req, res) => {
+    try {
+      const { type, payTo, scheme, network, extensions } = req.query;
+      const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
+      const offset = Number(req.query.offset ?? 0) || 0;
+      const out = catalog.list({
+        type,
+        payTo,
+        scheme,
+        network,
+        extensions: extensions
+          ? String(extensions)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : undefined,
+        limit,
+        offset,
+      });
+      res.json({ ...out, _shape: "internal-stub" });
+    } catch (e) {
+      res.status(500).json({ items: [], total: 0, error: reasonOf(e, "list failed") });
+    }
+  });
+
+  indexApp.get("/discovery/search", (req, res) => {
+    try {
+      const { query = "", cursor, type, payTo, scheme, network } = req.query;
+      const limit = Math.min(Number(req.query.limit ?? 20) || 20, 100);
+      const out = catalog.search({ query, limit, cursor, type, payTo, scheme, network });
+      res.json({ ...out, _shape: "internal-stub" });
+    } catch (e) {
+      res.status(500).json({
+        items: [],
+        partialResults: true,
+        pagination: { limit: 20, cursor: null },
+        error: reasonOf(e, "search failed"),
+      });
+    }
+  });
+}
 
 /** Lets the seller pre-register routes at boot so discovery works before any payment. */
-indexApp.post("/discovery/resources", (req, res) => {
+indexApp.post("/discovery/resources", async (req, res) => {
   try {
     const out = catalog.upsert(req.body);
-    if (out?.ok) emit({ type: "catalog", ok: true, id: req.body?.id, detail: "pre-registered" });
-    res.status(out?.ok ? 200 : 400).json(out ?? { ok: false, dropped: [], reason: "upsert failed" });
+    if (!out?.ok) {
+      return res.status(400).json(out ?? { ok: false, dropped: [], reason: "upsert failed" });
+    }
+    // Pre-registration is durable too, for the same reason settle-time cataloging is:
+    // the announcement outlives the process that received it.
+    const persisted = await persistRecord(out.id ?? req.body?.id);
+    emit({
+      type: "catalog",
+      ok: true,
+      id: req.body?.id,
+      durable: persisted.durable,
+      detail: `pre-registered${persisted.durable ? " (durable)" : ""}`,
+    });
+    return res.status(200).json({ ...out, durable: persisted.durable, ...(persisted.reason ? { durableReason: persisted.reason } : {}) });
   } catch (e) {
-    res.status(400).json({ ok: false, dropped: [], reason: reasonOf(e, "upsert failed") });
+    return res.status(400).json({ ok: false, dropped: [], reason: reasonOf(e, "upsert failed") });
   }
 });
 
@@ -634,9 +778,10 @@ indexApp.post("/discovery/resources", (req, res) => {
 // Only when executed directly (`node apps/facilitator/src/server.mjs`). When this module
 // is imported — api/facilitator.mjs wraps `app` as a Vercel function so /supported,
 // /verify and /settle answer on the public domain — binding ports would crash the
-// runtime. The hand-rolled indexApp stays local-only either way: the deployed discovery
-// API is api/discovery/*, which serves the same packages/index without the KNOWN DRIFT
-// documented in CONTRACT.md.
+// runtime. indexApp stays local-only either way; the deployed discovery API is
+// api/discovery/*. Both now mount the SAME mountDiscoveryRoutes from packages/index, so
+// the two surfaces agree on the wire format — the KNOWN DRIFT that CONTRACT.md used to
+// carry is closed — and both write through the same durable store.
 // ---------------------------------------------------------------------------
 
 const runDirect =
