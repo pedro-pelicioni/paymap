@@ -56,22 +56,53 @@ function itemsOf(json) {
   return [];
 }
 
+/**
+ * Read one record in EITHER shape.
+ *
+ * The spec's `DiscoveryResource` puts the URL in `resource` as a plain STRING and the
+ * presentation fields at the top level, with the payment terms in `accepts[0]`. This
+ * repo's internal catalog record nests them under `resource: { url, serviceName, … }`.
+ * Both shapes reach this client — the deployment and :4022 now serve the spec shape, a
+ * third-party facilitator may serve either — so read the spec shape first and fall back
+ * to the nested block rather than returning `null` for a record that is perfectly valid.
+ */
+function fieldsOf(rec) {
+  const block = rec?.resource && typeof rec.resource === 'object' ? rec.resource : {};
+  const accepts = Array.isArray(rec?.accepts) && rec.accepts.length ? rec.accepts[0] : {};
+  return {
+    url: typeof rec?.resource === 'string' ? rec.resource : (block.url ?? null),
+    serviceName: rec?.serviceName ?? block.serviceName ?? null,
+    description: rec?.description ?? block.description ?? null,
+    tags: rec?.tags ?? block.tags ?? [],
+    iconUrl: rec?.iconUrl ?? block.iconUrl ?? null,
+    network: rec?.network ?? accepts.network ?? null,
+    scheme: rec?.scheme ?? accepts.scheme ?? null,
+    payTo: rec?.payTo ?? accepts.payTo ?? null,
+    asset: rec?.asset ?? accepts.asset ?? null,
+    // v2 names the price `amount`; the v1 name is kept as an additive mirror.
+    maxAmountRequired: rec?.maxAmountRequired ?? accepts.amount ?? null,
+    lastSeenAt: rec?.lastSeenAt ?? (rec?.lastUpdated ? Date.parse(rec.lastUpdated) || null : null)
+  };
+}
+
 /** Project a record down to the agent-facing summary shape. */
 export function summarise(rec, extra = {}) {
+  const f = fieldsOf(rec);
   return {
-    id: rec?.id ?? rec?.resource?.url ?? null,
-    url: rec?.resource?.url ?? null,
-    serviceName: rec?.resource?.serviceName ?? null,
-    description: rec?.resource?.description ?? null,
-    tags: rec?.resource?.tags ?? [],
+    id: rec?.id ?? f.url ?? null,
+    url: f.url,
+    serviceName: f.serviceName,
+    description: f.description,
+    tags: f.tags,
     type: rec?.type ?? null,
-    network: rec?.network ?? null,
-    scheme: rec?.scheme ?? null,
-    payTo: rec?.payTo ?? null,
-    asset: rec?.asset ?? null,
-    maxAmountRequired: rec?.maxAmountRequired ?? null,
+    network: f.network,
+    scheme: f.scheme,
+    payTo: f.payTo,
+    asset: f.asset,
+    maxAmountRequired: f.maxAmountRequired,
     settlements: rec?.settlements ?? 0,
-    lastSeenAt: rec?.lastSeenAt ?? null,
+    lastSeenAt: f.lastSeenAt,
+    ...(rec?.seeded === true ? { seeded: true } : {}),
     ...extra
   };
 }
@@ -192,14 +223,18 @@ export async function describe({ id, config } = {}) {
   const listed = await getJson(`${cfg.indexUrl}/discovery/resources?limit=100`);
   if (!listed.ok) return listed;
 
-  let rec = itemsOf(listed.json).find((r) => r?.id === wanted || r?.resource?.url === wanted);
+  const matches = (r) =>
+    r?.id === wanted ||
+    (typeof r?.resource === 'string' ? r.resource === wanted : r?.resource?.url === wanted);
+
+  let rec = itemsOf(listed.json).find(matches);
 
   if (!rec) {
     const u = new URL(`${cfg.indexUrl}/discovery/search`);
     u.searchParams.set('query', wanted);
     u.searchParams.set('limit', '25');
     const found = await getJson(u.toString());
-    if (found.ok) rec = itemsOf(found.json).find((r) => r?.id === wanted || r?.resource?.url === wanted);
+    if (found.ok) rec = itemsOf(found.json).find(matches);
   }
 
   if (!rec) {
@@ -216,25 +251,32 @@ export async function describe({ id, config } = {}) {
 /** Turn a raw bazaar record into a call-construction brief. Pure — also used offline. */
 export function describeRecord(rec) {
   const params = normaliseParams(rec);
+  const f = fieldsOf(rec);
   return {
-    id: rec?.id ?? rec?.resource?.url ?? null,
-    resource: rec?.resource ?? null,
+    id: rec?.id ?? f.url ?? null,
+    // Always the presentation BLOCK, whichever shape arrived: an agent building a call
+    // wants the fields, not the spec's bare URL string.
+    resource: { url: f.url, serviceName: f.serviceName, description: f.description, tags: f.tags, ...(f.iconUrl ? { iconUrl: f.iconUrl } : {}) },
     type: rec?.type ?? null,
-    network: rec?.network ?? null,
-    scheme: rec?.scheme ?? null,
-    payTo: rec?.payTo ?? null,
-    asset: rec?.asset ?? null,
-    maxAmountRequired: rec?.maxAmountRequired ?? null,
-    routeTemplate: rec?.routeTemplate ?? null,
-    extensions: rec?.extensions ?? [],
+    network: f.network,
+    scheme: f.scheme,
+    payTo: f.payTo,
+    asset: f.asset,
+    maxAmountRequired: f.maxAmountRequired,
+    routeTemplate: rec?.routeTemplate ?? rec?.extensions?.bazaar?.routeTemplate ?? null,
+    extensions: Array.isArray(rec?.extensions)
+      ? rec.extensions
+      : rec?.extensions && typeof rec.extensions === 'object'
+        ? Object.keys(rec.extensions)
+        : [],
     settlements: rec?.settlements ?? 0,
-    lastSeenAt: rec?.lastSeenAt ?? null,
-    input: rec?.input ?? null,
-    output: rec?.output ?? null,
+    lastSeenAt: f.lastSeenAt,
+    input: rec?.input ?? rec?.extensions?.bazaar?.info?.input ?? null,
+    output: rec?.output ?? rec?.extensions?.bazaar?.info?.output ?? null,
     parameters: params,
     howToCall: {
       tool: 'stellarsight_pay',
-      url: rec?.resource?.url ?? null,
+      url: f.url,
       method: rec?.input?.method ?? (rec?.type === 'mcp' ? 'MCP' : 'GET'),
       params: Object.fromEntries(params.map((p) => [p.name, p.example ?? `<${p.type || 'string'}>`])),
       methodHint:
@@ -250,7 +292,12 @@ export function describeRecord(rec) {
 }
 
 /** Flatten queryParams / body / JSON-Schema inputSchema into one parameter list. */
-function normaliseParams(rec) {
+function normaliseParams(record) {
+  // Spec shape carries the declaration under extensions.bazaar.info; the internal record
+  // carries it flattened. `describe` must work against both.
+  const rec = record?.input
+    ? record
+    : { ...record, input: record?.extensions?.bazaar?.info?.input, output: record?.extensions?.bazaar?.info?.output };
   const out = [];
   const push = (name, spec, where) => {
     if (!name) return;
