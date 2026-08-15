@@ -85,7 +85,57 @@ registry cannot charge.
 | `upto` scheme | Published position, no contract | Spec upstream, contract on testnet |
 | Network | `stellar:testnet` only | `stellar:pubnet`, 30 days measured uptime |
 
-### 1.4 The stack in one paragraph
+### 1.4 System architecture
+
+```mermaid
+flowchart TB
+    subgraph agents["Agents and clients"]
+        A1["stock @x402/fetch client"]
+        A2["MCP-driven agent"]
+        A3["seller with @stellarsight/express"]
+    end
+
+    subgraph origin["stellarsight.xyz · one origin"]
+        direction TB
+        D["/discovery/*<br/><i>packages/index</i>"]
+        F["/supported /verify /settle<br/><i>apps/facilitator</i>"]
+        R["/v1/*<br/><i>reference paid API</i>"]
+    end
+
+    subgraph core["packages/index · one definition"]
+        C1["catalog + upsert"]
+        C2["integrity validator<br/><i>soft-drop</i>"]
+        C3["BM25 ranker<br/><i>_explain</i>"]
+        C4["wire projection<br/><i>DiscoveryResource</i>"]
+    end
+
+    KV[("Redis<br/>durable catalog")]
+    RPC["Soroban RPC"]
+    HOR["Horizon"]
+    LED[("Stellar ledger<br/>stellar:testnet")]
+
+    A1 & A2 --> D
+    A1 --> R
+    A3 --> F
+    R -. "402 challenge" .-> A1
+    D --> C1 --> C2
+    C1 --> C3 --> C4
+    D <--> KV
+    F -- "post-validation record" --> KV
+    F --> RPC --> LED
+    F --> HOR
+
+    classDef stellar fill:#1a3a52,stroke:#2d6da3,color:#e8f1f8
+    classDef store fill:#2d1f3d,stroke:#6b4c8a,color:#f0e8f8
+    class RPC,HOR,LED stellar
+    class KV store
+```
+
+The trust boundary is the edge of `core`: everything crossing into it from a seller or a
+buyer is attacker-controlled and goes through the validator before it can reach the catalog
+or the ledger.
+
+### 1.5 The stack in one paragraph
 
 Node ≥22, pure ESM, no build step outside the web console. One Express app is the
 facilitator; one npm workspace (`packages/index`) is the catalog, its ranker and its
@@ -124,26 +174,32 @@ invocation tree: the contract being called, the function, and every argument. It
 **not** bind the transaction envelope, the source account, or the fee. So the buyer can
 authorize *exactly this payment* while a different account submits it and pays for it.
 
-```
-buyer                          facilitator                        Stellar
-  │                                 │                                │
-  │  GET /v1/thing                  │                                │
-  ├────────────────────────────────>│  (seller) 402 + PAYMENT-REQUIRED
-  │<────────────────────────────────┤                                │
-  │                                 │                                │
-  │  sign SorobanAuthorizationEntry │                                │
-  │  over SAC.transfer(from,to,amt) │                                │
-  │  + signatureExpirationLedger    │                                │
-  │                                 │                                │
-  │  PAYMENT-SIGNATURE ────────────>│                                │
-  │                                 │  POST /verify                  │
-  │                                 │   simulate ───────────────────>│
-  │                                 │<─────────────────── result ────┤
-  │                                 │  POST /settle                  │
-  │                                 │   rebuild tx, FEEPAYER as      │
-  │                                 │   source, wrap in fee-bump ───>│
-  │                                 │<──────────── tx hash ──────────┤
-  │<───── 200 + PAYMENT-RESPONSE ───┤                                │
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Buyer (agent)
+    participant S as Seller
+    participant F as Facilitator
+    participant L as Stellar ledger
+
+    B->>S: GET /v1/thing
+    S-->>B: 402 · PAYMENT-REQUIRED<br/>(amount, asset, payTo, bazaar ext)
+
+    Note over B: signs a SorobanAuthorizationEntry over<br/>SAC.transfer(from, to, amount)<br/>+ signatureExpirationLedger.<br/>NOT a transaction: no source, no fee.
+
+    B->>S: retry · PAYMENT-SIGNATURE
+    S->>F: POST /verify
+    F->>L: simulate
+    L-->>F: result
+    F-->>S: { isValid, invalidReason } · nothing on-ledger
+
+    S->>F: POST /settle
+    Note over F: rebuilds the tx with FEEPAYER as source,<br/>wraps it in a fee-bump.<br/>Buyer holds zero XLM.
+    F->>L: submit
+    L-->>F: tx hash · nonce consumed
+    F-->>S: { success, transaction }
+    Note over F: catalogs the resource, bound to payTo,<br/>and persists it to the durable store
+    S-->>B: 200 · PAYMENT-RESPONSE + body
 ```
 
 ### 2.3 SEP-41 / SAC
@@ -215,6 +271,33 @@ control group is what makes the attribution honest: `@x402/stellar` collapses a 
 submission into `settle_exact_stellar_transaction_submission_failed` without surfacing the
 underlying `tx_bad_seq`, so the error text alone proves nothing.
 
+```mermaid
+flowchart LR
+    subgraph now["Today · one FEEPAYER, one sequence number"]
+        direction TB
+        N1["settle #1"] --> SEQ(("seq n"))
+        N2["settle #2"] -. "tx_bad_seq" .-> SEQ
+        N3["settle #3"] -. "tx_bad_seq" .-> SEQ
+        SEQ --> OK1["1 of 10 lands"]
+    end
+
+    subgraph pool["Tranche 1 · channel-account pool"]
+        direction TB
+        P1["settle #1"] --> CH1(("channel A<br/>seq a"))
+        P2["settle #2"] --> CH2(("channel B<br/>seq b"))
+        P3["settle #3"] --> CH3(("channel C<br/>seq c"))
+        CH1 & CH2 & CH3 --> FB["one fee-bump signer<br/>FEEPAYER pays"]
+        FB --> OK2["25-50 concurrent<br/>zero seq failures"]
+    end
+
+    now ==>|"funded by deliverable 1.1"| pool
+
+    classDef bad fill:#3d1f1f,stroke:#a34d4d,color:#f8e8e8
+    classDef good fill:#1f3d2a,stroke:#4da36b,color:#e8f8ee
+    class OK1 bad
+    class OK2 good
+```
+
 **Tranche 1, deliverable 1.1** replaces this with a pool of channel accounts, each with its
 own sequence number, round-robin leased, with sequence-drift quarantine and reconciliation,
 targeting 25–50 concurrent settlements with zero sequence-number failures.
@@ -230,6 +313,26 @@ the discovery extension, the facilitator projects the payment into a catalog rec
 upserts it. The seller middleware additionally pre-registers a route at boot, so a resource
 is discoverable **before** its first payment; the settlement then promotes it, increments
 its observed settlement count, and clears any demo flag.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Unknown: not in the catalog
+    [*] --> Seeded: shipped in the demo corpus
+    Seeded: Seeded · settlements pinned to 0
+    Unknown --> Announced: seller boots, authenticated announce
+    Unknown --> Cataloged: first settlement carries the bazaar extension
+    Announced --> Cataloged: first settlement binds it to payTo
+    Cataloged --> Cataloged: further settlements increment the count
+    Seeded --> Cataloged: a real announcement shares the id, flag cleared
+    Cataloged --> Dropped: hostile field submitted
+    Dropped --> Cataloged: soft-drop keeps the record, discards only the field
+
+    note right of Cataloged
+        durable: survives the process
+        bound to the settled payTo
+    end note
+```
 
 Two properties make this trustworthy rather than merely convenient:
 
@@ -272,6 +375,20 @@ The catalog has three states, and `/discovery/health` reports which one is live:
 | `seed`, read-only | no store configured | serves the seeded corpus; **never fails** |
 | `kv`, not writable | store configured, no write token | durable reads, writes refused with a reason |
 | `kv`, writable | store + `STELLARSIGHT_WRITE_TOKEN` | auto-cataloging on |
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> SeedReadOnly
+    SeedReadOnly: seed · read-only — serves the seeded corpus, never fails
+    KvReadOnly: kv · not writable — durable reads, writes refused with a reason
+    KvWritable: kv · writable — auto-cataloging on
+
+    SeedReadOnly --> KvReadOnly: store configured
+    KvReadOnly --> KvWritable: STELLARSIGHT_WRITE_TOKEN set
+    KvWritable --> SeedReadOnly: store unreachable, degrade and report on /health
+    KvReadOnly --> SeedReadOnly: store unreachable
+```
 
 A public Bazaar that answers out of the box beats a write-capable one that needs setup
 nobody has done, so the read-only baseline must never break. A store that is configured but
@@ -477,6 +594,40 @@ fn settle_upto(env: Env, token: Address, payer: Address, pay_to: Address,
   once and cannot be replayed.
 - **Three clocks, normatively ordered:** allowance expiration ≥ contract deadline ≥
   settlement time, all derived from the operator's advertised `maxTimeoutSeconds`.
+
+```mermaid
+flowchart TB
+    subgraph signed["What the payer signs · immutable after signing"]
+        S1["token"]
+        S2["payTo"]
+        S3["max (ceiling)"]
+        S4["signatureExpirationLedger"]
+    end
+    subgraph unsigned["Supplied by the facilitator at settle"]
+        U1["actual"]
+    end
+
+    S1 & S2 & S3 & S4 --> AUTH["require_auth_for_args<br/>(token, payTo, max)"]
+    AUTH --> C{{"settle_upto<br/><i>immutable · no admin · no storage</i>"}}
+    U1 --> C
+
+    C --> CHK{"actual ≤ max ?"}
+    CHK -->|no| REJ["rejected on-ledger"]
+    CHK -->|yes| T["approve nested in the auth tree<br/>then transfer_from"]
+    T --> PAY["payer ──> payTo<br/><i>contract never holds a balance</i>"]
+    PAY --> NONCE["Soroban consumes the nonce<br/><i>one signature settles once</i>"]
+
+    classDef bad fill:#3d1f1f,stroke:#a34d4d,color:#f8e8e8
+    class REJ bad
+```
+
+The three clocks, normatively ordered:
+
+```mermaid
+flowchart LR
+    A["allowance expiration"] -->|"≥"| B["contract deadline"] -->|"≥"| C["settlement time"]
+    D["operator maxTimeoutSeconds"] -.->|"derives all three"| A
+```
 
 Our bias, stated so it can be argued with: zero settlement **should** submit, because a
 facilitator should never hold a live authorization it cannot invalidate; and the residual
