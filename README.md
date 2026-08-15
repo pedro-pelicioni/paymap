@@ -452,6 +452,14 @@ deploy, minting the test asset, and returning a legacy balance. Only the 16 paym
 evidence that the payment path works; the two newest of them settled entirely through the
 hosted stack.
 
+## Technical architecture
+
+The full engineering document is [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): the Soroban
+authorization-entry flow, SEP-41/SAC settlement, the fee-bump ceiling and how it was
+derived, the catalog's trust boundary, the planned `upto` contract, the security model, the
+monitoring plan, the deployment topology, and how each of those maps to a funded tranche.
+Start there if you are evaluating this rather than running it.
+
 ## Durability, throughput and the security posture
 
 Three things a reviewer will look for, answered here rather than in a support thread.
