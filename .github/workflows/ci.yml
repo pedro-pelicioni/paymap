@@ -62,6 +62,14 @@ jobs:
       - name: API conformance
         run: npm run verify:api
 
+      # Search quality is a number or it is an opinion. This runs the graded golden set in
+      # eval/golden.jsonl through the real ranker and fails the build if nDCG@10,
+      # Recall@20, MRR@10 or Precision@1 fall more than 0.02 below eval/baseline.json.
+      # A ranking change that quietly costs relevance therefore cannot merge unnoticed:
+      # it either keeps the numbers or updates the baseline on purpose, in the diff.
+      - name: Search quality regression gate
+        run: npm run eval:search
+
       # What Vercel builds. Catches a type error or a broken import before the deployment
       # does. The prebuild scripts reach Horizon and are written to never fail the build,
       # so a network blip degrades the data rather than the run.
