@@ -8,7 +8,7 @@
 
 **The facilitator-side Bazaar discovery layer for x402 — the piece that does not exist in public code today — and the whole payment loop around it, running end to end on Stellar testnet.**
 
-`Apache-2.0` · `stellar:testnet` · **16 settled x402 payments** · **129 tests, 0 failing**
+`Apache-2.0` · `stellar:testnet` · **16+ settled x402 payments** · **151 tests, 0 failing** · **nDCG@10 0.864, measured**
 
 </div>
 
@@ -25,7 +25,9 @@ You do not have to take any claim in this README on trust. Every one of them is 
 |---|---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
-| Catalog integrity is real, not decorative | `npm test` → 129 tests, 0 failing (66 of them adversarial) | 30s |
+| Catalog integrity is real, not decorative | `npm test` → 151 tests, 0 failing (66 of them adversarial) | 30s |
+| Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI | 20s |
+| We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys | 60s |
 | It stays that way | [CI](../../actions) runs the suite, the 46 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
 | A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
@@ -77,6 +79,14 @@ discovery, payment and settlement are one deployment. Run the commands below and
 | `GET` | [`/discovery/health`](https://stellarsight.xyz/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
 | `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` |
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
+
+`?seeded=false` is the additive filter that answers "what here can I actually pay for?".
+The catalog ships a 27-record demo corpus on `.example` hosts so the ranker has a realistic
+spread to rank — completeness and freshness vary on purpose, which is what makes `_explain`
+legible instead of constant. Every one of those records is flagged `seeded: true` and
+pinned to `settlements: 0`, the flag survives the wire projection, and one query separates
+them from the real ones. Hiding the corpus would hide the ranker; labelling it costs
+nothing and is checkable.
 
 CORS is `*`, because the point is for *other people's* agents to call it. Every rejection —
 `404` on an unknown path, `503` when writes are not enabled (no durable store, or a store
@@ -272,9 +282,11 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 129 tests
+npm test           # 151 tests
 npm run verify:api # 46 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
+npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
+npm run load:baseline        # serial vs concurrent settlement, the single-fee-payer "before"
 ```
 
 No API keys. No captcha. No mainnet. No real money.
@@ -301,10 +313,42 @@ catalogs most often leave unimplemented. So the ranking here is not a `.includes
   zero-settlement, 200-day-stale record when the query matches the latter.
 - **`_explain` per result**, with the four parts asserted by test to sum exactly to `_score`.
 
-[`docs/SEARCH-QUALITY.md`](docs/SEARCH-QUALITY.md) documents the retrieval rationale, an
-nDCG@10 / Recall@20 / MRR evaluation plan with pooled graded labels, and an explicit
-cold-start section stating plainly that popularity is worthless at launch and gameable
-forever — with four unimplemented mitigations ranked.
+### Measured, not asserted
+
+The evaluation is no longer a plan. `npm run eval:search` runs a **50-query human-graded
+golden set** ([`eval/golden.jsonl`](eval/golden.jsonl)) through the real ranker — the same
+`catalog.search` that `/discovery/search` serves — and publishes:
+
+| Metric | Value |
+|---|---|
+| nDCG@10 | **0.864** |
+| Recall@20 | **0.905** |
+| MRR@10 | **0.920** |
+| Precision@1 | 0.896 |
+| No-match silence | 0.500 |
+
+Full method and the weakest queries: [`docs/SEARCH-EVAL.md`](docs/SEARCH-EVAL.md).
+CI fails the build if any of these falls more than 0.02 below
+[`eval/baseline.json`](eval/baseline.json), so a ranking change that quietly costs
+relevance cannot merge unnoticed — it either holds the numbers or updates the baseline
+on purpose, in the diff.
+
+Read them as what they are: a **known-item** measurement over the 27-record demo corpus,
+graded by the same person who wrote the ranker. Both facts inflate confidence and both are
+stated in the report rather than buried. The Tranche 1 deliverable replaces this with
+150–200 queries plus a rolling sample drawn from the live catalog, which nobody here
+authored.
+
+Two of the fifty queries have **no right answer on purpose** (`quantum teleportation as a
+service`). Half of them still return something — BM25 will match a stray token — and that
+number is published as `no-match silence 0.5` instead of quietly excluded. The two worst
+real queries are `will it rain tomorrow` and `logistics cost estimation`, which return
+nothing at all: pure paraphrases with zero lexical overlap, i.e. exactly the failure a
+semantic layer fixes. That is the evidence behind the Tranche 2 deliverable, not a hunch.
+
+[`docs/SEARCH-QUALITY.md`](docs/SEARCH-QUALITY.md) documents the retrieval rationale and an
+explicit cold-start section stating plainly that popularity is worthless at launch and
+gameable forever — with four unimplemented mitigations ranked.
 
 ---
 
@@ -407,6 +451,53 @@ stock-client conformance run — and 8 are setup and cleanup, meaning trustlines
 deploy, minting the test asset, and returning a legacy balance. Only the 16 payment rows are
 evidence that the payment path works; the two newest of them settled entirely through the
 hosted stack.
+
+## Durability, throughput and the security posture
+
+Three things a reviewer will look for, answered here rather than in a support thread.
+
+### Cataloging survives the process
+
+A settlement through the hosted facilitator writes the **post-validation** record to the
+same durable store `api/discovery/*` reads. Before, the settle path only ever touched the
+instance's own heap: a third-party seller could settle, watch `EXTENSION-RESPONSES` say
+`success`, and never appear in the public catalog, because the instance that catalogued
+them was gone. Auto-cataloging that does not outlive the process is a demo, not a Bazaar.
+
+Durability is reported, never assumed — `/health` on the facilitator carries
+`durableCataloging: { enabled, transport }`, and a store that rejects a write says so in
+the settle response instead of silently claiming success. With no store configured the
+behaviour is unchanged and the reason is stated.
+
+### One fee-payer is the bottleneck, measured
+
+[`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md), produced by `npm run load:baseline`:
+
+| | Attempted | Succeeded |
+|---|---|---|
+| Serial (one at a time) | 4 | **4 — 100%** |
+| Concurrent | 10 | **1 — 10%** |
+
+Same payment, same stack, same signer, same network. Only the timing changed. That is the
+controlled experiment, and it is the only honest way to attribute the failures: upstream
+`@x402/stellar` collapses a rejected submission into
+`settle_exact_stellar_transaction_submission_failed` without surfacing the underlying
+`tx_bad_seq`, so the message alone proves nothing. A channel-account pool is the first
+funded deliverable, and this file is the "before" it has to beat.
+
+### Threat model and monitoring, written before mainnet
+
+- [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md) — assets, trust boundaries, and twelve
+  threats each mapped to the control that answers it **and the test that proves it**. The
+  gaps are marked as gaps: no per-seller identity yet, no alerting on fee-payer drain yet,
+  sequence contention undefended.
+- [`docs/MONITORING.md`](docs/MONITORING.md) — the signal, threshold and response for each
+  of those surfaces, with what exists today marked ✅ and what is funded work marked ⬜.
+- [`docs/upto-position.md`](docs/upto-position.md) — why there is no `upto` contract here
+  yet: four independent Stellar implementations disagree on whether zero settlement submits
+  a transaction and on what happens to the residual allowance. Shipping a fifth
+  incompatible contract adds a data point, not a decision. The position is written against
+  [stellar/x402-stellar#72](https://github.com/stellar/x402-stellar/issues/72).
 
 ## License
 

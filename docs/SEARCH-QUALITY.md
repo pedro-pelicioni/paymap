@@ -165,10 +165,32 @@ reproduction harness.
 
 ---
 
-## 4. How this would be evaluated
+## 4. How this is evaluated
 
-The honest status: **there is no labeled evaluation set yet, so there are no quality
-numbers to report.** What follows is the methodology we would run, not results we claim.
+**Status: this section has been superseded by measurement.** It used to open by saying
+there was no labeled set and therefore no numbers to report. There is one now:
+
+| Metric | Value |
+|---|---|
+| nDCG@10 | **0.864** |
+| Recall@20 | **0.905** |
+| MRR@10 | **0.920** |
+| Precision@1 | 0.896 |
+| No-match silence | 0.500 |
+
+Run it yourself with `npm run eval:search`. The graded set is
+[`eval/golden.jsonl`](../eval/golden.jsonl) (50 queries), the recorded numbers are
+[`eval/baseline.json`](../eval/baseline.json), the full report with the weakest queries is
+[SEARCH-EVAL.md](SEARCH-EVAL.md), and CI fails the build on a regression greater than 0.02.
+
+Two caveats that belong next to the numbers, not below them: the corpus is the 27-record
+demo catalog, so this is a **known-item** measurement; and the labels were written by the
+same person who wrote the ranker. The Tranche 1 deliverable takes the set to 150–200
+queries with a rolling sample from the live catalog, which is where the second caveat
+stops applying.
+
+The methodology below is what that expansion follows — it is the plan for the *next*
+version of the set, no longer the excuse for not having one.
 
 ### Building the judgement set
 
