@@ -15,9 +15,10 @@
  *   packages/index/src/http.mjs        -> Express (`mountDiscoveryRoutes`)
  *   packages/index/src/serverless.mjs  -> Node `(req, res)` handlers under /api
  *
- * KNOWN DRIFT: apps/facilitator/src/server.mjs does NOT. It hand-rolls the same two
- * routes and returns catalog.list()/search() verbatim, so the local index on :4022 still
- * serves the internal record shape while the deployment serves this one. See CONTRACT.md.
+ *   apps/facilitator/src/server.mjs    -> mounts packages/index/src/http.mjs on :4022
+ *
+ * All three funnel through this module, so there is one definition of the wire format and
+ * every surface agrees on it.
  *
  * No side effects on import. Field names here are checked against the installed
  * `@x402/extensions` / `@x402/core` type declarations by `npm run verify:api`, which
@@ -47,13 +48,23 @@ export function firstString(v) {
   return typeof v === 'string' && v.length > 0 ? v : undefined;
 }
 
-/** Filters shared by both endpoints. [spec: type, payTo, scheme, network, extensions] */
+/**
+ * Filters shared by both endpoints. [spec: type, payTo, scheme, network, extensions]
+ *
+ * `seeded` is ADDITIVE — not in the bazaar extension, ignored by a client that does not
+ * know it. It exists because this catalog carries a demo corpus (`.example` hosts, pinned
+ * to `settlements: 0`) that gives the ranker a realistic spread to rank. `?seeded=false`
+ * returns only resources that were announced or paid for; `?seeded=true` returns only the
+ * demo corpus. Absent, the catalog answers with everything, which is the current
+ * behaviour and stays the default.
+ */
 export function readFilters(q = {}) {
   return {
     type: firstString(q.type),
     payTo: firstString(q.payTo),
     scheme: firstString(q.scheme),
     network: firstString(q.network),
+    seeded: firstString(q.seeded),
     // `extensions` is repeatable AND comma-separatable; the catalog's own asArray()
     // normalises both shapes, so it is passed through untouched.
     extensions: q.extensions,

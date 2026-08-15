@@ -257,12 +257,30 @@ export function createCatalog(options = {}) {
     return store.get(id) ?? null;
   }
 
-  /** [spec: GET /discovery/resources filters — type, payTo, scheme, network, extensions] */
+  /**
+   * [spec: GET /discovery/resources filters — type, payTo, scheme, network, extensions]
+   *
+   * Plus one filter the spec does not define, marked additive in the docs: `seeded`.
+   *
+   * The catalog ships a demo corpus so the ranker has something to rank — completeness
+   * and freshness vary on purpose, which is what makes `_explain` legible instead of
+   * constant. Those records are pinned `seeded: true, settlements: 0` and they are, by
+   * construction, `.example` hostnames nobody can pay.
+   *
+   * An agent shopping for something it can actually call needs to exclude them, and a
+   * reviewer asking "how much of this is real?" deserves an answer that is one query
+   * rather than an eyeball count. `?seeded=false` gives both. The demo records stay in
+   * the catalog — removing them would hide the ranker rather than clarify the catalog.
+   */
   function matches(rec, f) {
     if (f.type && rec.type !== f.type) return false;
     if (f.payTo && rec.payTo !== f.payTo) return false;
     if (f.scheme && rec.scheme !== f.scheme) return false;
     if (f.network && rec.network !== f.network) return false;
+    if (f.seeded !== undefined && f.seeded !== null) {
+      const want = f.seeded === true || f.seeded === 'true' || f.seeded === '1';
+      if (Boolean(rec.seeded) !== want) return false;
+    }
     const wanted = asArray(f.extensions);
     if (wanted.length) {
       const have = new Set(rec.extensions ?? []);
