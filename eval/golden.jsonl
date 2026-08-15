@@ -1,0 +1,50 @@
+{"id":"q01","query":"convert dollars to reais","intent":"task","relevant":{"https://api.fxrates.example/v1/fx/usd-brl":3,"https://api.fxrates.example/v1/fx/usdc-brl":2,"https://api.fxrates.example/v1/fx/history":1}}
+{"id":"q02","query":"usd brl exchange rate","intent":"task","relevant":{"https://api.fxrates.example/v1/fx/usd-brl":3,"https://api.fxrates.example/v1/fx/usdc-brl":2,"https://api.fxrates.example/v1/fx/history":1}}
+{"id":"q03","query":"stablecoin price in brazilian real","intent":"paraphrase","relevant":{"https://api.fxrates.example/v1/fx/usdc-brl":3,"https://api.fxrates.example/v1/fx/usd-brl":2}}
+{"id":"q04","query":"historical fx rates time series","intent":"task","relevant":{"https://api.fxrates.example/v1/fx/history":3,"https://api.fxrates.example/v1/fx/usd-brl":1}}
+{"id":"q05","query":"xlm price feed","intent":"task","relevant":{"https://oracle.reflector.example/v1/price/xlm":3,"https://oracle.reflector.example/v1/price/multi":2}}
+{"id":"q06","query":"oracle price for stellar assets","intent":"paraphrase","relevant":{"https://oracle.reflector.example/v1/price/multi":3,"https://oracle.reflector.example/v1/price/xlm":2}}
+{"id":"q07","query":"look up a brazilian postal code","intent":"task","relevant":{"https://api.addresses.example/v1/postal-code/01310930":3,"https://api.addresses.example/v1/geocode":1}}
+{"id":"q08","query":"cep lookup","intent":"acronym","relevant":{"https://api.addresses.example/v1/postal-code/01310930":3}}
+{"id":"q09","query":"extract data from an invoice image","intent":"task","relevant":{"https://api.documents.example/v1/invoice-ocr":3}}
+{"id":"q10","query":"ocr for tax documents","intent":"task","relevant":{"https://api.documents.example/v1/invoice-ocr":3}}
+{"id":"q11","query":"validate a pix key","intent":"task","relevant":{"https://api.payments.example/v1/pix/validate":3}}
+{"id":"q12","query":"generate a pix qr code for payment","intent":"task","relevant":{"https://api.payments.example/v1/pix/qrcode":3,"https://api.payments.example/v1/pix/validate":1}}
+{"id":"q13","query":"check if a company is active","intent":"paraphrase","relevant":{"https://api.registry.example/v1/company/12345678000190":3,"https://api.registry.example/v1/taxid/check":2}}
+{"id":"q14","query":"cnpj lookup","intent":"acronym","relevant":{"https://api.registry.example/v1/company/12345678000190":3,"https://api.registry.example/v1/taxid/check":2}}
+{"id":"q15","query":"verify a tax id","intent":"task","relevant":{"https://api.registry.example/v1/taxid/check":3,"https://api.registry.example/v1/company/12345678000190":2}}
+{"id":"q16","query":"brazilian central bank interest rate","intent":"task","relevant":{"https://api.centralbank.example/v1/indicators":3}}
+{"id":"q17","query":"selic and ipca indicators","intent":"domain-term","relevant":{"https://api.centralbank.example/v1/indicators":3}}
+{"id":"q18","query":"parse a boleto barcode","intent":"task","relevant":{"https://api.payments.example/v1/boleto/parse":3}}
+{"id":"q19","query":"freight shipping quote","intent":"task","relevant":{"https://api.logistics.example/v1/freight/quote":3}}
+{"id":"q20","query":"geocode an address to coordinates","intent":"task","relevant":{"https://api.addresses.example/v1/geocode":3,"https://api.addresses.example/v1/postal-code/01310930":1}}
+{"id":"q21","query":"weather forecast","intent":"task","relevant":{"https://api.weather.example/v1/forecast":3}}
+{"id":"q22","query":"will it rain tomorrow","intent":"paraphrase","relevant":{"https://api.weather.example/v1/forecast":3}}
+{"id":"q23","query":"translate text to english","intent":"task","relevant":{"https://api.translate.example/v1/translate":3}}
+{"id":"q24","query":"neural machine translation","intent":"domain-term","relevant":{"https://api.translate.example/v1/translate":3}}
+{"id":"q25","query":"sentiment analysis of text","intent":"task","relevant":{"https://api.nlp.example/v1/sentiment":3,"https://api.translate.example/v1/translate":1}}
+{"id":"q26","query":"transcribe audio to text","intent":"task","relevant":{"https://api.nlp.example/v1/speech-to-text":3}}
+{"id":"q27","query":"speech recognition","intent":"paraphrase","relevant":{"https://api.nlp.example/v1/speech-to-text":3}}
+{"id":"q28","query":"fraud risk score for a device","intent":"task","relevant":{"https://api.antifraud.example/v1/risk-score":3}}
+{"id":"q29","query":"detect fraudulent transactions","intent":"paraphrase","relevant":{"https://api.antifraud.example/v1/risk-score":3}}
+{"id":"q30","query":"stellar account balances","intent":"task","relevant":{"https://api.chaindata.example/v1/account/GABC/balances":3,"https://api.chaindata.example/v1/contract/events":1}}
+{"id":"q31","query":"read soroban contract events","intent":"task","relevant":{"https://api.chaindata.example/v1/contract/events":3}}
+{"id":"q32","query":"submit a stellar transaction via mcp","intent":"mcp","relevant":{"https://mcp.stellartools.example/mcp#submit_transaction":3,"https://mcp.stellartools.example/mcp#simulate_contract":1}}
+{"id":"q33","query":"simulate a soroban contract call","intent":"mcp","relevant":{"https://mcp.stellartools.example/mcp#simulate_contract":3,"https://mcp.stellartools.example/mcp#submit_transaction":1}}
+{"id":"q34","query":"fetch a ledger entry","intent":"mcp","relevant":{"https://mcp.stellartools.example/mcp#fetch_ledger_entry":3}}
+{"id":"q35","query":"mcp tool to search the x402 catalog","intent":"mcp","relevant":{"https://mcp.stellarsight.example/mcp#search_catalog":3}}
+{"id":"q36","query":"discovery of paid services","intent":"category","relevant":{"https://mcp.stellarsight.example/mcp#search_catalog":3}}
+{"id":"q37","query":"price data for market analysis","intent":"category","relevant":{"https://api.fxrates.example/v1/fx/usd-brl":2,"https://api.fxrates.example/v1/fx/usdc-brl":2,"https://oracle.reflector.example/v1/price/multi":2,"https://oracle.reflector.example/v1/price/xlm":2,"https://api.centralbank.example/v1/indicators":1}}
+{"id":"q38","query":"brazil payments api","intent":"category","relevant":{"https://api.payments.example/v1/pix/validate":2,"https://api.payments.example/v1/pix/qrcode":2,"https://api.payments.example/v1/boleto/parse":2}}
+{"id":"q39","query":"address validation","intent":"category","relevant":{"https://api.addresses.example/v1/postal-code/01310930":3,"https://api.addresses.example/v1/geocode":2}}
+{"id":"q40","query":"identity verification","intent":"category","relevant":{"https://api.payments.example/v1/pix/validate":2,"https://api.registry.example/v1/taxid/check":2,"https://api.registry.example/v1/company/12345678000190":1}}
+{"id":"q41","query":"blockchain data api","intent":"category","relevant":{"https://api.chaindata.example/v1/account/GABC/balances":3,"https://api.chaindata.example/v1/contract/events":3,"https://oracle.reflector.example/v1/price/multi":1}}
+{"id":"q42","query":"ai language services","intent":"category","relevant":{"https://api.translate.example/v1/translate":3,"https://api.nlp.example/v1/sentiment":2,"https://api.nlp.example/v1/speech-to-text":2}}
+{"id":"q43","query":"compliance check for a business","intent":"category","relevant":{"https://api.registry.example/v1/company/12345678000190":3,"https://api.registry.example/v1/taxid/check":2,"https://api.antifraud.example/v1/risk-score":1}}
+{"id":"q44","query":"document data extraction","intent":"paraphrase","relevant":{"https://api.documents.example/v1/invoice-ocr":3}}
+{"id":"q45","query":"real time currency quote","intent":"paraphrase","relevant":{"https://api.fxrates.example/v1/fx/usd-brl":3,"https://api.fxrates.example/v1/fx/usdc-brl":2}}
+{"id":"q46","query":"logistics cost estimation","intent":"paraphrase","relevant":{"https://api.logistics.example/v1/freight/quote":3}}
+{"id":"q47","query":"climate data","intent":"category","relevant":{"https://api.weather.example/v1/forecast":3}}
+{"id":"q48","query":"risk scoring","intent":"category","relevant":{"https://api.antifraud.example/v1/risk-score":3}}
+{"id":"q49","query":"quantum teleportation as a service","intent":"no-match","relevant":{}}
+{"id":"q50","query":"book a flight to tokyo","intent":"no-match","relevant":{}}
