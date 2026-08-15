@@ -559,25 +559,38 @@ billing, bandwidth, inference — need `upto`: the buyer authorizes a ceiling an
 settles only what was consumed. Discovery without metered pricing lists services an agent
 cannot pay correctly, which is why this sits inside a discovery submission.
 
-`upto` is **not solved on Stellar**, and the reason is visible in
-[`stellar/x402-stellar#72`](https://github.com/stellar/x402-stellar/issues/72): at least four
-independent implementations disagree on decisions that change what the client signs.
+The design is **converging, and we are not going to fragment it.**
+[`stellar/x402-stellar#72`](https://github.com/stellar/x402-stellar/issues/72) shows three
+independent implementations arriving at the same shape — the client signs a ceiling, a
+recipient, an expiry and a nonce, the actual amount stays unsigned, and a small contract
+enforces `actual ≤ max` and single-use on-ledger — and
+[`x402-foundation/x402#3134`](https://github.com/x402-foundation/x402/pull/3134) proposes the
+Stellar binding as a spec, open for review since 12 August 2026.
 
-| Decision | Position A | Position B |
-|---|---|---|
-| Residual allowance after settling below the maximum | zeroed atomically | left to expire on its own ledger deadline |
-| Zero-value settlement | submits a real transaction, consuming the nonce | submits nothing, to avoid a fee for a no-op |
-| Rent and TTL responsibility | contract-side, monitored | operator-side |
+A fourth private design would add a data point, not a decision. What is genuinely missing is
+narrower, and it is what this project is positioned to supply:
 
-Two of these produce observably different on-chain behaviour for the same logical payment. A
-facilitator that assumes one and meets the other fails as a rejected settlement with a
-generic reason, which is the worst kind of failure. Shipping a fifth incompatible contract
-would add a data point, not a decision. Our full position is in
-[upto-position.md](upto-position.md).
+| Still open | Who can answer it |
+|---|---|
+| `validAfter` enforced on-chain or treated as verify-time policy | the implementers, in the thread |
+| Residual allowance: zeroed atomically, or left to expire | the implementers, in the thread |
+| **What a catalog listing publishes as the price of a metered resource** | **the discovery layer — nobody else has raised it** |
+| **How a budget filter avoids excluding metered services whose actual cost lands under budget** | **the discovery layer** |
+| **Where the settled actual amount lives, so ranking can weight by value rather than call count** | **the discovery layer** |
 
-### 6.2 The contract we would ship
+`PaymentRequirements.amount` holds one value. For `exact` it is the price; for `upto` the
+only figure a seller can honestly publish before the call is the *ceiling*, which is not the
+price and is usually much larger. A catalog that puts a ceiling where an agent reads "cost"
+makes every metered service look expensive next to a fixed-price one — a bias against
+exactly the services `upto` exists to enable. That is a discovery problem, invisible from
+the settlement side, and it is the contribution we have made to the thread
+([our comment](https://github.com/stellar/x402-stellar/issues/72#issuecomment-5303705529),
+full text in [upto-position.md](upto-position.md)).
 
-Deliberately minimal, because the audit surface should be one function:
+### 6.2 The contract shape
+
+Deliberately minimal, because the audit surface should be one function. This is the shape
+the thread has converged on; where the upstream spec differs when it lands, the spec wins:
 
 ```rust
 // no admin, no upgrade path, no persistent storage, never holds a balance
@@ -636,13 +649,24 @@ transaction they signed rather than by an expiry they have to track.
 
 ### 6.3 What Tranche 2 delivers
 
-The spec (`scheme_upto_stellar.md`) written against whatever the thread converges on and
-opened upstream **before** the contract is funded, then the contract deployed to testnet and
-integrated into `/verify` and `/settle`, with settled hashes published for the partial,
-maximum and zero cases and a negative-test matrix covering above-maximum, altered recipient,
-altered token, expired authorization, replay and unexpected sub-invocations.
+Three things, none of which is a fourth spec:
 
-Building it before mainnet is deliberate: the contract must be inside the audit scope, and
+1. **The discovery-side requirements, contributed to the open spec** (deliverable 2.1). The
+   three rows in bold in §6.1, argued upstream while #3134 is still under review.
+2. **The scheme implemented as standardized, and proven interoperable** (deliverable 2.2).
+   Settled testnet hashes for the partial, maximum and zero cases, a negative-test matrix
+   covering above-maximum, altered recipient, altered token, expired authorization, replay
+   and unexpected sub-invocations — and, the part that does not exist on Stellar today, an
+   **interop report showing this facilitator settling a payload produced by a different
+   Stellar `upto` implementation**, published with both parties named. Three implementations
+   exist and no two have been tested against each other, so interoperability here is
+   currently an assertion rather than a measured property.
+3. **Metered pricing in the catalog** (deliverable 2.7). The implementation of what §6.1
+   argues: listings that carry a ceiling *and* a unit or typical price, a budget filter that
+   stops excluding cheap metered services, and ranking weighted by settled value rather than
+   by call count.
+
+Building the contract before mainnet is deliberate: it must be inside the audit scope, and
 the audit gates mainnet.
 
 ---
@@ -770,7 +794,9 @@ no faucet, no captcha and no API key.
 | | Golden set to 150–200 queries + rolling live sample | §4.2 |
 | | Wire shape locked by golden tests on all three surfaces | §3.2 |
 | | Nightly stock-client conformance in public CI | §5.3 |
-| **T2** ($26,700, ~12 weeks) | `upto` spec upstream, then the contract on testnet | §6 |
+| **T2** ($26,700, ~12 weeks) | Discovery-side requirements into the open `upto` spec | §6.1 |
+| | `upto` implemented as standardized + a published interop report | §6.3 |
+| | Metered pricing in the catalog: ceiling vs price, budget filters, value-weighted ranking | §6.3 |
 | | Monitoring plan becomes a running system with alerts | §8 |
 | | CPU-only semantic layer, measured by the T1 harness | §4.3 |
 | | Hosted HTTP MCP + TS/Go/Python adapter tests | §5.1 |
