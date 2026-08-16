@@ -413,15 +413,23 @@ function paywall(route) {
       );
     }
 
-    const paymentRequirements = paymentPayload.accepted ?? requirementsFor(route);
+    const paymentRequirements = paymentPayload?.accepted ?? requirementsFor(route);
 
-    // Never trust the client's echoed requirements about money.
+    // Never trust the client's echoed requirements about money. The comparison itself
+    // runs inside try/catch: a header decoding to null or a non-integer amount ("1e7")
+    // makes BigInt() throw, and an adversarial header must produce a reasoned 402,
+    // never an unreasoned 500.
     const expected = requirementsFor(route);
-    if (
-      paymentRequirements.payTo !== expected.payTo ||
-      paymentRequirements.asset !== expected.asset ||
-      BigInt(paymentRequirements.amount ?? 0) < BigInt(expected.amount)
-    ) {
+    let echoMismatch;
+    try {
+      echoMismatch =
+        paymentRequirements.payTo !== expected.payTo ||
+        paymentRequirements.asset !== expected.asset ||
+        BigInt(paymentRequirements.amount ?? 0) < BigInt(expected.amount);
+    } catch {
+      echoMismatch = true;
+    }
+    if (echoMismatch) {
       return send402(
         res,
         route,

@@ -70,8 +70,10 @@ try {
 } catch (e) {
   usingIndexStub = true;
   console.warn(`[facilitator] packages/index unavailable (${e.message}) — using in-memory stub`);
-  // TODO(stellarsight): remove this stub once packages/index ships. Same public API,
-  // naive substring matching instead of BM25.
+  // Deliberate fallback, not a migration leftover: keeps the facilitator bootable when
+  // packages/index cannot be imported (partial checkout, packaging error). Same public
+  // API, naive substring matching instead of BM25; /health reports wireShape
+  // "internal-stub" while this is active.
   indexPkg = {
     createCatalog() {
       const store = new Map();
@@ -257,9 +259,11 @@ const feePayerSigner = createEd25519Signer(FEEPAYER_SECRET, NETWORK);
 // 500_000 stroops is 0.05 XLM. It is 8.7x the observed simulation and still small
 // enough to catch a genuinely runaway transaction, which is what the ceiling is for.
 // The FEEPAYER pays this, never the buyer.
-const MAX_TRANSACTION_FEE_STROOPS = Number(
-  process.env.MAX_TRANSACTION_FEE_STROOPS ?? 500_000,
-);
+// A malformed env value must fall back to the calibrated default, not become NaN —
+// every NaN comparison is false, which would silently remove the ceiling.
+const maxFeeFromEnv = Number(process.env.MAX_TRANSACTION_FEE_STROOPS ?? 500_000);
+const MAX_TRANSACTION_FEE_STROOPS =
+  Number.isFinite(maxFeeFromEnv) && maxFeeFromEnv > 0 ? maxFeeFromEnv : 500_000;
 
 const stellarScheme = new ExactStellarScheme([feePayerSigner], {
   rpcConfig: { url: STELLAR_RPC_URL },
@@ -395,7 +399,17 @@ function toCatalogRecord(paymentPayload, paymentRequirements, discovery) {
       ? { url: paymentRequirements.resource, description: paymentRequirements.description }
       : (paymentRequirements?.resource ?? {}));
 
-  const url = resourceInfo.url ?? "";
+  // Key the record by the WHATWG-normalized href so the prior-settlements lookup on the
+  // settle path hits the same id that catalog.upsert stores under (upsert keys on
+  // url.href — a raw "https://api.example.com" would otherwise miss its own stored
+  // record forever and pin the settlement counter at 1).
+  const rawUrl = resourceInfo.url ?? "";
+  let url;
+  try {
+    url = new URL(rawUrl).href;
+  } catch {
+    url = rawUrl;
+  }
   const meta = paymentRequirements?.extra ?? {};
   const id = input.toolName ? `${url}#${input.toolName}` : url;
 
@@ -796,7 +810,11 @@ if (runDirect) {
     console.log(`[facilitator]   feePayer ${feePayerSigner.address} (fees sponsored)`);
   });
 
-  indexApp.listen(INDEX_PORT, () => {
+  // Loopback only: the local index carries an unauthenticated write path (the deployed
+  // write path is bearer-gated in serverless.mjs), so it must never bind a public
+  // interface. Public discovery reads belong to api/discovery/* or mountDiscoveryRoutes
+  // mounted on a host the operator controls.
+  indexApp.listen(INDEX_PORT, "127.0.0.1", () => {
     console.log(`[index]       bazaar index    http://localhost:${INDEX_PORT}`);
     console.log(`[index]         GET /discovery/resources  /discovery/search`);
     console.log(`[index]         backend: ${usingIndexStub ? "in-memory stub" : "packages/index"}\n`);

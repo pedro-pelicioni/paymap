@@ -93,6 +93,7 @@ function fingerprint(query, filters) {
     filters.payTo ?? '',
     filters.scheme ?? '',
     filters.network ?? '',
+    filters.seeded ?? '',
     [...asArray(filters.extensions)].sort(),
   ]);
   // Cheap non-cryptographic fingerprint (FNV-1a). It only needs to detect accidental
