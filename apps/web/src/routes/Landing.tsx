@@ -55,7 +55,7 @@ const HERO_CMD: CodeSpan[] = [
  * page previously carried a hand-typed 84 in the strip and 129 in the block, for the same
  * `npm test`, eighty lines apart.
  */
-const TEST_COUNT = 129
+const TEST_COUNT = 151
 const API_CHECKS = 46
 /** Of API_CHECKS, the ones driven through the unmodified @x402/extensions client. */
 const STOCK_CLIENT_CHECKS = 9
