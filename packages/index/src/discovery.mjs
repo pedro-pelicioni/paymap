@@ -26,6 +26,10 @@
  * without re-running that harness.
  */
 
+// One import, and only for identity: the offering key must be THE SAME definition
+// the catalog dedupes with, or the two drift (index.mjs has no import cycle back).
+import { offeringKeyOf } from './index.mjs';
+
 export const X402_VERSION = 2;
 
 /**
@@ -151,6 +155,32 @@ function extensionsMapOf(rec) {
  * @param {object} rec  an internal catalog record (see CONTRACT.md)
  * @returns {object}    a spec `DiscoveryResource` plus STELLARSIGHT's additive fields
  */
+function acceptsOf(rec, mirror) {
+  const head = {
+    scheme: mirror.scheme,
+    network: mirror.network,
+    asset: mirror.asset,
+    amount: mirror.amount,
+    payTo: mirror.payTo,
+    maxTimeoutSeconds: mirror.maxTimeoutSeconds,
+    extra: rec.extra && typeof rec.extra === 'object' ? rec.extra : {},
+  };
+  if (!Array.isArray(rec.requirements) || rec.requirements.length < 2) return [head];
+  const headKey = offeringKeyOf(head);
+  const rest = rec.requirements
+    .filter((o) => offeringKeyOf(o) !== headKey)
+    .map((o) => ({
+      scheme: typeof o.scheme === 'string' ? o.scheme : head.scheme,
+      network: typeof o.network === 'string' ? o.network : head.network,
+      asset: typeof o.asset === 'string' ? o.asset : head.asset,
+      amount: String(o.maxAmountRequired ?? '0'),
+      payTo: typeof o.payTo === 'string' ? o.payTo : head.payTo,
+      maxTimeoutSeconds: head.maxTimeoutSeconds,
+      extra: o.extra && typeof o.extra === 'object' ? o.extra : {},
+    }));
+  return [head, ...rest];
+}
+
 export function toDiscoveryResource(rec) {
   if (!rec || typeof rec !== 'object') return rec;
 
@@ -179,9 +209,10 @@ export function toDiscoveryResource(rec) {
     type: rec.type ?? 'http',
     x402Version: X402_VERSION,
     // [spec: v2 PaymentRequirements = { scheme, network, asset, amount, payTo,
-    //  maxTimeoutSeconds, extra }] — one entry, because a catalog record advertises
-    //  exactly one priced way to call the resource.
-    accepts: [{ scheme, network, asset, amount, payTo, maxTimeoutSeconds, extra: {} }],
+    //  maxTimeoutSeconds, extra }] — one entry per distinct offering the record
+    //  advertises. accepts[0] is always the offering the native mirrors track (the
+    //  most recently seen); further offerings follow in first-seen order.
+    accepts: acceptsOf(rec, { scheme, network, asset, amount, payTo, maxTimeoutSeconds }),
     lastUpdated: isoFrom(rec.lastSeenAt),
     ...(description !== undefined ? { description } : {}),
     ...(mimeType !== undefined ? { mimeType } : {}),

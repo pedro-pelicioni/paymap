@@ -29,7 +29,7 @@ jobs:
         node: ['22', '24']
 
     # Two store-transport tests skip themselves without a real Redis, so a bare `npm test`
-    # reports 148 passed / 3 skipped. CI supplies one and takes that to 150 / 1: the round
+    # reports 158 passed / 3 skipped. CI supplies one and takes that to 160 / 1: the round
     # trip and the error-reply path are exactly the parts worth exercising against a real
     # server rather than a mock. The last skip is the agent's live-replay check, which
     # wants a facilitator on localhost:4021 and stays skipped here by design — booting the

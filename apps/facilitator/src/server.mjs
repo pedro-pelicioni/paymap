@@ -427,6 +427,9 @@ function toCatalogRecord(paymentPayload, paymentRequirements, discovery) {
     scheme: paymentRequirements?.scheme ?? "exact",
     payTo: paymentRequirements?.payTo ?? SELLER_PUBLIC,
     asset: paymentRequirements?.asset ?? ASSET_SAC,
+    // The requirements' extra rides into the catalog so distinct offerings of the
+    // same resource (e.g. two upto profiles) keep their identity — see issue #1.
+    extra: paymentRequirements?.extra,
     maxAmountRequired: String(
       paymentRequirements?.amount ?? paymentRequirements?.maxAmountRequired ?? "0",
     ),

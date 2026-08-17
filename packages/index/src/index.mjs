@@ -107,6 +107,55 @@ function fingerprint(query, filters) {
   return h.toString(36);
 }
 
+/* ─────────────────────────────── offerings ───────────────────────────── */
+
+// A record can advertise more than one priced way to call the same resource — two
+// upto profiles, or exact alongside upto. An offering's identity is everything
+// EXCEPT the price: scheme, network, asset, payTo and the canonicalized `extra`
+// bag. Keying on content rather than on a semantic field is deliberate: the spec
+// has not yet named the profile discriminator (see issue #1), and a content key
+// loses nothing no matter where that discriminator lands.
+export function canonicalJson(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
+  return (
+    '{' +
+    Object.keys(value)
+      .sort()
+      .map((k) => JSON.stringify(k) + ':' + canonicalJson(value[k]))
+      .join(',') +
+    '}'
+  );
+}
+
+export function offeringKeyOf(o) {
+  return [o.scheme, o.network, o.asset, o.payTo, canonicalJson(o.extra ?? {})].join('|');
+}
+
+const EXTRA_MAX_BYTES = 2048;
+
+// Soft-drop sanitizer for accepts.extra: a JSON round-trip clone (kills prototype
+// pollution and non-JSON values), bounded in serialized size so a hostile announce
+// cannot use `extra` as a storage amplifier.
+function sanitizeExtra(extra) {
+  if (extra === undefined || extra === null) return { value: undefined, ok: true };
+  if (typeof extra !== 'object' || Array.isArray(extra)) return { value: undefined, ok: false };
+  let clone;
+  try {
+    clone = JSON.parse(JSON.stringify(extra));
+  } catch {
+    return { value: undefined, ok: false };
+  }
+  if (canonicalJson(clone).length > EXTRA_MAX_BYTES) return { value: undefined, ok: false };
+  return { value: clone, ok: true };
+}
+
+// Records stored before `requirements` existed contribute their single tuple.
+function offeringsOf(rec) {
+  if (Array.isArray(rec.requirements) && rec.requirements.length) return rec.requirements;
+  return [{ scheme: rec.scheme, network: rec.network, payTo: rec.payTo, asset: rec.asset }];
+}
+
 /* ─────────────────────────────── catalog ─────────────────────────────── */
 
 /**
@@ -206,15 +255,58 @@ export function createCatalog(options = {}) {
     const incomingSettlements = Math.max(0, Number(record.settlements ?? 0) || 0);
     const incomingLastSeen = Number(record.lastSeenAt) || now();
 
+    const network = typeof record.network === 'string' ? record.network : 'stellar:testnet';
+    const scheme = typeof record.scheme === 'string' ? record.scheme : 'exact';
+    const payTo = typeof record.payTo === 'string' ? record.payTo : '';
+    const asset = typeof record.asset === 'string' ? record.asset : '';
+    const maxAmountRequired =
+      record.maxAmountRequired !== undefined ? String(record.maxAmountRequired) : '0';
+
+    // 6. offerings — re-seeing an offering updates its price in place; a distinct
+    //    offering (different scheme, asset, payTo or extra) is appended rather than
+    //    overwriting the record. The top-level fields keep mirroring the offering
+    //    seen most recently, which is what the single-tuple model always showed.
+    const ex = sanitizeExtra(record.extra);
+    if (!ex.ok) dropped.push('extra');
+    const offering = {
+      scheme,
+      network,
+      payTo,
+      asset,
+      maxAmountRequired,
+      ...(ex.value !== undefined ? { extra: ex.value } : {}),
+    };
+    const requirements = (
+      previous?.requirements ??
+      (previous
+        ? [
+            {
+              scheme: previous.scheme,
+              network: previous.network,
+              payTo: previous.payTo,
+              asset: previous.asset,
+              maxAmountRequired: previous.maxAmountRequired,
+              ...(previous.extra !== undefined ? { extra: previous.extra } : {}),
+            },
+          ]
+        : [])
+    ).map((o) => ({ ...o }));
+    const key = offeringKeyOf(offering);
+    const existing = requirements.find((o) => offeringKeyOf(o) === key);
+    if (existing) existing.maxAmountRequired = offering.maxAmountRequired;
+    else requirements.push(offering);
+
     const stored = {
       id,
       resource: res.value,
       type,
-      network: typeof record.network === 'string' ? record.network : 'stellar:testnet',
-      scheme: typeof record.scheme === 'string' ? record.scheme : 'exact',
-      payTo: typeof record.payTo === 'string' ? record.payTo : '',
-      asset: typeof record.asset === 'string' ? record.asset : '',
-      maxAmountRequired: record.maxAmountRequired !== undefined ? String(record.maxAmountRequired) : '0',
+      network,
+      scheme,
+      payTo,
+      asset,
+      maxAmountRequired,
+      ...(ex.value !== undefined ? { extra: ex.value } : {}),
+      requirements,
       input,
       output,
       ...(routeTemplate ? { routeTemplate } : {}),
@@ -275,9 +367,12 @@ export function createCatalog(options = {}) {
    */
   function matches(rec, f) {
     if (f.type && rec.type !== f.type) return false;
-    if (f.payTo && rec.payTo !== f.payTo) return false;
-    if (f.scheme && rec.scheme !== f.scheme) return false;
-    if (f.network && rec.network !== f.network) return false;
+    // Requirement filters match ANY offering the record advertises, not only the
+    // mirrored latest one — a resource whose second offering is upto must be
+    // findable by ?scheme=upto.
+    if (f.payTo && !offeringsOf(rec).some((o) => o.payTo === f.payTo)) return false;
+    if (f.scheme && !offeringsOf(rec).some((o) => o.scheme === f.scheme)) return false;
+    if (f.network && !offeringsOf(rec).some((o) => o.network === f.network)) return false;
     if (f.seeded !== undefined && f.seeded !== null) {
       const want = f.seeded === true || f.seeded === 'true' || f.seeded === '1';
       if (Boolean(rec.seeded) !== want) return false;

@@ -69,6 +69,15 @@ It is **not** what goes on the wire — see the next section.
   payTo: "G...",
   asset: "C...",
   maxAmountRequired: "10000",
+  extra?: object,             // sanitized accepts.extra of the offering mirrored above
+  requirements: [             // EVERY distinct offering this resource advertises.
+    { scheme, network, payTo, asset, maxAmountRequired, extra? }
+    // Identity = scheme|network|asset|payTo|canonical(extra): re-seeing an offering
+    // updates its price in place; a different offering (second upto profile, exact
+    // alongside upto) is appended. Top-level fields mirror the most recently seen
+    // offering. Content-keyed on purpose until the spec names the discriminator
+    // (extra.uptoProfile is still in open upstream PRs) — see issue #1.
+  ],
   input: { type, method?, queryParams?, body?, toolName?, inputSchema? },
   output: { type, format?, example? },
   routeTemplate?: string,
@@ -108,8 +117,10 @@ than pretending to be spec-shaped.
   resource: "https://api.example/v1/thing",   // a URL STRING, not the block above
   type: "http" | "mcp",
   x402Version: 2,
-  accepts: [                                  // x402 v2 PaymentRequirements
+  accepts: [                                  // x402 v2 PaymentRequirements — one entry
     { scheme, network, asset, amount, payTo, maxTimeoutSeconds, extra }
+    // per distinct offering the record advertises. accepts[0] is always the offering
+    // the native mirrors below track; further offerings follow in first-seen order.
   ],
   lastUpdated: "2026-08-07T12:00:00.000Z",    // ISO 8601, from lastSeenAt
   serviceName?, description?, tags?, iconUrl?, mimeType?,   // TOP LEVEL, not nested

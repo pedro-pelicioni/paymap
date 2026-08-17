@@ -8,7 +8,7 @@
 
 **The facilitator-side Bazaar discovery layer for x402 — the piece that does not exist in public code today — and the whole payment loop around it, running end to end on Stellar testnet.**
 
-`Apache-2.0` · `stellar:testnet` · **16+ settled x402 payments** · **151 tests, 0 failing** · **nDCG@10 0.864, measured**
+`Apache-2.0` · `stellar:testnet` · **19 settled x402 payments** · **161 tests, 0 failing** · **nDCG@10 0.864, measured**
 
 </div>
 
@@ -25,7 +25,7 @@ You do not have to take any claim in this README on trust. Every one of them is 
 |---|---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
 | The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
-| Catalog integrity is real, not decorative | `npm test` → 151 tests, 0 failing (66 of them adversarial) | 30s |
+| Catalog integrity is real, not decorative | `npm test` → 161 tests, 0 failing (66 of them adversarial) | 30s |
 | Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI | 20s |
 | We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys | 60s |
 | It stays that way | [CI](../../actions) runs the suite, the 46 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
@@ -246,7 +246,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
-| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 151 tests are its. On npm: `npm i @stellarsight/express` |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 161 tests are its. On npm: `npm i @stellarsight/express` |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |
@@ -282,7 +282,7 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 151 tests
+npm test           # 161 tests
 npm run verify:api # 46 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
