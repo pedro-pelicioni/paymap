@@ -281,10 +281,10 @@ export default function Landing() {
               >
                 <div className="proof__cell">
                   <span className="proof__n">
-                    <em>16</em>
+                    <em>19</em>
                   </span>
                   <span className="proof__l">
-                    settled x402 payments on Stellar testnet — the two newest through the
+                    settled x402 payments on Stellar testnet — the three newest through the
                     hosted stack
                   </span>
                 </div>
