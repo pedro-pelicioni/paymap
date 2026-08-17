@@ -1,0 +1,66 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "STELLARSIGHT",
+  "description": "The facilitator-side Bazaar discovery layer for x402 on Stellar.",
+  "colors": {
+    "primary": "#9A7B1C",
+    "light": "#E3B93D",
+    "dark": "#9A7B1C"
+  },
+  "logo": {
+    "light": "/logo/stellarsight.svg",
+    "dark": "/logo/stellarsight.svg"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get started",
+        "pages": ["index", "quickstart"]
+      },
+      {
+        "group": "Guides",
+        "pages": ["guides/seller", "guides/agent"]
+      },
+      {
+        "group": "Reference",
+        "pages": ["architecture", "api/contract"]
+      },
+      {
+        "group": "Security",
+        "pages": ["security/threat-model", "security/monitoring"]
+      },
+      {
+        "group": "Evidence",
+        "pages": [
+          "evidence/testnet-transactions",
+          "evidence/search-eval",
+          "evidence/load-baseline"
+        ]
+      },
+      {
+        "group": "Upstream",
+        "pages": ["upto-position"]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Live catalog",
+        "href": "https://stellarsight.xyz"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/pedro-pelicioni/stellarsight"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/pedro-pelicioni/stellarsight",
+      "website": "https://stellarsight.xyz"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+---
+title: "Find what to pay for on Stellar"
+description: "STELLARSIGHT is the facilitator-side Bazaar discovery layer for x402 — the catalog, the search and the agent surface, with the whole payment loop running around it on Stellar testnet."
+---
+
+An agent that can pay but cannot discover is an agent with a wallet and no map.
+STELLARSIGHT is the map: a public, durable x402 discovery catalog, live at
+[stellarsight.xyz](https://stellarsight.xyz), where listings are born from settled
+Stellar payments.
+
+```bash
+curl "https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3"
+```
+
+<CardGroup cols={2}>
+  <Card title="Verify the claims in 60 seconds" icon="stopwatch" href="/quickstart">
+    Every number this project publishes is checkable: settled hashes, 151 tests,
+    46 conformance checks, measured search quality.
+  </Card>
+  <Card title="Sell through it" icon="store" href="/guides/seller">
+    Clone to a paid, discoverable endpoint in 59 measured seconds. No faucet,
+    no captcha, no API key.
+  </Card>
+  <Card title="Buy from an agent" icon="robot" href="/guides/agent">
+    An MCP server with four tools — search, browse, describe, pay — with input
+    and output schemas and a 17-code error enum.
+  </Card>
+  <Card title="Read the architecture" icon="sitemap" href="/architecture">
+    One wire-format definition shared by every surface, a durable Redis-backed
+    catalog, and the trust boundaries drawn explicitly.
+  </Card>
+</CardGroup>
+
+## Why it exists
+
+The x402 `bazaar` extension defines `GET /discovery/resources` and
+`GET /discovery/search`, but ships only client and server helpers — no
+facilitator-side catalog. STELLARSIGHT implements that missing piece for Stellar
+and runs it as a hosted public API, alongside a self-hosted facilitator
+(`/supported`, `/verify`, `/settle`) with sponsored fees, so discovery, payment
+and settlement are one deployment. Everything is Apache-2.0 and self-hostable.
+
+## What is measured, not asserted
+
+| Claim | Where it is proven |
+|---|---|
+| Payments settle on Stellar | [Settled transactions](/evidence/testnet-transactions) — explorer links |
+| Search quality is a number | [Search evaluation](/evidence/search-eval) — nDCG@10 0.864, gated in CI |
+| The worst number is published | [Load baseline](/evidence/load-baseline) — 4/4 serial vs 1/10 concurrent |
+| Threats have controls and tests | [Threat model](/security/threat-model) — 12 threats, gaps marked as gaps |
+| The wire format holds | [API contract](/api/contract) — enforced by 46 stock-client checks in CI |

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Stellarsight</title>
+  <ellipse cx="256" cy="444" rx="238" ry="9" fill="#7D818F"/>
+  <path fill="#F5400E" d="M252 256 C 246 338 214 408 150 441 L 362 441 C 298 408 266 338 260 256 Z"/>
+  <path fill="#F2EDE3" d="M256 54 Q 264 126 341 143 Q 264 160 256 268 Q 248 160 171 143 Q 248 126 256 54 Z"/>
+</svg>

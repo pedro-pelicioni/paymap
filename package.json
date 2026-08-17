@@ -33,7 +33,8 @@
     "test:agent": "node --test apps/agent/src/replay-guard.test.mjs",
     "demo:agent": "node apps/agent/src/cli.mjs",
     "mcp": "node apps/agent/src/mcp-server.mjs",
-    "check:bazaar": "node scripts/check-bazaar-client.mjs"
+    "check:bazaar": "node scripts/check-bazaar-client.mjs",
+    "docs:sync": "node scripts/sync-docs-site.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

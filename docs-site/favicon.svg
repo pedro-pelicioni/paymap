@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Stellarsight</title>
+  <!--
+    The favicon is the mark REDUCED, not the mark shrunk. At 16px the ground
+    ellipse is under a pixel tall and the beam collapses into the star, so both
+    are dropped and the star alone is scaled to fill the canvas. It keeps the
+    star's own proportions, including the longer lower point.
+
+    It carries the accent rather than the cream because a tab strip may be light
+    or dark, and the accent is the only tone in the palette legible on both.
+  -->
+  <path fill="#F5400E" d="M256 53 Q 271 190 418 222 Q 271 254 256 459 Q 241 254 94 222 Q 241 190 256 53 Z"/>
+</svg>

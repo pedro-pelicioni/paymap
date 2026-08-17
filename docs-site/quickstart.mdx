@@ -1,0 +1,56 @@
+---
+title: "Verify in 60 seconds"
+description: "Nothing here asks for trust. Every claim is checkable against a live endpoint, a public explorer or a command you run yourself."
+---
+
+## Against the live deployment
+
+<Steps>
+  <Step title="Search the catalog">
+    ```bash
+    curl "https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3"
+    ```
+    Results arrive under `resources`, each with an `_explain` score breakdown —
+    the ranking is reproducible, no LLM in the path.
+  </Step>
+  <Step title="Check the facilitator's contract">
+    ```bash
+    curl "https://stellarsight.xyz/supported"
+    ```
+    The Stellar extra contract is emitted, including `areFeesSponsored: true` —
+    the buyer holds zero XLM.
+  </Step>
+  <Step title="Read the health of the catalog">
+    ```bash
+    curl "https://stellarsight.xyz/discovery/health"
+    ```
+    Reports mode, record counts (demo records are labeled `seeded` and never
+    count as real), and the exact commit being served.
+  </Step>
+  <Step title="Open a settled payment">
+    Pick any hash in [Settled transactions](/evidence/testnet-transactions) and
+    open it on the explorer: `successful: true`, and the `fee_account` is the
+    facilitator's fee payer, not the buyer.
+  </Step>
+</Steps>
+
+## On your machine
+
+```bash
+git clone https://github.com/pedro-pelicioni/stellarsight && cd stellarsight
+npm install && npm run setup
+```
+
+No captcha, no faucet, no API key — `setup` issues the SXT test asset and funds
+every account the demo needs.
+
+| Command | What it proves |
+|---|---|
+| `npm test` | 151 tests, 0 failing — 66 of them adversarial catalog-integrity cases |
+| `npm run verify:api` | 46 conformance checks, the load-bearing ones driven by the stock `withBazaar()` client |
+| `npm run eval:search` | nDCG@10 0.864 · Recall@20 0.905 · MRR@10 0.920 over a 50-query graded set |
+| `npm run verify:conformance` | An unmodified `@x402/fetch` client completes 402 → sign → settle → 200 |
+
+The same suite runs in public CI on every push and on a nightly schedule, on
+Node 22 and 24 against a real Redis, with a merge-blocking regression gate on
+search quality.
