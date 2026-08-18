@@ -88,6 +88,23 @@ registry cannot charge.
 ### 1.4 System architecture
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "edgeLabelBackground": "#FFFFFF",
+    "clusterBkg": "#FCFCFD",
+    "clusterBorder": "#D8DEE7",
+    "titleColor": "#3F4756"
+  },
+  "flowchart": { "curve": "basis", "padding": 14, "nodeSpacing": 40, "rankSpacing": 56 }
+}}%%
 flowchart TB
     subgraph agents["Agents and clients"]
         A1["stock @x402/fetch client"]
@@ -96,10 +113,9 @@ flowchart TB
     end
 
     subgraph origin["stellarsight.xyz · one origin"]
-        direction TB
         D["/discovery/*<br/><i>packages/index</i>"]
-        F["/supported /verify /settle<br/><i>apps/facilitator</i>"]
         R["/v1/*<br/><i>reference paid API</i>"]
+        F["/supported /verify /settle<br/><i>apps/facilitator</i>"]
     end
 
     subgraph core["packages/index · one definition"]
@@ -109,25 +125,36 @@ flowchart TB
         C4["wire projection<br/><i>DiscoveryResource</i>"]
     end
 
-    KV[("Redis<br/>durable catalog")]
-    RPC["Soroban RPC"]
-    HOR["Horizon"]
-    LED[("Stellar ledger<br/>stellar:testnet")]
+    subgraph stellar["Stellar · stellar:testnet"]
+        RPC["Soroban RPC"]
+        HOR["Horizon"]
+        LED[("Stellar ledger")]
+    end
 
-    A1 & A2 --> D
+    KV[("Redis<br/>durable catalog")]
+
+    A1 --> D
+    A2 --> D
     A1 --> R
     A3 --> F
     R -. "402 challenge" .-> A1
-    D --> C1 --> C2
-    C1 --> C3 --> C4
+    D --> C1
+    C1 --> C2
+    C1 --> C3
+    C3 --> C4
     D <--> KV
     F -- "post-validation record" --> KV
-    F --> RPC --> LED
+    F --> RPC
     F --> HOR
+    RPC --> LED
 
-    classDef stellar fill:#1a3a52,stroke:#2d6da3,color:#e8f1f8
-    classDef store fill:#2d1f3d,stroke:#6b4c8a,color:#f0e8f8
-    class RPC,HOR,LED stellar
+    core ~~~ stellar
+
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    classDef chain fill:#EDF3F8,stroke:#4E7FA0,stroke-width:1.5px,color:#1C3B4F
+    classDef store fill:#F2EFF8,stroke:#6F5F94,stroke-width:1.5px,color:#382C55
+    class origin,core ours
+    class stellar chain
     class KV store
 ```
 
@@ -175,6 +202,28 @@ invocation tree: the contract being called, the function, and every argument. It
 authorize *exactly this payment* while a different account submits it and pays for it.
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "actorBkg": "#F6F7F9",
+    "actorBorder": "#C8CED8",
+    "actorTextColor": "#1F2937",
+    "actorLineColor": "#BCC3CE",
+    "signalColor": "#7C8595",
+    "signalTextColor": "#3F4756",
+    "sequenceNumberColor": "#FFFFFF",
+    "noteBkgColor": "#FDF9EE",
+    "noteTextColor": "#5A4710",
+    "noteBorderColor": "#9A7B1C",
+    "labelBoxBkgColor": "#F6F7F9",
+    "labelBoxBorderColor": "#C8CED8",
+    "labelTextColor": "#1F2937",
+    "lineColor": "#7C8595"
+  },
+  "sequence": { "mirrorActors": false, "boxMargin": 12, "noteMargin": 12, "messageAlign": "left", "wrap": false }
+}}%%
 sequenceDiagram
     autonumber
     participant B as Buyer (agent)
@@ -272,6 +321,23 @@ submission into `settle_exact_stellar_transaction_submission_failed` without sur
 underlying `tx_bad_seq`, so the error text alone proves nothing.
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "edgeLabelBackground": "#FFFFFF",
+    "clusterBkg": "#FCFCFD",
+    "clusterBorder": "#D8DEE7",
+    "titleColor": "#3F4756"
+  },
+  "flowchart": { "curve": "basis", "padding": 14, "nodeSpacing": 40, "rankSpacing": 56 }
+}}%%
 flowchart LR
     subgraph now["Today · one FEEPAYER, one sequence number"]
         direction TB
@@ -292,10 +358,12 @@ flowchart LR
 
     now ==>|"funded by deliverable 1.1"| pool
 
-    classDef bad fill:#3d1f1f,stroke:#a34d4d,color:#f8e8e8
-    classDef good fill:#1f3d2a,stroke:#4da36b,color:#e8f8ee
-    class OK1 bad
-    class OK2 good
+    classDef fail fill:#FBECEC,stroke:#B0504D,stroke-width:1.5px,color:#6B2320
+    classDef pass fill:#EAF4EE,stroke:#48885F,stroke-width:1.5px,color:#1D4630
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    class OK1 fail
+    class OK2 pass
+    class FB ours
 ```
 
 **Tranche 1, deliverable 1.1** replaces this with a pool of channel accounts, each with its
@@ -315,8 +383,33 @@ is discoverable **before** its first payment; the settlement then promotes it, i
 its observed settlement count, and clears any demo flag.
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "labelColor": "#1F2937",
+    "labelBackgroundColor": "#FFFFFF",
+    "transitionColor": "#7C8595",
+    "transitionLabelColor": "#3F4756",
+    "stateLabelColor": "#1F2937",
+    "stateBkg": "#F6F7F9",
+    "specialStateColor": "#5A6273",
+    "altBackground": "#FCFCFD",
+    "compositeBackground": "#FCFCFD",
+    "compositeTitleBackground": "#F6F7F9",
+    "noteBkgColor": "#FDF9EE",
+    "noteTextColor": "#5A4710",
+    "noteBorderColor": "#9A7B1C"
+  }
+}}%%
 stateDiagram-v2
-    direction LR
+    direction TB
     [*] --> Unknown: not in the catalog
     [*] --> Seeded: shipped in the demo corpus
     Seeded: Seeded · settlements pinned to 0
@@ -332,6 +425,11 @@ stateDiagram-v2
         durable: survives the process
         bound to the settled payTo
     end note
+
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    classDef fail fill:#FBECEC,stroke:#B0504D,stroke-width:1.5px,color:#6B2320
+    class Cataloged ours
+    class Dropped fail
 ```
 
 Two properties make this trustworthy rather than merely convenient:
@@ -377,6 +475,31 @@ The catalog has three states, and `/discovery/health` reports which one is live:
 | `kv`, writable | store + `STELLARSIGHT_WRITE_TOKEN` | auto-cataloging on |
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "labelColor": "#1F2937",
+    "labelBackgroundColor": "#FFFFFF",
+    "transitionColor": "#7C8595",
+    "transitionLabelColor": "#3F4756",
+    "stateLabelColor": "#1F2937",
+    "stateBkg": "#F6F7F9",
+    "specialStateColor": "#5A6273",
+    "altBackground": "#FCFCFD",
+    "compositeBackground": "#FCFCFD",
+    "compositeTitleBackground": "#F6F7F9",
+    "noteBkgColor": "#FDF9EE",
+    "noteTextColor": "#5A4710",
+    "noteBorderColor": "#9A7B1C"
+  }
+}}%%
 stateDiagram-v2
     direction TB
     [*] --> SeedReadOnly
@@ -388,6 +511,9 @@ stateDiagram-v2
     KvReadOnly --> KvWritable: STELLARSIGHT_WRITE_TOKEN set
     KvWritable --> SeedReadOnly: store unreachable, degrade and report on /health
     KvReadOnly --> SeedReadOnly: store unreachable
+
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    class KvWritable ours
 ```
 
 A public Bazaar that answers out of the box beats a write-capable one that needs setup
@@ -609,6 +735,23 @@ fn settle_upto(env: Env, token: Address, payer: Address, pay_to: Address,
   settlement time, all derived from the operator's advertised `maxTimeoutSeconds`.
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "edgeLabelBackground": "#FFFFFF",
+    "clusterBkg": "#FCFCFD",
+    "clusterBorder": "#D8DEE7",
+    "titleColor": "#3F4756"
+  },
+  "flowchart": { "curve": "basis", "padding": 14, "nodeSpacing": 40, "rankSpacing": 56 }
+}}%%
 flowchart TB
     subgraph signed["What the payer signs · immutable after signing"]
         S1["token"]
@@ -630,16 +773,40 @@ flowchart TB
     T --> PAY["payer ──> payTo<br/><i>contract never holds a balance</i>"]
     PAY --> NONCE["Soroban consumes the nonce<br/><i>one signature settles once</i>"]
 
-    classDef bad fill:#3d1f1f,stroke:#a34d4d,color:#f8e8e8
-    class REJ bad
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    classDef fail fill:#FBECEC,stroke:#B0504D,stroke-width:1.5px,color:#6B2320
+    classDef pass fill:#EAF4EE,stroke:#48885F,stroke-width:1.5px,color:#1D4630
+    class C ours
+    class REJ fail
+    class NONCE pass
 ```
 
 The three clocks, normatively ordered:
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#F6F7F9",
+    "primaryTextColor": "#1F2937",
+    "primaryBorderColor": "#C8CED8",
+    "lineColor": "#7C8595",
+    "textColor": "#3F4756",
+    "edgeLabelBackground": "#FFFFFF",
+    "clusterBkg": "#FCFCFD",
+    "clusterBorder": "#D8DEE7",
+    "titleColor": "#3F4756"
+  },
+  "flowchart": { "curve": "basis", "padding": 14, "nodeSpacing": 40, "rankSpacing": 56 }
+}}%%
 flowchart LR
     A["allowance expiration"] -->|"≥"| B["contract deadline"] -->|"≥"| C["settlement time"]
     D["operator maxTimeoutSeconds"] -.->|"derives all three"| A
+
+    classDef ours fill:#FDF9EE,stroke:#9A7B1C,stroke-width:1.5px,color:#5A4710
+    class D ours
 ```
 
 Our bias, stated so it can be argued with: zero settlement **should** submit, because a
