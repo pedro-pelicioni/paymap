@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-20T23:51:27.184Z",
+  "generatedAt": "2026-08-21T19:02:50.333Z",
   "generator": "apps/web/scripts/gen-integrity.mjs",
   "validator": "packages/index/src/integrity.mjs (via createCatalog().upsert)",
-  "commit": "36ec82d",
+  "commit": "80f5756",
   "note": "Replay of a fixed hostile corpus through the shipped validator. Every rule, verdict and reason below is the validator&apos;s own output. Not a live feed.",
   "entries": [
     {
