@@ -23,6 +23,14 @@ export default function Console() {
   const [took, setTook] = useState<number | null>(null)
   const [paying, setPaying] = useState<StellarsightRecord | null>(null)
   const [runId, setRunId] = useState(0)
+  /**
+   * Filter, not re-rank. The board's promise is that the printed score explains the
+   * order, so live records are never SORTED above seeds — they are shown alone by
+   * default and the seeds come back with one labeled click. Defaults to true only when
+   * the live catalog actually contains live registrations: a demo fixture (or an index
+   * with nothing announced yet) starts with the filter off rather than an empty board.
+   */
+  const [liveOnly, setLiveOnly] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -31,6 +39,7 @@ export default function Console() {
       if (!alive) return
       setCat(c)
       setItems(rank('', c.items))
+      setLiveOnly(c.source === 'live' && c.items.some((r) => !r.seeded))
     })
     return () => {
       alive = false
@@ -157,28 +166,67 @@ export default function Console() {
                 clear ✕
               </button>
             )}
+            <button
+              className="chip"
+              aria-pressed={liveOnly}
+              onClick={() => setLiveOnly((v) => !v)}
+              title={
+                liveOnly
+                  ? 'Showing only live registrations — resources announced by a reachable seller. Click to include the labeled demo seed records.'
+                  : 'Showing the full catalog, demo seed records included. Click to show only live, payable registrations.'
+              }
+            >
+              {liveOnly ? 'live only ●' : 'live only ○'}
+            </button>
           </div>
 
           <div className="board__wrap" id="board">
             <div>
-              {items.length ? (
-                <SightBoard
-                  items={items}
-                  query={query}
-                  onPay={onPay}
-                  caption={query ? `Results for “${query}”` : 'Full catalog — ranked'}
-                  source={cat.source}
-                />
-              ) : (
-                <div className="emptystate">
-                  <p>No results for that query.</p>
-                </div>
-              )}
-              <p className="label" style={{ marginTop: '0.9rem', color: 'var(--fg-3)' }}>
-                {items.length} result{items.length === 1 ? '' : 's'}
-                {took === null ? '' : ` · ranked in ${took.toFixed(1)} ms`} · BM25 + metadata +
-                settlements + recency
-              </p>
+              {(() => {
+                const visible = liveOnly ? items.filter((r) => !r.seeded) : items
+                const hidden = items.length - visible.length
+                return (
+                  <>
+                    {visible.length ? (
+                      <SightBoard
+                        items={visible}
+                        query={query}
+                        onPay={onPay}
+                        caption={
+                          query
+                            ? `Results for “${query}”${liveOnly ? ' — live only' : ''}`
+                            : liveOnly
+                              ? 'Live registrations — ranked'
+                              : 'Full catalog — ranked'
+                        }
+                        source={cat.source}
+                      />
+                    ) : (
+                      <div className="emptystate">
+                        {liveOnly && hidden > 0 ? (
+                          <p>
+                            No live results{query ? ' for that query' : ''} — {hidden} demo seed
+                            record{hidden === 1 ? '' : 's'} hidden.{' '}
+                            <button className="chip" onClick={() => setLiveOnly(false)}>
+                              show all
+                            </button>
+                          </p>
+                        ) : (
+                          <p>No results for that query.</p>
+                        )}
+                      </div>
+                    )}
+                    <p className="label" style={{ marginTop: '0.9rem', color: 'var(--fg-3)' }}>
+                      {visible.length} result{visible.length === 1 ? '' : 's'}
+                      {liveOnly && hidden > 0
+                        ? ` · ${hidden} demo seed record${hidden === 1 ? '' : 's'} hidden`
+                        : ''}
+                      {took === null ? '' : ` · ranked in ${took.toFixed(1)} ms`} · BM25 + metadata
+                      + settlements + recency
+                    </p>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>

@@ -55,8 +55,18 @@ const HERO_CMD: CodeSpan[] = [
  * page previously carried a hand-typed 84 in the strip and 129 in the block, for the same
  * `npm test`, eighty lines apart.
  */
-const TEST_COUNT = 161
+const TEST_COUNT = 200
 const API_CHECKS = 46
+/**
+ * Counted from the receipts, not typed in. This number moves every time a batch or a
+ * nightly run settles, and a hand-written one silently understated it for two weeks —
+ * which is the same defect as overstating it, just in the flattering direction.
+ *
+ * A row counts as a payment when its label names the script that made it (`demo:`,
+ * `conformance:`, `load:`); the setup and cleanup operations that created the accounts
+ * are transactions but not payments.
+ */
+const SETTLED_PAYMENTS = testnetTxs.filter((t) => /^(demo|conformance|load)/i.test(t.label ?? '')).length
 /** Of API_CHECKS, the ones driven through the unmodified @x402/extensions client. */
 const STOCK_CLIENT_CHECKS = 9
 
@@ -205,6 +215,8 @@ export default function Landing() {
           <nav className="topbar__nav" aria-label="Site">
             <a href="#ship">Sell an API</a>
             <Link to="/console">Console</Link>
+            <Link to="/playground">Playground</Link>
+            <Link to="/explorer">Explorer</Link>
             <a href={GITHUB} target="_blank" rel="noreferrer noopener">
               GitHub
             </a>
@@ -248,7 +260,10 @@ export default function Landing() {
                   and settle in one HTTP round trip.
                 </p>
                 <div className="hero__cta reveal" style={{ ['--d' as string]: '330ms' }}>
-                  <Link className="btn btn--solid" to="/console">
+                  <Link className="btn btn--solid" to="/playground">
+                    Pay for something now
+                  </Link>
+                  <Link className="btn btn--ghost" to="/console">
                     Open console
                   </Link>
                   <a className="btn btn--ghost" href="#ship">
@@ -264,8 +279,8 @@ export default function Landing() {
                   </a>
                 </div>
                 <p className="hero__note reveal" style={{ ['--d' as string]: '420ms' }}>
-                  Clone to a paid, discoverable endpoint in 59s of commands — no API keys, no
-                  captcha, no faucet.
+                  Or make a real testnet payment from this browser in about a minute — no wallet,
+                  no signup, no API key. Clone to a paid, discoverable endpoint in 59s of commands.
                 </p>
               </div>
               <div className="reveal" style={{ ['--d' as string]: '380ms' }}>
@@ -281,11 +296,11 @@ export default function Landing() {
               >
                 <div className="proof__cell">
                   <span className="proof__n">
-                    <em>19</em>
+                    <em>{SETTLED_PAYMENTS}</em>
                   </span>
                   <span className="proof__l">
-                    settled x402 payments on Stellar testnet — the three newest through the
-                    hosted stack
+                    settled x402 payments on Stellar testnet — every one labeled by the script
+                    that made it, none of it organic demand
                   </span>
                 </div>
                 <div className="proof__cell">
