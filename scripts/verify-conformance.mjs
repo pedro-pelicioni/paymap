@@ -23,11 +23,20 @@
  * Usage:
  *   npm run verify:conformance
  *   npm run verify:conformance -- --url http://localhost:4023/v1/cep/01310100
+ *   npm run verify:conformance -- --seller https://stellarsight.xyz --emit --append-txdoc "conformance: nightly hosted"
+ *
+ * `--emit` writes docs/status/conformance.json — every criterion with the value actually
+ * observed, plus the settled hash — so the published claim and the run that produced it
+ * are the same artifact. `--append-txdoc "<label>"` appends the settled row to
+ * docs/TESTNET-TXS.md instead of only printing it for a human to paste. Neither flag
+ * changes what is checked; without them this script behaves exactly as before.
  */
 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
+
+import { writeEvidence, updateProvenance, appendTxRows } from "./lib/evidence.mjs";
 
 import { wrapFetchWithPayment, x402Client, decodePaymentResponseHeader } from "@x402/fetch";
 import { decodePaymentRequiredHeader } from "@x402/core/http";
@@ -52,9 +61,38 @@ const head = (msg) => console.log(`\n${C.bold}${++step}. ${msg}${C.off}`);
 const ok = (msg) => say(`${C.green}PASS${C.off}  ${msg}`);
 const info = (msg) => say(`${C.dim}      ${msg}${C.off}`);
 
-function die(msg, detail) {
+/**
+ * The acceptance criteria, as observed rather than as claimed.
+ *
+ * Each entry records what the RFP asks for (`expected`) beside what this run actually
+ * saw (`observed`). A criterion whose observed value is written by hand is not evidence,
+ * so every one of these is filled from the response objects themselves.
+ */
+const criteria = [];
+const record = (id, name, expected, observed, pass = true) => {
+  criteria.push({ id, name, expected, observed: String(observed), pass });
+};
+
+function die(msg, detail, id) {
+  if (id) record(id, msg, "pass", detail ? `${msg} — ${String(detail).split("\n")[0]}` : msg, false);
   console.error(`  ${C.red}FAIL${C.off}  ${msg}`);
   if (detail) console.error(`${C.dim}        ${String(detail).split("\n").join("\n        ")}${C.off}`);
+  // A failed run is still evidence — arguably the more valuable kind — so emit it before
+  // exiting rather than leaving the last passing artifact on disk to imply a green run.
+  if (EMIT) {
+    try {
+      writeEvidence("conformance", {
+        ok: false,
+        target: TARGET,
+        network: NETWORK,
+        criteria,
+        failure: msg,
+      });
+      console.error(`${C.dim}        wrote docs/status/conformance.json (ok: false)${C.off}`);
+    } catch (e) {
+      console.error(`${C.dim}        could not write evidence: ${e.message}${C.off}`);
+    }
+  }
   console.error(`\n${C.red}CONFORMANCE CHECK FAILED${C.off} — a stock @x402/fetch client cannot pay this resource.\n`);
   process.exit(1);
 }
@@ -77,6 +115,9 @@ const {
 const SELLER_URL = String(arg("seller", process.env.SELLER_URL || "http://localhost:4023")).replace(/\/+$/, "");
 const TARGET = arg("url", `${SELLER_URL}/v1/fx/usd-brl`);
 const METHOD = arg("method", "GET").toUpperCase();
+const EMIT = process.argv.includes("--emit");
+/** `--append-txdoc "<label>"` — the label prefixes the row, e.g. "conformance: nightly hosted". */
+const APPEND_LABEL = arg("append-txdoc", null);
 
 console.log(`\n${C.bold}STELLARSIGHT — x402 v2 conformance against an unmodified @x402/fetch client${C.off}`);
 console.log(`${C.dim}  resource ${TARGET}`);
@@ -105,8 +146,9 @@ try {
   die(`Could not reach the resource at ${TARGET}`, `${e.message}\nIs the seller running? \`npm run dev:all\``);
 }
 
-if (probe.status !== 402) die(`Expected HTTP 402 from an unpaid request, got ${probe.status}.`);
+if (probe.status !== 402) die(`Expected HTTP 402 from an unpaid request, got ${probe.status}.`, null, "unpaid-402");
 ok("HTTP 402 Payment Required");
+record("unpaid-402", "an unpaid request is answered 402", "HTTP 402", `HTTP ${probe.status}`);
 
 const challengeHeader = probe.headers.get("PAYMENT-REQUIRED");
 if (!challengeHeader) {
@@ -124,16 +166,24 @@ try {
   die("PAYMENT-REQUIRED did not decode with @x402/core's decodePaymentRequiredHeader.", e.message);
 }
 ok(`PAYMENT-REQUIRED decoded — x402Version ${challenge.x402Version}, ${challenge.accepts?.length ?? 0} requirement(s)`);
+record(
+  "payment-required-header",
+  "the challenge rides in the PAYMENT-REQUIRED header and decodes with @x402/core",
+  "decodes via decodePaymentRequiredHeader",
+  `decoded, ${challenge.accepts?.length ?? 0} requirement(s)`,
+);
 
 const req0 = challenge.accepts?.[0] ?? {};
 info(`${req0.scheme}@${req0.network}  amount=${req0.amount}  asset=${req0.asset}`);
 info(`resource ${challenge.resource?.url ?? "(none)"}`);
 
-if (challenge.x402Version !== 2) die(`Challenge advertises x402Version ${challenge.x402Version}; this check targets v2.`);
-if (!Array.isArray(challenge.accepts) || challenge.accepts.length === 0) die("Challenge lists no `accepts` entries.");
+if (challenge.x402Version !== 2) die(`Challenge advertises x402Version ${challenge.x402Version}; this check targets v2.`, null, "v2-version");
+if (!Array.isArray(challenge.accepts) || challenge.accepts.length === 0) die("Challenge lists no `accepts` entries.", null, "v2-version");
 if (req0.maxAmountRequired !== undefined && req0.amount === undefined) {
-  die("PaymentRequirements uses the v1 field `maxAmountRequired`; v2 names it `amount`.");
+  die("PaymentRequirements uses the v1 field `maxAmountRequired`; v2 names it `amount`.", null, "v2-version");
 }
+record("v2-version", "the challenge is x402 v2 shaped", "x402Version 2, accepts[].amount", `x402Version ${challenge.x402Version}, amount=${req0.amount}`);
+record("scheme-network", "the offer names the scheme and CAIP-2 network", "exact @ stellar:testnet", `${req0.scheme} @ ${req0.network}`);
 
 // ---------------------------------------------------------------------------
 // 2. Build the canonical client and let it drive the whole loop.
@@ -173,9 +223,15 @@ if (response.status !== 200) {
       ? "\nA second 402 after payment means the seller never saw the PAYMENT-SIGNATURE header\n" +
         "(v2 clients do not send X-PAYMENT) or the facilitator rejected the payload."
       : "";
-  die(`Paid request returned HTTP ${response.status}, expected 200.${hint}`, detail);
+  die(`Paid request returned HTTP ${response.status}, expected 200.${hint}`, detail, "stock-client-200");
 }
 ok(`HTTP 200 in ${elapsedMs}ms`);
+record(
+  "stock-client-200",
+  "an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200",
+  "HTTP 200",
+  `HTTP 200 in ${elapsedMs}ms`,
+);
 
 // ---------------------------------------------------------------------------
 // 3. The settlement receipt must live where the spec puts it.
@@ -198,11 +254,19 @@ try {
   die("PAYMENT-RESPONSE did not decode with @x402/fetch's decodePaymentResponseHeader.", e.message);
 }
 
-if (settle.success !== true) die(`Settlement reported success=false: ${settle.errorReason ?? "no errorReason given"}`);
+if (settle.success !== true) die(`Settlement reported success=false: ${settle.errorReason ?? "no errorReason given"}`, null, "settle-success");
 ok("PAYMENT-RESPONSE decoded, success=true");
+record(
+  "payment-response-header",
+  "the receipt rides in the PAYMENT-RESPONSE header and decodes with @x402/fetch",
+  "decodes via decodePaymentResponseHeader",
+  "decoded",
+);
+record("settle-success", "settlement reports success", "success=true", `success=${settle.success}`);
 
 const txHash = String(settle.transaction ?? "").trim();
-if (!/^[0-9a-f]{64}$/i.test(txHash)) die(`Settlement carried no usable transaction hash (got ${JSON.stringify(settle.transaction)}).`);
+if (!/^[0-9a-f]{64}$/i.test(txHash)) die(`Settlement carried no usable transaction hash (got ${JSON.stringify(settle.transaction)}).`, null, "tx-hash");
+record("tx-hash", "the receipt carries a settled transaction hash", "64-hex transaction hash", txHash);
 
 const explorer = `https://stellar.expert/explorer/testnet/tx/${txHash}`;
 
@@ -216,6 +280,58 @@ console.log(`\n  ${C.bold}tx${C.off}       ${txHash}`);
 console.log(`  ${C.bold}payer${C.off}    ${settle.payer ?? signer.address}`);
 console.log(`  ${C.bold}network${C.off}  ${settle.network ?? NETWORK}`);
 console.log(`  ${C.bold}explorer${C.off} ${C.cyan}${explorer}${C.off}`);
-console.log(`\n  ${C.dim}Append to docs/TESTNET-TXS.md:${C.off}`);
-console.log(`  | \`${txHash.slice(0, 8)}…\` | ${req0.amount ? Number(req0.amount) / 1e7 : "?"} SXT | ${new URL(TARGET).pathname} | [link](${explorer}) |`);
+const route = new URL(TARGET).pathname;
+const amountSxt = req0.amount ? Number(req0.amount) / 1e7 : null;
+
+if (EMIT) {
+  const { path } = writeEvidence("conformance", {
+    ok: true,
+    target: TARGET,
+    route,
+    method: METHOD,
+    client: "@x402/fetch wrapFetchWithPayment (unmodified)",
+    payer: settle.payer ?? signer.address,
+    amount: req0.amount ?? null,
+    amountDisplay: amountSxt === null ? null : `${amountSxt} SXT`,
+    asset: req0.asset ?? null,
+    scheme: req0.scheme ?? null,
+    txHash,
+    explorerUrl: explorer,
+    elapsedMs,
+    criteria,
+  });
+  updateProvenance({ [txHash]: { label: "conformance", run: process.env.GITHUB_RUN_ID ?? null } });
+  console.log(`  ${C.dim}evidence  ${path.replace(`${ROOT}/`, "")}${C.off}`);
+}
+
+if (APPEND_LABEL) {
+  const { appended } = appendTxRows([{ step: `${APPEND_LABEL} -> ${route}`, hash: txHash }]);
+  console.log(`  ${C.dim}appended  ${appended} row to docs/TESTNET-TXS.md${C.off}`);
+} else {
+  console.log(`\n  ${C.dim}Append to docs/TESTNET-TXS.md (or re-run with --append-txdoc "<label>"):${C.off}`);
+  console.log(`  | \`${txHash.slice(0, 8)}…\` | ${amountSxt ?? "?"} SXT | ${route} | [link](${explorer}) |`);
+}
+
+// GitHub Actions job summary: the settled hash is the point of a nightly run, so put it
+// where a reviewer clicking through the run sees it without opening the log.
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const { appendFileSync } = await import("node:fs");
+  appendFileSync(
+    process.env.GITHUB_STEP_SUMMARY,
+    [
+      `### Conformance settled on ${NETWORK}`,
+      "",
+      `An unmodified \`@x402/fetch\` client completed 402 → sign → settle → 200 against \`${TARGET}\`.`,
+      "",
+      `| | |`,
+      `|---|---|`,
+      `| tx | [\`${txHash}\`](${explorer}) |`,
+      `| payer | \`${settle.payer ?? signer.address}\` |`,
+      `| amount | ${amountSxt ?? "?"} SXT |`,
+      `| elapsed | ${elapsedMs} ms |`,
+      "",
+    ].join("\n"),
+  );
+}
+
 console.log("");

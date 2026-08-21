@@ -14,7 +14,6 @@
  * Run:  node scripts/demo-loop.mjs   (facilitator + seller must be running)
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
@@ -22,11 +21,12 @@ import dotenv from "dotenv";
 import { createEd25519Signer } from "@x402/stellar";
 import { ExactStellarScheme } from "@x402/stellar/exact/client";
 
+import { appendTxRows, updateProvenance } from "./lib/evidence.mjs";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 dotenv.config({ path: join(ROOT, ".env"), quiet: true });
 
-const TX_DOC_PATH = join(ROOT, "docs", "TESTNET-TXS.md");
 
 const {
   PAYER_SECRET,
@@ -156,23 +156,11 @@ async function payAndFetch(label, url, { method = "GET", body } = {}) {
 
 function appendTxDoc() {
   if (!settled.length) return;
-  mkdirSync(dirname(TX_DOC_PATH), { recursive: true });
-
-  const rows = settled
-    .map(
-      (t) =>
-        `| ${t.step} | \`${t.hash}\` | https://stellar.expert/explorer/testnet/tx/${t.hash} |`,
-    )
-    .join("\n");
-
-  if (existsSync(TX_DOC_PATH)) {
-    const prev = readFileSync(TX_DOC_PATH, "utf8").trimEnd();
-    writeFileSync(TX_DOC_PATH, `${prev}\n${rows}\n`, "utf8");
-  } else {
-    const header = `# STELLARSIGHT — testnet transactions\n\n| Step | Hash | Explorer |\n|---|---|---|\n`;
-    writeFileSync(TX_DOC_PATH, header + rows + "\n", "utf8");
-  }
-  console.log(`\n   appended ${settled.length} settlement hash(es) to docs/TESTNET-TXS.md`);
+  // The row shape lives in scripts/lib/evidence.mjs, with the date column the table
+  // grew. Two copies of a markdown row is how a table acquires a ragged column.
+  const { appended } = appendTxRows(settled.map((t) => ({ step: t.step, hash: t.hash })));
+  updateProvenance(Object.fromEntries(settled.map((t) => [t.hash, { label: "demo" }])));
+  console.log(`\n   appended ${appended} settlement hash(es) to docs/TESTNET-TXS.md`);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,357 @@
+{
+  "note": "hash -> why this payment exists. Written only by scripts/; an unlisted hash renders as \"unlabeled\", never as \"organic\".",
+  "labels": [
+    "setup",
+    "demo",
+    "conformance",
+    "scripted-load",
+    "nightly-ci"
+  ],
+  "updatedAt": "2026-08-21T13:27:56.222Z",
+  "hashes": {
+    "fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882": {
+      "label": "conformance",
+      "recordedAt": "2026-08-21T05:38:42.526Z"
+    },
+    "9e1c4dfc8aa3d754d7714c2fdd7924867346661a61e4f74c724a5bd955a7dca4": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:40:02.803Z"
+    },
+    "3532847e56fc08d881b61eacd456012f367e4483e983359597e51ed8c36f24b2": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:40:02.803Z"
+    },
+    "b3d3a2d98ceb9dd0cd8938dc4b40ee7408c574a47e12bbdd70b97efae0b2b698": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:41:17.522Z"
+    },
+    "202e7cadd8617f96503eed9159888f3bfdbf2a397bb6d0212c1e1bf83358acc0": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:41:17.522Z"
+    },
+    "a3e5ba89b9a088a7f42f903f91dc89e53966bb173838d3a59797464c2e62d185": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:41:17.522Z"
+    },
+    "5d23544ebc19b2558a326eab36b0fc4cc7e6a1dfa69dd521aa104992aadd3c9a": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "758f820b657cc671ad32e4d0cda0f07ae897317a23e9a86fc07d586cb3e501be": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "87f8cb695c65d767a65e4ef533310a4ff10ae1a8f97ff28d8f09a49727abb287": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "87fe1b3707ecb0b16373872fa35787cb0b618b2644967aec05e54dc84a6bb16f": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "471afa825e48db7d0a9efbe08bb23929d6c3c58973fe1e48645fd860dc3816ad": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "0d468960d61b38630864e9fc9bbecd85e80fa1bbef131bf96585aec763916adc": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "cbd4775eecaa7c9ffed149ad617b4e99ada096a2eb42cf81285f9dfec7cf7b2f": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "0dbbe900648c18d2ba1904890bf38f6970121f412a3eb157c866db7d78bd13d1": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "cb8fd706ec496b89b77b5a46f57ea37e007e64c107acd3df2410706b93928206": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "3ea24dc95e437cd3080ac3b95e537269e57db3a4d4bde51046e7b047736f6248": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "fd3882fb730df17195175fc27d9c23cc81e1b77a709a46d3db0d5538b9153d8a": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "3974a4f5a7ee1e42f46861363c5c36762ea0faa868b3ee8b07a54567436d7614": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "4949da42082dca11d1e557d553c57c7c8b927a91b5c324a0b47b49a06169ab54": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "6920d529a706501de6e70358ada034389c4e81671848ef27722695a79a894665": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "fd3e8d5dd91f1b9a35ba06064ffa14543ec77561322818896e05b0f283562ed6": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "6a2e728187a3526968ac5b7642a2564fe59f75776510d14ff959da5e735b7454": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "c3655f5f2a223d9c32f06ea27f730ae9ef35735215636ca9cb24f2330253d1be": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "37847b9e2372236e685de6052e1366af1ddaa1b5eb256c668d00842334768c58": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "98342c095ef09cbd64691f6501640958ccedce145fd09f11f38596ec4fb66178": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "87c91857c4898dbfdf3b979340e7892063cfaf22953d71d3b3d7f791a3ab7043": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "0b2ee015143e20046dd5478ca33d09e6a5fe198c47db48555acaa50d09ff0e06": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "912c8df181cfa3d6e649f1911dd68b45ad251a6321f074ba3604a2d172ff1930": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "05a5174d96731bb4e04fe4dccf80f8390892108a8117aa484092a792fdab347c": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "bc60df6c44d9d84342d43b3572a4fd5725ad7043d553810208a5ebae9c1c00bd": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "839df1095b86305e17da617c5f64d0cd4d22388c7438955b70f842fec02b0353": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "82e2de4a4d016c60a3865f08a5ab5afd3a681b4f7c926e9fb74cd371365cc286": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "fe1b48bfa870380ead297cae89e8d929bce37230db751b58900e7855f6a99cd4": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "beaab0c219b266187162736d5c5fb340334be6f9e02ef176acc3daf6f45bf5eb": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "d82f7b8cd214696ef5c2e97ec5ac6f15d0a7f66c42cf94488afd007a2ffa99cb": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "fac1aada1a464ce001dffa4ed34c0a6192b4f23a54eb6584286645be3549d717": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "33fce968b55f4d3d33bca7f7984e9afe54190f3d0873021f9b823e48b07bd5b5": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "2fd39944442d5576c5f16cd86866c8daf88055852b0fefd06ffa19f2433cd051": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "35bb4b0c7727b36bc87e9873c8ed1d646904d96b8f90269a45480c3b839b0b90": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "33bc04e7bd1b01da65e9e26349567298bac79be3999dba2dfb73d68028dfeabc": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "27f9122bf5f38a54639ed6d1b5eb2396f529a72ccffd52e5b1a48dc4284b05c9": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "40131a7cdd298d7d6b7b31b4cc770afdc11a5448e5914b9b595b1781df1d3aa4": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "c3d572bb48334315b8f236b3b0ae8f7a861bdc79e12d4643151153a7fa1999e7": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "7ec377c21cab11dfe01519db33e50025809cad773452ef97cf0162b05a70a6b3": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "3309a38b07ff98069202c494d73869896975af3272ebcf02e8a3221647bc6316": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "21f9550a44e7ff72e65bb29182216121675d63ae2d2e93d1576e8ec77e86f2ef": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "fab1cad236e187e1a2b0108ff8c6d64c21fda8bd6267ebee01d8e4bd53785d17": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "99091300527c5c3dc5712a46b6f750b3f1a7425c5cbc21321aa22e9c58b7003d": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "796008c8737a0d90f68334a7dfa3f9b499019e896f603dc6e1e7ff1d0ece677b": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "2fc28b3f4519d5cb951b99a48a57e62328915411df1623fe2730438e05cbf39c": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "a2a42d9ee1bba5542cdcd8cc37c9b4445d4a76176203ef81f8da53cbc6a67d8d": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "9b32f553877df56ec4bfc899061018b143505501472c4168de249b712c345eba": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "4bdc61fc9acde3b42a262d81b34ba525e04180c004622d51c097133555ef831f": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "8080bf2a89bf679143b0cbb719cd81d20db22edde3f1586976a6591bedc37fe5": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "db2118366e20819bf4e9936651ff5d26e9b67d802967958026f23e84e45681d3": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "0c127c632949ffb240620a8518df2dfbcb757859ea151d02ba0ed59e5af7cd61": {
+      "label": "scripted-load",
+      "recordedAt": "2026-08-21T05:50:02.564Z"
+    },
+    "6737943f906ac4fea7c94e5b832fcfce182244d492081c02110b213e0ff0a124": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "4d3cfc2b2311df4b8ba0cde79f502a81239295ec5c2698ceb316c4b4f84e18c6": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "a6df9c5e3fa064f95e68768ba9b242cd87a1d63ac0dab109082308877b9f95b1": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "35733092507e109d0d6d22710dc31f4ec9d5cd1ca004c8fa17346fa77c90168a": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "b361e1693490952b48ef314d381ba0d6513aa68c047da092f7858e1d73e855f3": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "dafe82019577f725426e46f8dcfa9e2dd2867b0987663dfb1db2af41d3c36884": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "d02095096d1e6bb2b035250de1e653957a7b00e796ce949d5eff041ae3a4c810": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "ebd60b594283aa9787b0bcfed361f57154b9bd69d1392762519c0ba2455d6703": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "2e3e1a84d788d22c91097ca5b09cdf4549f247b3551e76d73cdafcff96312582": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "bcabce960c29bec4821013aa80c3cbef974854488bf767fcc5ef84e96ded942d": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "01fee0b5c53a4f94cf9b76ff8155aa8b126d4f6fbff92328d800534c3d6a4f76": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "b5a8fd3b5239a2eb8ae026046dff453c6f1a665091a58da31b026fe123b8258b": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "412d5840441e415f19298c22d2653c1db779220191e3f0bd4c13f49b760a3c58": {
+      "label": "setup",
+      "recordedAt": "2026-08-21T05:51:32.152Z"
+    },
+    "43af892d31c2a961b21f99eba43f4f7da14af36656fb5c0b81a6e49ee86c2787": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "4b4336dd58d871453f11606ba37ace4f12f8c244d9bc2e10ce8d94663a2c12e5": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "5e49e77232de345a5f5fed5d5b4fd5925b305c00bf35ec2ea272d1493306ca2e": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "3bfd5ee6428b80c65272f6592e3e6a70b49f506b25a97390e343b28e45fcc6ce": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "c5d50781df8abbb0cf97e20af7b93488e087d9e2d554057e1c9521e897ca13cf": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "895801b0447e023fe3a86c5a68986197def54c0d7a62d0968e8464b348de5468": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "15c4fa24785ac42b1287d9336ad219552b07d7ff81cdf86c18edbc5c250e9726": {
+      "label": "conformance",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "cbc0397a851a3adbf5f97dbea0e9fd6edf2df56f7a7841f32251bbae0878b671": {
+      "label": "conformance",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "dbb099c87704b0db9cd555f3edc67b10c3b00a3e3ab67e8ae2fc6d166f4c7e3d": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "0932e567e21813d7af706529140df3bb264545a60c3ec56b9beffc86769d2c29": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "d706a2c27bd45f91e53a2a63245ef584231d7639da645bec5f711c68a2c408e0": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "c830764d2dd0958ed48f3ae30816702003aaef23ffe9008785c3f5b27b181315": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "0a83407f703566c5e8916a693c2c42263b151043430de01ea8a5c86e316a7453": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T05:51:32.153Z"
+    },
+    "4a3eec5fcd5b6dfa103a4f31e97fe38d3511bbd480214f3fc2b5c08ae997f2f8": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T06:22:00.906Z"
+    },
+    "537e85d427b5cf3beb86282ee9e1a6ed7804591269d4604db24b2aafa38026e7": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T06:22:00.906Z"
+    },
+    "4fbe5d69eea5df16a3b28b32747683fd857cdd4d03ce375f15797df77efed636": {
+      "label": "demo",
+      "recordedAt": "2026-08-21T06:22:00.906Z"
+    }
+  }
+}

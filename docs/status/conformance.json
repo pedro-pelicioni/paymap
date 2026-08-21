@@ -1,0 +1,78 @@
+{
+  "kind": "conformance",
+  "generatedAt": "2026-08-21T05:38:42.508Z",
+  "commit": "66d88e2",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "ok": true,
+  "target": "http://localhost:4023/v1/fx/usd-brl",
+  "route": "/v1/fx/usd-brl",
+  "method": "GET",
+  "client": "@x402/fetch wrapFetchWithPayment (unmodified)",
+  "payer": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+  "amount": "100000",
+  "amountDisplay": "0.01 SXT",
+  "asset": "CAYCPWN5YZEHKPGZOXGU3O7R2Q5H7LT7SZ45YIO26VMFM47VBUHOGPO2",
+  "scheme": "exact",
+  "txHash": "fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882",
+  "explorerUrl": "https://stellar.expert/explorer/testnet/tx/fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882",
+  "elapsedMs": 7975,
+  "criteria": [
+    {
+      "id": "unpaid-402",
+      "name": "an unpaid request is answered 402",
+      "expected": "HTTP 402",
+      "observed": "HTTP 402",
+      "pass": true
+    },
+    {
+      "id": "payment-required-header",
+      "name": "the challenge rides in the PAYMENT-REQUIRED header and decodes with @x402/core",
+      "expected": "decodes via decodePaymentRequiredHeader",
+      "observed": "decoded, 1 requirement(s)",
+      "pass": true
+    },
+    {
+      "id": "v2-version",
+      "name": "the challenge is x402 v2 shaped",
+      "expected": "x402Version 2, accepts[].amount",
+      "observed": "x402Version 2, amount=100000",
+      "pass": true
+    },
+    {
+      "id": "scheme-network",
+      "name": "the offer names the scheme and CAIP-2 network",
+      "expected": "exact @ stellar:testnet",
+      "observed": "exact @ stellar:testnet",
+      "pass": true
+    },
+    {
+      "id": "stock-client-200",
+      "name": "an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200",
+      "expected": "HTTP 200",
+      "observed": "HTTP 200 in 7975ms",
+      "pass": true
+    },
+    {
+      "id": "payment-response-header",
+      "name": "the receipt rides in the PAYMENT-RESPONSE header and decodes with @x402/fetch",
+      "expected": "decodes via decodePaymentResponseHeader",
+      "observed": "decoded",
+      "pass": true
+    },
+    {
+      "id": "settle-success",
+      "name": "settlement reports success",
+      "expected": "success=true",
+      "observed": "success=true",
+      "pass": true
+    },
+    {
+      "id": "tx-hash",
+      "name": "the receipt carries a settled transaction hash",
+      "expected": "64-hex transaction hash",
+      "observed": "fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882",
+      "pass": true
+    }
+  ]
+}

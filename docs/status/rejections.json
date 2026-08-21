@@ -1,0 +1,117 @@
+{
+  "kind": "rejections",
+  "generatedAt": "2026-08-21T06:23:13.919Z",
+  "commit": "66d88e2",
+  "node": "v22.22.3",
+  "network": "stellar:testnet",
+  "ok": true,
+  "stack": {
+    "seller": "http://localhost:4023",
+    "facilitator": "http://localhost:4021",
+    "index": "http://localhost:4022"
+  },
+  "total": 11,
+  "applicable": 10,
+  "passed": 10,
+  "skipped": 1,
+  "cases": [
+    {
+      "id": "unpaid-402",
+      "name": "an unpaid request is refused with a decodable challenge",
+      "expected": "402 + PAYMENT-REQUIRED header",
+      "observed": "402 + PAYMENT-REQUIRED",
+      "status": 402,
+      "reason": "PAYMENT-SIGNATURE header is required.",
+      "pass": true
+    },
+    {
+      "id": "garbage-signature",
+      "name": "an undecodable PAYMENT-SIGNATURE is refused, naming the format",
+      "expected": "402, reason names base64/JSON",
+      "observed": "402, reason names the format",
+      "status": 402,
+      "reason": "The PAYMENT-SIGNATURE header is not valid base64-encoded JSON: Invalid payment signature header",
+      "pass": true
+    },
+    {
+      "id": "echo-mismatch",
+      "name": "a tampered echoed price/recipient is refused before settlement",
+      "expected": "402, reason names the mismatch",
+      "observed": "402, echo mismatch named",
+      "status": 402,
+      "reason": "The payment requirements echoed in PAYMENT-SIGNATURE do not match this resource's price, asset or recipient.",
+      "pass": true
+    },
+    {
+      "id": "verify-empty-body",
+      "name": "POST /verify with an empty body is refused with invalidReason",
+      "expected": "4xx, isValid=false, non-null invalidReason",
+      "observed": "400, isValid=false",
+      "status": 400,
+      "reason": "Request body must include both `paymentPayload` and `paymentRequirements`.",
+      "pass": true
+    },
+    {
+      "id": "settle-empty-body",
+      "name": "POST /settle with an empty body is refused with errorReason",
+      "expected": "4xx, success=false, non-null errorReason",
+      "observed": "400, success=false",
+      "status": 400,
+      "reason": "Request body must include both `paymentPayload` and `paymentRequirements`.",
+      "pass": true
+    },
+    {
+      "id": "supported-shape",
+      "name": "GET /supported advertises the Stellar extra a stock client reads",
+      "expected": "200, kinds[].extra.areFeesSponsored === true",
+      "observed": "200, exact@stellar:testnet, areFeesSponsored=true",
+      "status": 200,
+      "reason": null,
+      "pass": true
+    },
+    {
+      "id": "discovery-unknown-endpoint",
+      "name": "an unknown /discovery path 404s in JSON, naming what is served",
+      "expected": "404 JSON listing the real endpoints",
+      "observed": "404, 3 endpoint(s) named",
+      "status": 404,
+      "reason": "no such discovery endpoint: /discovery/nope. This facilitator serves /discovery/resources, /discovery/search, /discovery/integrity.",
+      "pass": true
+    },
+    {
+      "id": "search-missing-query",
+      "name": "GET /discovery/search without a query is a reasoned 400",
+      "expected": "400, machine-readable reason",
+      "observed": "400",
+      "status": 400,
+      "reason": "the \"query\" parameter is required on /discovery/search",
+      "pass": true
+    },
+    {
+      "id": "write-without-token",
+      "name": "POST /discovery/resources without a bearer token is refused",
+      "expected": "401 or 503, reason explains which precondition is missing",
+      "observed": "not applicable to this surface",
+      "skipped": true,
+      "why": "the local index is deliberately unauthenticated and bound to 127.0.0.1; the write token guards the public deployment — audit it with --index https://stellarsight.xyz"
+    },
+    {
+      "id": "search-wrong-method",
+      "name": "PUT /discovery/search is refused with an Allow header",
+      "expected": "405 + Allow",
+      "observed": "405, Allow: GET, HEAD, OPTIONS",
+      "status": 405,
+      "reason": "allowed methods: GET, HEAD, OPTIONS",
+      "pass": true
+    },
+    {
+      "id": "integrity-replay-labeled",
+      "name": "GET /discovery/integrity declares replay provenance, not observation",
+      "expected": "200, source=\"replay\"",
+      "observed": "200, source=replay, 5 row(s)",
+      "status": 200,
+      "reason": null,
+      "pass": true
+    }
+  ]
+}
