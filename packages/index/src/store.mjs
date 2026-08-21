@@ -463,6 +463,34 @@ function redisProtocolCommand(cfg) {
  *   remove(id) -> { ok, reason? }
  *   ping()    -> { ok, count?, reason? }
  */
+/**
+ * createKv(env) -> { command(argv), transport, host } | null
+ *
+ * The raw command channel underneath createStore, exposed for callers that need Redis
+ * for something other than the catalog — today, the playground faucet's rate limits,
+ * which are counters rather than records.
+ *
+ * It reuses the same config discovery, the same two transports and the same secret
+ * scrubbing rather than letting a second module grow its own Redis plumbing. Returns
+ * null when nothing is configured; the caller degrades (the faucet falls back to
+ * per-instance counters and SAYS so in its response) instead of failing.
+ *
+ * Never throws.
+ */
+export function createKv(env = process.env, opts = {}) {
+  const cfg = readStoreConfig(env);
+  if (!cfg) return null;
+  let command;
+  if (cfg.transport === 'rest') {
+    const fetchImpl = opts.fetch ?? globalThis.fetch;
+    if (typeof fetchImpl !== 'function') return null;
+    command = restCommand(cfg, fetchImpl);
+  } else {
+    command = redisProtocolCommand(cfg);
+  }
+  return { command, transport: cfg.transport, host: cfg.host };
+}
+
 export function createStore(env = process.env, opts = {}) {
   const cfg = readStoreConfig(env);
   if (!cfg) return null;
