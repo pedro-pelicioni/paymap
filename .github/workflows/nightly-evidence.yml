@@ -1,0 +1,93 @@
+# One real settled payment a night, against the deployed stack, published as evidence.
+#
+# CI already runs the tests, the 46 API-conformance checks and the search-quality gate
+# nightly — but none of those move money, and the claim this project is judged on is that
+# an unmodified x402 client can pay a real resource. So this job does exactly that, once a
+# night, against https://stellarsight.xyz rather than a stack booted inside the runner:
+# booting the stack would test the boot.
+#
+# It needs NO repository secrets. The buyer is created inside the run — Friendbot, a
+# self-signed trustline, then the PUBLIC faucet — which also means a faucet that breaks in
+# production fails this job instead of failing a first-time visitor.
+#
+# Kept separate from ci.yml so `contents: write` lives on this workflow alone.
+name: Nightly evidence
+
+on:
+  schedule:
+    # After ci.yml's 06:00 run, so a red test suite is visible before this spends anything.
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Never two at once: both runs would append to docs/TESTNET-TXS.md and race the commit.
+concurrency:
+  group: nightly-evidence
+  cancel-in-progress: false
+
+jobs:
+  settle:
+    name: settle one payment against the hosted stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Friendbot -> changeTrust -> public faucet. Exports PAYER_SECRET to $GITHUB_ENV.
+      # The key exists only for this run and is never written to the repository.
+      - name: Create a throwaway buyer
+        run: node scripts/ci-buyer.mjs --site https://stellarsight.xyz
+
+      # The same command a reviewer runs locally, pointed at production. --emit writes
+      # docs/status/conformance.json; --append-txdoc adds the row to docs/TESTNET-TXS.md.
+      # The `conformance:` prefix is what puts this settlement into the console's replay
+      # pool, so the site shows a payment from last night rather than from launch week.
+      - name: Settle with an unmodified @x402/fetch client
+        run: |
+          npm run verify:conformance -- \
+            --seller https://stellarsight.xyz \
+            --emit \
+            --append-txdoc "conformance: nightly hosted ($(date -u +%Y-%m-%d))"
+
+      # Same run, the negative paths: every documented rejection, expected vs observed.
+      - name: Audit the rejection paths
+        run: |
+          node scripts/verify-rejections.mjs \
+            --seller https://stellarsight.xyz \
+            --facilitator https://stellarsight.xyz \
+            --index https://stellarsight.xyz \
+            --emit
+
+      - name: Rebuild the evidence page
+        run: npm run evidence:build
+
+      # Commit rather than upload an artifact: apps/web reads docs/TESTNET-TXS.md at build
+      # time and the evidence page is served from the repo, so an artifact would leave both
+      # public surfaces stale. `[skip ci]` stops the push from re-triggering CI.
+      #
+      # If branch protection refuses the bot, this step fails and the evidence is still in
+      # the job summary and the run log — the settlement itself already happened on chain.
+      - name: Commit the night's evidence
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- docs/; then
+            echo "no evidence changed — nothing to commit"
+            exit 0
+          fi
+          git add docs/TESTNET-TXS.md docs/EVIDENCE.md docs/status/
+          HASH=$(node -p "require('./docs/status/conformance.json').txHash.slice(0,8)")
+          git commit -m "chore(evidence): nightly settled payment ${HASH} [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
