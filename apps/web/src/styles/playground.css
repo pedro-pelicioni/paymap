@@ -1,0 +1,501 @@
+/* ============================================================
+   Playground and explorer.
+
+   Same vocabulary as the rest of the site — hairline rules, one warm accent
+   on a night-blue ground, DM Mono for anything a machine produced. The step
+   rail is the only new structure: a vertical spine where each node carries
+   its own state, because the page's whole argument is that these steps really
+   happen in order and each one can fail on its own terms.
+   ============================================================ */
+
+.pg {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 9vw, 7rem);
+  max-width: 60rem;
+}
+
+.pg-head {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.pg-lede {
+  margin-top: 1rem;
+  max-width: 46rem;
+  color: var(--fg-2);
+  line-height: 1.65;
+}
+
+/* ---------------------------------------------------------------- step rail */
+
+.pg-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--rule);
+}
+
+.pg-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  gap: 1rem;
+  padding: 1.25rem 0 1.5rem 1.5rem;
+}
+
+.pg-step + .pg-step {
+  border-top: 1px solid var(--rule-2);
+}
+
+.pg-step__n {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-left: -2.65rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--fg-3);
+  transition:
+    border-color 0.25s var(--ease),
+    color 0.25s var(--ease),
+    background 0.25s var(--ease);
+}
+
+.pg-step--running .pg-step__n {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pg-pulse 1.1s ease-in-out infinite;
+}
+
+.pg-step--done .pg-step__n {
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.pg-step--failed .pg-step__n {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@keyframes pg-pulse {
+  50% {
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-step--running .pg-step__n {
+    animation: none;
+  }
+}
+
+.pg-step__title {
+  font-size: 1.02rem;
+  margin: 0.3rem 0 0;
+}
+
+.pg-step--idle .pg-step__title {
+  color: var(--fg-3);
+}
+
+.pg-step__detail {
+  margin: 0.4rem 0 0;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--fg-2);
+  word-break: break-all;
+}
+
+.pg-step__error {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.82rem;
+  color: var(--fg-2);
+  line-height: 1.5;
+}
+
+.pg-step__error code {
+  color: var(--accent);
+  margin-right: 0.4rem;
+}
+
+.pg-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--fg-3);
+  max-width: 44rem;
+}
+
+/* ---------------------------------------------------------------- the key */
+
+.pg-key {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pg-key > div {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pg-key code {
+  font-size: 0.7rem;
+  color: var(--fg-2);
+  word-break: break-all;
+}
+
+/* ---------------------------------------------------------- HTTP exchanges */
+
+.pg-exchange {
+  margin-top: 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: rgba(242, 237, 227, 0.02);
+}
+
+.pg-exchange__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.8rem;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--fg-2);
+}
+
+.pg-exchange__head:hover {
+  background: rgba(242, 237, 227, 0.03);
+}
+
+.pg-exchange__chev {
+  margin-left: auto;
+  color: var(--fg-3);
+}
+
+.pg-code {
+  padding: 0.12rem 0.4rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--rule);
+  font-size: 0.68rem;
+}
+
+.pg-code--ok {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 40%, transparent);
+}
+
+.pg-code--pay {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.pg-code--warn {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 40%, transparent);
+}
+
+.pg-note {
+  color: var(--fg-3);
+  font-size: 0.66rem;
+}
+
+.pg-exchange__body {
+  padding: 0.2rem 0.85rem 0.85rem;
+  border-top: 1px solid var(--rule-2);
+}
+
+.pg-headers {
+  margin: 0.7rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+}
+
+.pg-headers > div {
+  display: grid;
+  grid-template-columns: minmax(9rem, auto) 1fr;
+  gap: 0.7rem;
+}
+
+.pg-headers dt {
+  color: var(--fg-3);
+  font-family: 'DM Mono', Menlo, monospace;
+}
+
+.pg-headers dd {
+  margin: 0;
+  color: var(--fg-2);
+  word-break: break-all;
+}
+
+.pg-pre {
+  margin: 0.7rem 0 0;
+  padding: 0.7rem;
+  background: var(--bg-2);
+  border-radius: var(--r-sm);
+  font-size: 0.68rem;
+  line-height: 1.55;
+  color: var(--fg-2);
+  overflow-x: auto;
+  max-height: 14rem;
+}
+
+/* ---------------------------------------------------------------- receipt */
+
+.pg-routes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.chip--on {
+  border-color: var(--accent);
+  color: var(--fg);
+  background: var(--accent-soft);
+}
+
+.pg-receipt {
+  margin-top: 0.8rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--good) 30%, var(--rule));
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--good) 5%, transparent);
+}
+
+.pg-receipt p {
+  margin: 0;
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+
+.pg-tx {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.68rem;
+  color: var(--good);
+  word-break: break-all;
+}
+
+/* ---------------------------------------------------------------- attacks */
+
+.pg-attack {
+  margin-top: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--rule);
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.83rem;
+}
+
+/* The property held — whether that meant a refusal or a correctly-priced settlement. */
+.pg-attack--held {
+  border-color: color-mix(in srgb, var(--good) 35%, var(--rule));
+  background: color-mix(in srgb, var(--good) 5%, transparent);
+}
+
+/* The property did NOT hold. A real finding, and it should look like one. */
+.pg-attack--violated {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Not run, or could not be built: neither a pass nor a finding. Styled as neither. */
+.pg-attack--not-sent,
+.pg-attack--pending {
+  border-style: dashed;
+  opacity: 0.72;
+}
+
+.pg-attack__k em {
+  color: var(--fg-2);
+  font-style: normal;
+}
+
+.pg-attack__k {
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.7rem;
+  color: var(--fg-3);
+}
+
+.pg-attack__v {
+  color: var(--fg-2);
+  line-height: 1.55;
+}
+
+.pg-attack--held .pg-attack__v code {
+  color: var(--good);
+}
+
+/* ---------------------------------------------------------------- actions */
+
+.pg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #ff5a24;
+  border-color: #ff5a24;
+  box-shadow: 0 8px 28px -10px rgba(245, 64, 14, 0.55);
+}
+
+.pg-actions .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pg-foot {
+  margin-top: 2rem;
+  font-size: 0.82rem;
+  color: var(--fg-3);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Explorer
+   ============================================================ */
+
+.xp {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 9vw, 7rem);
+}
+
+.xp-lede {
+  margin-top: 1rem;
+  max-width: 48rem;
+  color: var(--fg-2);
+  line-height: 1.65;
+}
+
+.xp-scope {
+  margin-top: 1.1rem;
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 48rem;
+}
+
+.xp-tablewrap {
+  margin-top: 1.8rem;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+}
+
+.xp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 46rem;
+}
+
+.xp-table th {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.xp-table td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--rule-2);
+  color: var(--fg-2);
+  vertical-align: top;
+}
+
+.xp-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.xp-table code {
+  font-size: 0.7rem;
+}
+
+.xp-hash {
+  color: var(--fg-2);
+}
+
+.xp-hash:hover {
+  color: var(--accent);
+}
+
+.xp-chip {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--rule);
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 0.63rem;
+  white-space: nowrap;
+}
+
+.xp-chip--scripted-load {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 40%, transparent);
+}
+
+.xp-chip--conformance,
+.xp-chip--nightly-ci {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 35%, transparent);
+}
+
+.xp-chip--demo {
+  color: var(--fg-2);
+}
+
+.xp-chip--unlabeled {
+  color: var(--fg-3);
+  border-style: dashed;
+}
+
+.xp-banner {
+  margin-top: 1.2rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px dashed var(--rule);
+  border-radius: var(--r-sm);
+  font-size: 0.82rem;
+  color: var(--fg-3);
+}
+
+.pg-attack__why {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--fg-3);
+}

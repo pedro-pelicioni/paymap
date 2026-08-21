@@ -11,6 +11,11 @@
     "preview": "vite preview --port 5173"
   },
   "dependencies": {
+    "@stellar/stellar-sdk": "^16.2.0",
+    "@x402/core": "^2.21.0",
+    "@x402/fetch": "^2.21.0",
+    "@x402/stellar": "^2.21.0",
+    "buffer": "^6.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
