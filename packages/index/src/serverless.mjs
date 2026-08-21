@@ -39,6 +39,7 @@ import { createCatalog } from './index.mjs';
 import { seedCatalog } from './seed.mjs';
 import { listResources, searchResources, X402_VERSION } from './discovery.mjs';
 import { createStore } from './store.mjs';
+import { replayHostileCorpus, VALIDATOR_ID } from './integrity-replay.mjs';
 
 const BOOTED_AT = Date.now();
 
@@ -347,6 +348,25 @@ export async function searchHandler(req, res, env = process.env) {
 }
 
 /**
+ * The health payload used to print the durable store's full `host:port`. That is an
+ * unnecessary public disclosure for a project that ships a threat model: the address
+ * narrows the attack surface hunt for free, and no reader of the PUBLIC endpoint needs
+ * it — "which provider, reachable or not" is the diagnosable part. So the public answer
+ * keeps the provider domain and drops the instance label and port. A self-hosting
+ * operator who wants the full address back sets STELLARSIGHT_HEALTH_VERBOSE=1 on their
+ * own deployment; the reason strings in store.mjs (operator logs, not public wire)
+ * are unaffected.
+ */
+function maskStoreHost(host, env = process.env) {
+  if (!host) return null;
+  if (env?.STELLARSIGHT_HEALTH_VERBOSE === '1') return host;
+  const name = String(host).split(':')[0];
+  const labels = name.split('.');
+  if (labels.length <= 2) return `…${labels.length === 2 ? `.${labels[1]}` : ''}` || '…';
+  return `….${labels.slice(1).join('.')}`;
+}
+
+/**
  * GET /discovery/health — which mode is active, how many records, which build.
  *
  * Deliberately uncached: it reports the state of the instance answering right now, and a
@@ -389,17 +409,86 @@ export async function healthHandler(req, res, env = process.env) {
         // protocol). An operator staring at a `reachable: false` needs to know which one
         // is being attempted before any of the rest of this is diagnosable.
         transport: state.store?.transport ?? null,
-        host: state.store?.host ?? null,
+        host: maskStoreHost(state.store?.host, env),
         key: state.store?.key ?? null,
         loadedRecords: state.fromStore,
         error: state.storeError,
       },
-      endpoints: ['/discovery/resources', '/discovery/search', '/discovery/health'],
+      endpoints: [
+        '/discovery/resources',
+        '/discovery/search',
+        '/discovery/health',
+        '/discovery/integrity',
+      ],
       build: buildInfo(env),
       catalogLoadedAt: state.loadedAt,
       instanceUptimeMs: Date.now() - BOOTED_AT,
     },
     { 'Cache-Control': 'no-store' },
+  );
+}
+
+/* ─────────────────────────── integrity replay ───────────────────────────── */
+
+/**
+ * The replay is deterministic per build — same corpus, same validator, same verdicts —
+ * so run it once per warm instance and remember when THIS instance ran it. That
+ * timestamp is the only honest `generatedAt` the endpoint can claim: it is when these
+ * verdicts were actually produced, not when some earlier build baked its copy.
+ */
+let integrityMemo = null;
+
+function integrityState() {
+  if (!integrityMemo) {
+    const { entries, skipped } = replayHostileCorpus();
+    integrityMemo = {
+      generatedAt: new Date().toISOString(),
+      at: Date.now(),
+      entries,
+      skippedCases: skipped.length,
+    };
+  }
+  return integrityMemo;
+}
+
+/** Test/harness helper: drop the memo so the next call re-replays. */
+export function resetIntegrityState() {
+  integrityMemo = null;
+}
+
+/**
+ * GET /discovery/integrity — the catalog-integrity ledger, served by the deployment.
+ *
+ * `source: "replay"` is load-bearing: these are verdicts from replaying a fixed hostile
+ * corpus through the shipped validator, NOT observations of live traffic. The web
+ * console keys its "replay" banner off that field — a payload that ever carries real
+ * observations must say `source: "observed"` instead, and nothing else may.
+ */
+export async function integrityHandler(req, res, env = process.env) {
+  const allow = 'GET, HEAD, OPTIONS';
+  if (handlePreflight(req, res, allow)) return res;
+  if (req?.method !== 'GET' && req?.method !== 'HEAD') return methodNotAllowed(res, allow);
+
+  const parsed = Number.parseInt(readQuery(req)?.limit ?? '', 10);
+  const limit = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 50) : 20;
+
+  const state = integrityState();
+  return sendJson(
+    res,
+    200,
+    {
+      ok: true,
+      source: 'replay',
+      generatedAt: state.generatedAt,
+      commit: buildInfo(env).commitShort,
+      validator: VALIDATOR_ID,
+      note: 'Replay of a fixed hostile corpus through the shipped validator. Every rule, verdict and reason is the validator’s own output. Not observed traffic.',
+      total: state.entries.length,
+      skippedCases: state.skippedCases,
+      integrity: state.entries.slice(0, limit).map((e) => ({ at: state.at, ...e })),
+    },
+    // Deterministic per build, so let the CDN keep it.
+    { 'Cache-Control': cacheControl(env) },
   );
 }
 
@@ -541,8 +630,10 @@ export default {
   resourcesHandler,
   searchHandler,
   healthHandler,
+  integrityHandler,
   getState,
   resetState,
+  resetIntegrityState,
   buildInfo,
   readQuery,
   readJsonBody,

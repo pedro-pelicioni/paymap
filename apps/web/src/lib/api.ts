@@ -341,19 +341,38 @@ export async function loadCatalog(): Promise<Catalog> {
     const payload = await getJSON('/discovery/resources?limit=50&extensions=bazaar')
     const items = pickItems(payload).map(sane)
     if (!items.length) throw new Error('empty index')
-    let observed = pickIntegrity(payload)
-    if (!observed.length) {
+    // A live catalog does not make the ledger live. The endpoint says what its verdicts
+    // ARE via `source`: only `source: "observed"` means a running index actually saw
+    // these records — anything else is a replay of the hostile corpus, and rendering a
+    // replay as observations is the one lie this panel exists not to tell. Before this
+    // check, the mere reachability of the endpoint was treated as proof of liveness.
+    let integrity: IntegrityProvenance | null = null
+    const inline = pickIntegrity(payload)
+    if (inline.length) integrity = { entries: inline, live: true }
+    if (!integrity) {
       try {
-        observed = pickIntegrity(await getJSON('/discovery/integrity?limit=20'))
+        const ledger = (await getJSON('/discovery/integrity?limit=20')) as {
+          source?: string
+          generatedAt?: string
+          commit?: string | null
+        }
+        const entries = pickIntegrity(ledger)
+        if (entries.length) {
+          integrity =
+            ledger.source === 'observed'
+              ? { entries, live: true }
+              : {
+                  entries,
+                  live: false,
+                  generatedAt: ledger.generatedAt,
+                  commit: ledger.commit ?? undefined,
+                }
+        }
       } catch {
         /* the index need not expose this yet — fall back to the baked replay */
       }
     }
-    // A live catalog does not make the ledger live. Only verdicts the index actually
-    // reported are `live: true`; otherwise we fall back to the replay and say so.
-    const integrity: IntegrityProvenance = observed.length
-      ? { entries: observed, live: true }
-      : fixtureIntegrity()
+    integrity ??= fixtureIntegrity()
     return {
       items,
       integrity,

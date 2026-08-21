@@ -24,7 +24,12 @@
 
 import { handlePreflight, sendJson } from '../../packages/index/src/serverless.mjs';
 
-const ENDPOINTS = ['/discovery/resources', '/discovery/search', '/discovery/health'];
+const ENDPOINTS = [
+  '/discovery/resources',
+  '/discovery/search',
+  '/discovery/health',
+  '/discovery/integrity',
+];
 
 export default function handler(req, res) {
   if (handlePreflight(req, res, 'GET, HEAD, POST, OPTIONS')) return undefined;
