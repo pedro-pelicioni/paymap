@@ -8,7 +8,16 @@
 
 **The facilitator-side Bazaar discovery layer for x402 — the piece that does not exist in public code today — and the whole payment loop around it, running end to end on Stellar testnet.**
 
-`Apache-2.0` · `stellar:testnet` · **19 settled x402 payments** · **161 tests, 0 failing** · **nDCG@10 0.864, measured**
+[![CI](https://img.shields.io/github/actions/workflow/status/pedro-pelicioni/stellarsight/ci.yml?branch=main&label=CI)](https://github.com/pedro-pelicioni/stellarsight/actions/workflows/ci.yml)
+[![npm: @stellarsight/express](https://img.shields.io/npm/v/%40stellarsight%2Fexpress?label=%40stellarsight%2Fexpress)](https://www.npmjs.com/package/@stellarsight/express)
+[![npm: @stellarsight/index](https://img.shields.io/npm/v/%40stellarsight%2Findex?label=%40stellarsight%2Findex)](https://www.npmjs.com/package/@stellarsight/index)
+[![npm: @stellarsight/agent](https://img.shields.io/npm/v/%40stellarsight%2Fagent?label=%40stellarsight%2Fagent)](https://www.npmjs.com/package/@stellarsight/agent)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+[![network: stellar:testnet](https://img.shields.io/badge/network-stellar%3Atestnet-brightgreen)](docs/TESTNET-TXS.md)
+[![settled x402 payments](https://img.shields.io/badge/settled_x402_payments-77-blue)](docs/TESTNET-TXS.md)
+[![tests](https://img.shields.io/badge/tests-200,_0_failing-brightgreen)](#running-it)
+[![nDCG@10](https://img.shields.io/badge/nDCG%4010-0.864_measured-blue)](docs/SEARCH-EVAL.md)
 
 </div>
 
@@ -24,11 +33,12 @@ You do not have to take any claim in this README on trust. Every one of them is 
 | Claim | How to check it | Time |
 |---|---|---|
 | Payments really settle on Stellar | Open [`c1acc578…`](https://stellar.expert/explorer/testnet/tx/c1acc578032a3a06a88603f971d871703f45b1246e0f1aa8862500495edbfba6) → `successful: true` | 10s |
-| The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer | 15s |
-| Catalog integrity is real, not decorative | `npm test` → 161 tests, 0 failing (66 of them adversarial) | 30s |
+| The buyer needs **zero XLM** — fees are sponsored | On that transaction, `fee_account` is the facilitator's `FEEPAYER`, not the payer. Concretely: on stellar.expert the transaction's source / fee account equals [`GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT`](https://stellar.expert/explorer/testnet/account/GC4E5Q6WQATXWA5FCL5OV7C7HVQUZOAGXVKNHNCIL2EDY3YNAGRLKADT), while the payer appears only inside the Soroban authorization entry / `transfer` event. All four account keys: [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md) | 15s |
+| Catalog integrity is real, not decorative | `npm test` → 200 tests, 0 failing (66 of them adversarial) | 30s |
 | Search quality is a number, not a plan | `npm run eval:search` → nDCG@10 **0.864**, Recall@20 **0.905**, MRR@10 **0.920** over a 50-query graded set, with a regression gate in CI | 20s |
 | We publish our own worst number | [`docs/LOAD-BASELINE.md`](docs/LOAD-BASELINE.md) — the same payments succeed **4/4 serially** and **1/10 concurrently** on today's single fee-payer. That gap is what Tranche 1 buys | 60s |
 | It stays that way | [CI](../../actions) runs the suite, the 46 conformance checks and the site build on Node 22 and 24, with a real Redis so nothing skips for want of one | 10s |
+| Attacks are refused **and named** | Open [the playground](https://stellarsight.xyz/playground) and press *Try to break it*: a replayed authorization, a corrupted signature and an inflated echoed price, each run against a freshly signed entry so the outcome is attributable. Two are refused; the third settles **at the original price**, because the echoed price is decoration | 90s |
 | **You can actually run it** | `npm install && npm run setup` — no captcha, no faucet, no API key | 2 min |
 | A developer can ship on it | [`docs/QUICKSTART-SELLER.md`](docs/QUICKSTART-SELLER.md) — clone → paid, discoverable endpoint. Every command timed with `/usr/bin/time` | 59s |
 
@@ -77,7 +87,10 @@ discovery, payment and settlement are one deployment. Run the commands below and
 | `GET` | [`/discovery/resources`](https://stellarsight.xyz/discovery/resources?limit=3) | Paginated catalog, with the spec's `type`, `payTo`, `scheme`, `network`, `extensions`, `limit`, `offset` filters |
 | `GET` | [`/discovery/search`](https://stellarsight.xyz/discovery/search?query=invoice%20ocr&limit=3) | Natural-language search. Results arrive under `resources`, with `partialResults`, `pagination { limit, cursor }`, and `_explain` per result |
 | `GET` | [`/discovery/health`](https://stellarsight.xyz/discovery/health) | Catalog mode, record counts, durable-store transport, and the commit being served |
+| `GET` | [`/discovery/integrity`](https://stellarsight.xyz/discovery/integrity?limit=5) | The catalog-integrity ledger: a fixed hostile corpus replayed through the shipped validator. Labeled `source: "replay"` — these are verdicts, not observed traffic |
 | `POST` | `/discovery/resources` | Auto-cataloging. Requires `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` |
+| `POST` | `/playground/fund` | Grants the demo asset to a testnet account so a browser can pay. Per-account, per-IP and global daily caps; testnet is hardcoded |
+| `GET` | [`/explorer/feed`](https://stellarsight.xyz/explorer/feed?limit=10) | This deployment's settled payments, read from Horizon, each labeled with why it exists |
 | any | `/discovery/<anything else>` | `404` JSON naming the endpoints that do exist — never HTML, never a silent `200` |
 
 `?seeded=false` is the additive filter that answers "what here can I actually pay for?".
@@ -246,7 +259,7 @@ currently missing, permissively licensed, that anyone can fork and run.
 | Component | What it is |
 |---|---|
 | `packages/index` | Catalog + BM25 hybrid search with explainable ranking, catalog-integrity validation |
-| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 161 tests are its. On npm: `npm i @stellarsight/express` |
+| [`packages/express`](packages/express#readme) | Drop-in x402 paywall middleware for Express: price a route, take payment in a Stellar token, and get listed in the bazaar before the first payment. 45 of the 200 tests are its. On npm: `npm i @stellarsight/express` |
 | `api/discovery` | Vercel functions serving that same catalog as a public hosted API — no logic of their own |
 | `apps/facilitator` | Self-hosted x402 facilitator on `@x402/stellar`, sponsoring network fees |
 | `apps/seller` | Paid API declaring discovery metadata with per-parameter descriptions |
@@ -282,7 +295,7 @@ npm run setup      # generates accounts, issues the SXT asset, adds trustlines �
 npm run dev:all    # facilitator :4021 · index :4022 · seller :4023
 npm run dev:web    # console + landing on :5173
 npm run demo       # full loop: discover → 402 → sign → settle → 200
-npm test           # 161 tests
+npm test           # 200 tests
 npm run verify:api # 46 checks, incl. the stock withBazaar() client against the handlers
 npm run verify:conformance   # stock @x402/fetch client pays the seller, end to end
 npm run eval:search          # 50 graded queries -> nDCG@10 / Recall@20 / MRR, with a CI gate
@@ -446,11 +459,17 @@ Each test cites the spec rule it enforces.
 Real hashes produced by this code, with explorer links:
 [`docs/TESTNET-TXS.md`](docs/TESTNET-TXS.md).
 
-Twenty-four in total, and the split matters: **16 are x402 payments** — the demo loop and the
-stock-client conformance run — and 8 are setup and cleanup, meaning trustlines, the SAC
-deploy, minting the test asset, and returning a legacy balance. Only the 16 payment rows are
-evidence that the payment path works; the two newest of them settled entirely through the
-hosted stack.
+Eighty-five in total, and the split matters: **77 are x402 payments** and 8 are setup and
+cleanup (5 setup, 3 cleanup) — trustlines, the SAC deploy, minting the test asset, and
+returning a legacy balance. Only the payment rows are evidence that the payment path works.
+
+The 77 also split by what produced them, because a settlement count without that is not
+evidence of anything: 55 came from `npm run evidence:batch` (a serial script paying our own
+seller, prefixed `load:`), 20 from the demo loop, and the rest from stock-client conformance
+runs. `npm run evidence:build` recounts that line from the table itself, so it cannot drift
+again. None of it is third-party demand, and nothing here is presented as such — the label
+map is [`docs/status/provenance.json`](docs/status/provenance.json) and the aggregate is
+[`docs/EVIDENCE.md`](docs/EVIDENCE.md).
 
 ## Technical architecture
 
@@ -501,11 +520,14 @@ funded deliverable, and this file is the "before" it has to beat.
   sequence contention undefended.
 - [`docs/MONITORING.md`](docs/MONITORING.md) — the signal, threshold and response for each
   of those surfaces, with what exists today marked ✅ and what is funded work marked ⬜.
-- [`docs/upto-position.md`](docs/upto-position.md) — why there is no `upto` contract here
-  yet: four independent Stellar implementations disagree on whether zero settlement submits
-  a transaction and on what happens to the residual allowance. Shipping a fifth
-  incompatible contract adds a data point, not a decision. The position is written against
-  [stellar/x402-stellar#72](https://github.com/stellar/x402-stellar/issues/72).
+- [`docs/upto-position.md`](docs/upto-position.md) — the position on `upto`, written
+  against [stellar/x402-stellar#72](https://github.com/stellar/x402-stellar/issues/72).
+  The design answer up front: **our `upto` design ships a dedicated Soroban settlement
+  contract** (`settle_upto` via `require_auth_for_args`) — no admin, no persistent storage,
+  never holds a balance. SEP-41 allowances alone cannot enforce recipient binding or single
+  settlement, which is why a contract is required. Implementation follows whatever
+  [x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134) converges
+  on rather than a private variant of it.
 
 ## License
 

@@ -126,6 +126,26 @@ nobody has done.
 | `STELLARSIGHT_CACHE_SWR` | no | CDN `stale-while-revalidate`. Default `600`. |
 | `SEED_CATALOG` | no | `0` boots an empty catalog instead of the seed corpus. |
 | `VITE_INDEX_URL` | no | Build-time override for where the web console points. Leave unset. |
+| `STELLARSIGHT_HEALTH_VERBOSE` | no | `1` prints the durable store's full `host:port` on `/discovery/health`. Off by default: the public payload keeps the provider domain and drops the instance label, which is all a reader needs to diagnose reachability. |
+| `PLAYGROUND_FAUCET_SECRET` | no | Distributor secret for `POST /playground/fund`. Falls back to `ISSUER_SECRET`. **Without either, the browser playground cannot hand out the demo asset** and answers `503 FAUCET_DISABLED` with that reason. |
+| `PLAYGROUND_FAUCET_DISABLED` | no | `1` switches the faucet off while leaving the secret in place. Answers `503` with a distinct reason so an operator can tell "off" from "unconfigured". |
+| `FAUCET_AMOUNT_SXT` | no | Size of one grant. Default `2` — roughly 40 of the most expensive route. |
+| `FAUCET_IP_DAILY_LIMIT` | no | Grants per IP per 24h. Default `10`. IPs are hashed, never stored. |
+| `FAUCET_GLOBAL_DAILY_LIMIT` | no | Grants per day across the whole deployment. Default `200`. |
+| `FEEPAYER_PUBLIC` | no | The fee-payer **public** key (not a secret). `GET /explorer/feed` keys on it to read this deployment's settlements from Horizon; without it the feed answers `503` naming what is missing. |
+
+### The faucet's blast radius
+
+`POST /playground/fund` is the only endpoint here that submits a transaction for an
+anonymous caller, so it is worth being explicit about what it can and cannot cost you.
+
+It pays out a **self-issued testnet token with no value**, and its network is hardcoded —
+no environment variable moves it to pubnet. What an abuser can actually consume is the
+distributor's XLM in network fees, which is why there are three independent caps
+(per-account, per-IP, global) and why the account claim is a single atomic `SET NX EX`
+rather than a read-then-write. With no Redis configured the limiter degrades to
+per-instance counters, and the response says `limiter: "per-instance"` rather than
+implying a guarantee the deployment cannot make.
 
 A missing, empty or malformed value never crashes a request. A configured-but-unreachable
 store falls back to the seeded catalog and reports the failure on `/discovery/health`.

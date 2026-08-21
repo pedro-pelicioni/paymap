@@ -51,6 +51,12 @@ const PAGES = {
     title: "Monitoring plan",
     description: "Signal, threshold and response per surface — what exists today and what is funded work.",
   },
+  "docs/EVIDENCE.md": {
+    out: "evidence/verify-it-yourself",
+    title: "Verify it yourself",
+    description:
+      "Every claim, the artifact that produced it, and the command that regenerates it — including what this build does not claim.",
+  },
   "docs/TESTNET-TXS.md": {
     out: "evidence/testnet-transactions",
     title: "Settled transactions",

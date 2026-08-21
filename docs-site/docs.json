@@ -34,6 +34,7 @@
       {
         "group": "Evidence",
         "pages": [
+          "evidence/verify-it-yourself",
           "evidence/testnet-transactions",
           "evidence/search-eval",
           "evidence/load-baseline"

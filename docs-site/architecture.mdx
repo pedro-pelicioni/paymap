@@ -870,7 +870,7 @@ control that answers it and the test that proves it. Summary:
 | Ranking manipulation | prior capped at 0.25; seeds pinned to 0 settlements | Gameable by real cheap settlements; stated |
 | Store used to bypass validation | only post-validation records persisted | By construction |
 | Store outage | read-only degradation + health reporting | Tested |
-| Silent spec drift | stock-client conformance, nightly | Caught a real bug already |
+| Silent spec drift | stock-client conformance vs the live stack; 46 API checks + suite nightly in CI | Caught a real bug already |
 
 ### 7.3 Key management
 
@@ -902,7 +902,7 @@ signals:
 | Catalog | store reachability | 2 consecutive failures → page |
 | Catalog | soft-drop rate | > 20% of writes → probing or a broken seller |
 | Search | nDCG@10 | > 0.02 below baseline → **build fails** (live today) |
-| Conformance | nightly stock-client run | any failure → the RFP's named failure mode |
+| Conformance | stock-client run vs the live stack; `verify:api` + suite nightly in CI | any failure → the RFP's named failure mode |
 
 One severity split, because a solo maintainer with five severities has one severity: **page**
 (fee-payer runway, settlement success, store unreachable, conformance failure) and **ticket**
@@ -997,7 +997,10 @@ run, on both Node versions the project claims to support. Tranche 3 funds four m
 post-launch operations and a handoff document naming the maintainer, the escalation path and
 the responsibility boundary — because a service that dies when the grant ends is what the
 RFP is trying to avoid. The failure mode the RFP screens for is drift as the spec moves, so
-nightly conformance is scheduled to continue past the grant window.
+the conformance cadence is scheduled to continue past the grant window: CI runs the 46
+API-conformance checks, the full test suite and the search-quality regression gate nightly
+on Node 22/24, and the end-to-end settled-payment conformance (`npm run verify:conformance`)
+runs against the live stack.
 
 ---
 
@@ -1010,7 +1013,7 @@ nightly conformance is scheduled to continue past the grant window.
 | The catalog is live and durable | `curl -s https://stellarsight.xyz/discovery/health` → `mode=kv`, record counts, serving commit | 10s |
 | Only real resources | `curl -s 'https://stellarsight.xyz/discovery/resources?seeded=false'` | 10s |
 | Search is measured | `npm run eval:search` → nDCG@10 0.864, with the gate | 20s |
-| Integrity is real | `npm test` → 151 tests, 66 adversarial | 30s |
+| Integrity is real | `npm test` → 200 tests, 66 adversarial | 30s |
 | A stock client can pay us | `npm run verify:conformance` | 60s |
 | The concurrency limit is real | `npm run load:baseline` | 2m |
 

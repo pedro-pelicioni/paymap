@@ -1,5 +1,13 @@
 # Position on the Stellar `upto` scheme
 
+**Does the `upto` design ship a Soroban contract? Yes.** Our `upto` design ships a
+dedicated Soroban settlement contract (`settle_upto` via `require_auth_for_args`): no
+admin, no persistent storage, and it never holds a balance. SEP-41 allowances alone cannot
+enforce recipient binding or single settlement, which is why a contract is required. The
+implementation follows the converged design in
+[x402-foundation/x402#3134](https://github.com/x402-foundation/x402/pull/3134) rather than
+a private variant — the rest of this document is why.
+
 **Posted** on [`stellar/x402-stellar#72`](https://github.com/stellar/x402-stellar/issues/72)
 as [comment 5303705529](https://github.com/stellar/x402-stellar/issues/72#issuecomment-5303705529),
 15 August 2026. This file is the text plus the reasoning behind it, versioned alongside the

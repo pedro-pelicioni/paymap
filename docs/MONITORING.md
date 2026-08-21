@@ -55,7 +55,7 @@ concurrency. Post-pool numbers replace these.
 
 | Signal | Source | Threshold | Response | Today |
 |---|---|---|---|---|
-| Stock-client conformance | nightly `verify:conformance` | any failure | The spec moved or we drifted. This is the RFP's named failure mode | ✅ harness, ⬜ scheduled nightly |
+| Stock-client conformance | `verify:conformance` against the live stack (needs a funded payer, so it settles a real payment per run) | any failure | The spec moved or we drifted. This is the RFP's named failure mode | ✅ harness, ⬜ scheduled nightly. Today CI runs the 46 API-conformance checks, the full test suite and the search-quality gate nightly on Node 22/24; the end-to-end settled-payment run is manual |
 | `withBazaar()` API checks | `verify:api`, 46 checks | any failure | Wire-format regression | ✅ in CI |
 | Upstream `@x402/*` version | dependency watch | new minor | Re-run conformance before bumping — 2.21 → 2.22 landed mid-development | ⬜ |
 
