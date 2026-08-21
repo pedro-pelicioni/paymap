@@ -1,0 +1,114 @@
+{
+  "note": "A real payment payload settled through this stack, kept so authIdentity() can be pinned without a network. The nonce is spent; the key is a throwaway testnet payer.",
+  "capturedAt": "2026-08-21T13:13:40.697Z",
+  "txHash": "1091bfff5f1176234bdbd4fc467474eae4982ac1b39ce9d8b44ce8c63b1eb654",
+  "paymentPayload": {
+    "x402Version": 2,
+    "payload": {
+      "transaction": "AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgWoAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAABqiFAnAAAAAAAAAAEAAAAAAAAAGAAAAAAAAAABMCfZvcZIdTzZdc1Nu/HUOn+uf5Z53CHa9VhWc/UNDuMAAAAIdHJhbnNmZXIAAAADAAAAEgAAAAAAAAAAtZXJnKozX65GKVdzQxSglhdMJt01or8I4JCShIvxOUsAAAASAAAAAAAAAACsd2R/fLxEuTshDDrZ9oKp+IlRV605wejsNzNf91n+ZQAAAAoAAAAAAAAAAAAAAAAAAYagAAAAAQAAAAEAAAAAAAAAALWVyZyqM1+uRilXc0MUoJYXTCbdNaK/COCQkoSL8TlLHiIs4dhqMN4AQP0sAAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAApwdWJsaWNfa2V5AAAAAAANAAAAILWVyZyqM1+uRilXc0MUoJYXTCbdNaK/COCQkoSL8TlLAAAADwAAAAlzaWduYXR1cmUAAAAAAAANAAAAQBFCVIgo4RqN02s7dG5RkWBWZgPHOeBaZWVR7rBQDvfRYCcb70cbh3YAu8I3tI6Kn8y/wyj5c3mg1rlTrtet0AgAAAAAAAAAATAn2b3GSHU82XXNTbvx1Dp/rn+Wedwh2vVYVnP1DQ7jAAAACHRyYW5zZmVyAAAAAwAAABIAAAAAAAAAALWVyZyqM1+uRilXc0MUoJYXTCbdNaK/COCQkoSL8TlLAAAAEgAAAAAAAAAArHdkf3y8RLk7IQw62faCqfiJUVetOcHo7DczX/dZ/mUAAAAKAAAAAAAAAAAAAAAAAAGGoAAAAAAAAAABAAAAAAAAAAIAAAAAAAAAALWVyZyqM1+uRilXc0MUoJYXTCbdNaK/COCQkoSL8TlLAAAABgAAAAEwJ9m9xkh1PNl1zU278dQ6f65/lnncIdr1WFZz9Q0O4wAAABQAAAABAAAAAwAAAAEAAAAArHdkf3y8RLk7IQw62faCqfiJUVetOcHo7DczX/dZ/mUAAAABU1hUAAAAAAAFyJN5tw396CLx9zrDENbKJz5jbyVIbm2gIgpK7BxUzgAAAAEAAAAAtZXJnKozX65GKVdzQxSglhdMJt01or8I4JCShIvxOUsAAAABU1hUAAAAAAAFyJN5tw396CLx9zrDENbKJz5jbyVIbm2gIgpK7BxUzgAAAAYAAAAAAAAAALWVyZyqM1+uRilXc0MUoJYXTCbdNaK/COCQkoSL8TlLAAAAFR4iLOHYajDeAAAAAAAL2KwAAAF4AAABNAAAAAAAAIEGAAAAAA=="
+    },
+    "extensions": {
+      "bazaar": {
+        "info": {
+          "input": {
+            "type": "http",
+            "queryParams": {},
+            "method": "GET"
+          },
+          "output": {
+            "type": "json",
+            "example": {
+              "pair": "USD/BRL",
+              "bid": 5.4312,
+              "ask": 5.4389,
+              "mid": 5.435,
+              "asOf": "2026-08-06T12:00:00.000Z",
+              "source": "stellarsight-mock"
+            }
+          }
+        },
+        "schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "input": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "http"
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "GET",
+                    "HEAD",
+                    "DELETE"
+                  ]
+                },
+                "queryParams": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              },
+              "required": [
+                "type",
+                "method"
+              ],
+              "additionalProperties": false
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "example": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          },
+          "required": [
+            "input"
+          ]
+        }
+      }
+    },
+    "resource": {
+      "url": "http://localhost:4023/v1/fx/usd-brl",
+      "description": "USD/BRL exchange rate with bid, ask and mid price.",
+      "mimeType": "application/json",
+      "serviceName": "stellarsight-fx",
+      "tags": [
+        "fx",
+        "forex",
+        "usd",
+        "brl",
+        "quote",
+        "finance"
+      ]
+    },
+    "accepted": {
+      "scheme": "exact",
+      "network": "stellar:testnet",
+      "asset": "CAYCPWN5YZEHKPGZOXGU3O7R2Q5H7LT7SZ45YIO26VMFM47VBUHOGPO2",
+      "amount": "100000",
+      "payTo": "GCWHOZD7PS6EJOJ3EEGDVWPWQKU7RCKRK6WTTQPI5Q3TGX7XLH7GKG3O",
+      "maxTimeoutSeconds": 120,
+      "extra": {
+        "assetCode": "SXT",
+        "humanAmount": "0.01 SXT",
+        "areFeesSponsored": true
+      }
+    }
+  },
+  "expect": {
+    "address": "GC2ZLSM4VIZV7LSGFFLXGQYUUCLBOTBG3U22FPYI4CIJFBEL6E4UW5AO",
+    "nonce": "2171347318856102110"
+  }
+}

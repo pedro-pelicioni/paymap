@@ -232,6 +232,14 @@ const looksLikeTxHash = (s) => typeof s === 'string' && /^[0-9a-f]{64}$/i.test(s
  * @param {number} [opts.timeoutMs=30000]
  * @param {string} [opts.forcePaymentHeader]  send this exact PAYMENT-SIGNATURE instead of signing
  *                                            fresh (used by the replay-guard test)
+ * @param {boolean} [opts.signOnly]        stop after signing and return the header without
+ *                                            settling. The adversarial demonstrations need a
+ *                                            VALID, UNSPENT authorization entry to mutate: one
+ *                                            taken from a completed payment carries a consumed
+ *                                            nonce, so every attack built on it is refused for
+ *                                            replay before the property under test is ever
+ *                                            reached — and is then reported as proving that
+ *                                            property. Nothing is charged on this path.
  * @param {(e:{stage:string,[k:string]:any})=>void} [opts.onEvent]  narration hook for the CLI
  * @param {object} [opts.config]           config overrides (PAYER_SECRET, STELLAR_RPC_URL, ...)
  * @returns {Promise<{ok:boolean,status:number,body:any,txHash:string|null,explorerUrl:string|null,
@@ -430,6 +438,22 @@ export async function payAndFetch(url, opts = {}) {
     payer: address,
     headerBytes: (paymentHeaders['PAYMENT-SIGNATURE'] || '').length
   });
+
+  if (opts.signOnly) {
+    return done({
+      ok: true,
+      paid: false,
+      signedOnly: true,
+      status: 0,
+      body: null,
+      payer: address,
+      amount: price,
+      asset: chosen.asset,
+      payTo: chosen.payTo,
+      paymentHeader: paymentHeaders['PAYMENT-SIGNATURE'] || null,
+      paymentPayload
+    });
+  }
 
   /* -- 4. retry with payment -> settlement ------------------------- */
   const tSettle = Date.now();
