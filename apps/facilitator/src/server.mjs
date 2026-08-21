@@ -27,6 +27,9 @@ import { ExactStellarScheme } from "@x402/stellar/exact/facilitator";
 import { x402Facilitator } from "@x402/core/facilitator";
 import { BAZAAR, extractDiscoveryInfo, validateAndExtract } from "@x402/extensions/bazaar";
 
+import { createFaucetHandler } from "./faucet.mjs";
+import { authIdentity, remember, replayReason, seen } from "./settled-nonces.mjs";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "..", "..");
 dotenv.config({ path: join(ROOT, ".env"), quiet: true });
@@ -509,6 +512,19 @@ app.post("/verify", async (req, res) => {
     return res.status(400).json({ isValid: false, invalidReason, payer: null });
   }
 
+  // Before delegating: is this an entry we already settled? The scheme would refuse it
+  // anyway — the chain does — but it would refuse it as
+  // `invalid_exact_stellar_payload_simulation_failed`, which tells the caller nothing it
+  // can branch on. See apps/facilitator/src/settled-nonces.mjs for why this is a naming
+  // layer and not a security boundary.
+  const identity = authIdentity(paymentPayload);
+  const known = await seen(identity);
+  if (known.seen) {
+    const invalidReason = replayReason(identity);
+    emit({ type: "verify", ok: false, payer: identity.address, detail: invalidReason });
+    return res.json({ isValid: false, invalidReason, payer: identity.address });
+  }
+
   try {
     const result = await facilitator.verify(paymentPayload, paymentRequirements);
     const isValid = Boolean(result?.isValid);
@@ -554,6 +570,20 @@ app.post("/settle", async (req, res) => {
 
   let bazaarResponse = null;
 
+  const identity = authIdentity(paymentPayload);
+  const known = await seen(identity);
+  if (known.seen) {
+    const errorReason = replayReason(identity);
+    emit({ type: "settle", ok: false, payer: identity.address, detail: errorReason });
+    return res.json({
+      success: false,
+      errorReason,
+      transaction: null,
+      network: NETWORK,
+      payer: identity.address,
+    });
+  }
+
   try {
     const result = await facilitator.settle(paymentPayload, paymentRequirements);
     const success = Boolean(result?.success);
@@ -578,6 +608,17 @@ app.post("/settle", async (req, res) => {
         : null,
       detail: success ? "settled on stellar testnet" : errorReason,
     });
+
+    // Remember the nonce only once the settlement actually happened. Recording at verify
+    // time — or on a failed settle — would make the very next legitimate attempt look
+    // like a replay of itself.
+    if (success && identity) {
+      const noted = await remember(identity);
+      if (!noted.ok) {
+        // Losing this record costs a future replay its precise name, nothing more.
+        emit({ type: "settle", ok: true, detail: `settled; nonce not recorded: ${noted.reason}` });
+      }
+    }
 
     // --- bazaar discovery: auto-catalog the resource on a successful settle ---
     if (success) {
@@ -672,6 +713,33 @@ app.get("/events", (req, res) => {
     clearInterval(ping);
     sseClients.delete(res);
   });
+});
+
+/**
+ * POST /playground/fund — the browser playground's SXT drip.
+ *
+ * Mounted on the facilitator app so `npm run dev:all` serves it at :4021 and the same
+ * handler answers on the deployment through api/playground/fund.mjs. The guards (testnet
+ * lock, per-account / per-IP / global caps, trustline precondition) live in the handler,
+ * not here.
+ */
+app.post("/playground/fund", createFaucetHandler());
+
+/**
+ * GET /explorer/feed — the settlement feed the web explorer polls.
+ *
+ * Mounted here for the same reason the faucet is: `npm run dev:all` and the deployment
+ * must answer the same paths, or the dev stack quietly diverges from the thing reviewers
+ * actually see. The handler is the deployed function itself, imported.
+ *
+ * FEEPAYER_PUBLIC is what the feed keys on; locally it is derived from the fee-payer
+ * secret already in .env, so a developer does not have to add a second variable that
+ * says the same thing.
+ */
+app.get("/explorer/feed", async (req, res) => {
+  process.env.FEEPAYER_PUBLIC ??= feePayerSigner.address;
+  const { default: explorerFeed } = await import("../../../api/explorer/feed.mjs");
+  return explorerFeed(req, res);
 });
 
 // ---------------------------------------------------------------------------
@@ -788,6 +856,18 @@ indexApp.post("/discovery/resources", async (req, res) => {
     return res.status(400).json({ ok: false, dropped: [], reason: reasonOf(e, "upsert failed") });
   }
 });
+
+/**
+ * The JSON 404 for unknown /discovery/* paths, matching what api/discovery/unknown.mjs
+ * serves on the deployment. Mounted here, last, because it matches every remaining path
+ * under /discovery — registering it inside mountDiscoveryRoutes would have shadowed the
+ * POST write path above.
+ */
+if (typeof indexHttp?.mountDiscoveryFallback === "function") {
+  indexHttp.mountDiscoveryFallback(indexApp, {
+    endpoints: ["/discovery/resources", "/discovery/search", "/discovery/integrity"],
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Boot
