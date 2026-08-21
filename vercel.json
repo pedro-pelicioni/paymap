@@ -6,7 +6,7 @@
   "framework": null,
   "functions": {
     "api/**/*.mjs": {
-      "includeFiles": "packages/index/src/**",
+      "includeFiles": "{packages/index/src/**,docs/status/**}",
       "maxDuration": 60
     }
   },
@@ -22,6 +22,10 @@
     {
       "source": "/discovery/health",
       "destination": "/api/discovery/health"
+    },
+    {
+      "source": "/discovery/integrity",
+      "destination": "/api/discovery/integrity"
     },
     {
       "source": "/discovery/:path*",
@@ -46,6 +50,14 @@
     {
       "source": "/events",
       "destination": "/api/facilitator"
+    },
+    {
+      "source": "/playground/fund",
+      "destination": "/api/playground/fund"
+    },
+    {
+      "source": "/explorer/feed",
+      "destination": "/api/explorer/feed"
     },
     {
       "source": "/v1/:path*",

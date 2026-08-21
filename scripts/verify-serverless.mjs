@@ -45,12 +45,14 @@ import { PaymentRequirementsSchema, isPaymentRequirementsV2 } from '@x402/core/s
 import resourcesFn from '../api/discovery/resources.mjs';
 import searchFn from '../api/discovery/search.mjs';
 import healthFn from '../api/discovery/health.mjs';
+import integrityFn from '../api/discovery/integrity.mjs';
 import {
   resourcesHandler,
   searchHandler,
   healthHandler,
   resetState,
 } from '../packages/index/src/serverless.mjs';
+import * as replayModule from '../packages/index/src/integrity-replay.mjs';
 
 const ROOT = new URL('..', import.meta.url);
 
@@ -342,6 +344,68 @@ async function main() {
     eq(b.durableStore.configured, false, 'durableStore.configured');
     assert(b.build && 'commit' in b.build && 'env' in b.build && 'node' in b.build, 'build info');
     eq(res.getHeader('cache-control'), 'no-store', 'health must not be CDN-cached');
+    assert(
+      b.endpoints.includes('/discovery/integrity'),
+      'health must advertise the integrity endpoint',
+    );
+    // The full store host:port is an unnecessary public disclosure (see maskStoreHost).
+    // An unconfigured deployment has no host at all; when one is set it must be masked.
+    assert(
+      b.durableStore.host === null || !/:\d+$/.test(b.durableStore.host),
+      'durableStore.host must not expose a port publicly',
+    );
+  });
+
+  /* ---------- 3b. GET /discovery/integrity through the real api/ file ---------- */
+  console.log('\napi/discovery/integrity.mjs');
+
+  await check('serves the hostile-corpus replay with honest provenance', async () => {
+    const res = await call(integrityFn, mockReq('GET', '/discovery/integrity?limit=20'));
+    eq(res.statusCode, 200, 'status');
+    const b = res.json;
+    eq(b.ok, true, 'ok');
+    // `source` is the field the web console keys its replay-vs-observed banner off.
+    // This endpoint replays a fixed corpus; claiming anything else would be the exact
+    // static-file-as-live-feed lie the integrity panel exists not to tell.
+    eq(b.source, 'replay', 'replay verdicts must say so');
+    assert(Array.isArray(b.integrity) && b.integrity.length > 0, 'integrity rows');
+    assert(b.integrity.length <= 20, 'limit respected');
+    eq(b.skippedCases, 0, 'no corpus case may be silently accepted by the validator');
+    for (const row of b.integrity) {
+      assert(row.verdict === 'rejected' || row.verdict === 'soft-drop', `verdict: ${row.verdict}`);
+      assert(typeof row.reason === 'string' && row.reason.length > 0, 'every row carries a non-null reason');
+      assert(typeof row.at === 'number' && row.at > 0, 'every row is timestamped');
+    }
+    // Rejections sort first so a bounded render never hides them behind soft-drops.
+    const firstSoftDrop = b.integrity.findIndex((r) => r.verdict === 'soft-drop');
+    const lastRejected = b.integrity.map((r) => r.verdict).lastIndexOf('rejected');
+    assert(firstSoftDrop === -1 || lastRejected < firstSoftDrop, 'rejected rows sort first');
+  });
+
+  await check('clamps limit and refuses non-GET with a reasoned 405', async () => {
+    const one = await call(integrityFn, mockReq('GET', '/discovery/integrity?limit=1'));
+    eq(one.json.integrity.length, 1, 'limit=1');
+    const put = await call(integrityFn, mockReq('PUT', '/discovery/integrity'));
+    eq(put.statusCode, 405, 'PUT is refused');
+    assert(put.getHeader('allow')?.includes('GET'), '405 names the allowed methods');
+    const pre = await call(integrityFn, mockReq('OPTIONS', '/discovery/integrity'));
+    eq(pre.statusCode, 204, 'CORS preflight');
+  });
+
+  await check('replay verdicts match the baked frontend fallback byte for byte', () => {
+    // Same corpus, same validator, two bindings — if these ever differ, the endpoint
+    // and the offline fallback have drifted, which is the bug this module structure
+    // exists to prevent.
+    const baked = JSON.parse(
+      readFileSync(fileURLToPath(new URL('apps/web/src/data/integrity.json', ROOT)), 'utf8'),
+    );
+    const { replayHostileCorpus } = replayModule;
+    const fresh = replayHostileCorpus().entries;
+    eq(
+      JSON.stringify(fresh),
+      JSON.stringify(baked.entries),
+      'endpoint replay and baked integrity.json disagree — regenerate with node apps/web/scripts/gen-integrity.mjs',
+    );
   });
 
   /* ---------- 4. write path ---------- */
@@ -564,18 +628,25 @@ async function main() {
       readFileSync(fileURLToPath(new URL(`.${rule.destination}.mjs`, ROOT)), 'utf8');
       checked++;
     }
-    // 11 = three discovery endpoints + the /discovery/:path* guard + five facilitator
-    // routes + the seller's two (/v1/:path* and /.well-known/x402, both api/seller.mjs).
-    eq(checked, 11, 'expected eleven concrete function routes (discovery x4 + facilitator x5 + seller x2)');
+    // 14 = four discovery endpoints (resources, search, health, integrity) + the
+    // /discovery/:path* guard + five facilitator routes + the playground faucet + the
+    // explorer feed + the seller's two (/v1/:path* and /.well-known/x402).
+    eq(checked, 14, 'expected fourteen concrete function routes (discovery x5 + facilitator x5 + playground x1 + explorer x1 + seller x2)');
   });
 
   await check('the functions glob in vercel.json matches the files that exist', () => {
     const keys = Object.keys(vercelJson.functions ?? {});
     assert(keys.length > 0, 'no functions configuration');
     assert(keys.some((k) => k === 'api/**/*.mjs'), `unexpected functions globs: ${keys.join(', ')}`);
+    // api/explorer/feed.mjs reads docs/status/provenance.json with fs at cold start, so
+    // that path must be traced into the bundle — a static import would be found for us,
+    // a file read is not.
+    const inc = String(vercelJson.functions['api/**/*.mjs'].includeFiles ?? '');
+    assert(inc.includes('packages/index/src'), `includeFiles must cover packages/index/src, got "${inc}"`);
+    assert(inc.includes('docs/status'), `includeFiles must cover docs/status for the explorer feed, got "${inc}"`);
     // api/**/*.+(js|mjs|ts|tsx) is the zero-config glob Vercel uses to find functions,
     // so .mjs under api/ is picked up without further configuration.
-    for (const name of ['resources', 'search', 'health', 'unknown']) {
+    for (const name of ['resources', 'search', 'health', 'integrity', 'unknown']) {
       readFileSync(fileURLToPath(new URL(`api/discovery/${name}.mjs`, ROOT)), 'utf8');
     }
     // Function filenames must be literal. A bracketed dynamic-route name such as
