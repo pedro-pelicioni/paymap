@@ -43,8 +43,8 @@ repo generates is labeled at the moment it settles:
 | `scripted-load` | 55 | `node scripts/evidence-batch.mjs` — this repo paying its own seller, serially |
 | `demo` | 20 | `npm run demo` — the narrated discover → pay → unlock loop |
 | `setup` | 8 | `scripts/setup-testnet.mjs` — account creation, trustlines, SAC deploy |
-| `conformance` | 3 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
-| **total labeled** | **86** | |
+| `conformance` | 4 | `npm run verify:conformance` — an unmodified `@x402/fetch` client |
+| **total labeled** | **87** | |
 
 An unlabeled hash renders as *unlabeled*, never as *organic*. The full map is
 [`docs/status/provenance.json`](./status/provenance.json); every hash with an explorer
@@ -61,8 +61,8 @@ link is in [TESTNET-TXS.md](./TESTNET-TXS.md).
 
 ## Acceptance criteria, as observed
 
-Written by `npm run verify:conformance -- --emit` on 2026-08-21 05:38:42 UTC
-(commit `66d88e2`), driving an **unmodified `@x402/fetch` client** —
+Written by `npm run verify:conformance -- --emit` on 2026-08-22 07:11:28 UTC
+(commit `b3edda6`), driving an **unmodified `@x402/fetch` client** —
 no STELLARSIGHT code on the payment path.
 
 | Criterion | Expected | Observed |
@@ -71,12 +71,12 @@ no STELLARSIGHT code on the payment path.
 | ✓ the challenge rides in the PAYMENT-REQUIRED header and decodes with @x402/core | decodes via decodePaymentRequiredHeader | `decoded, 1 requirement(s)` |
 | ✓ the challenge is x402 v2 shaped | x402Version 2, accepts[].amount | `x402Version 2, amount=100000` |
 | ✓ the offer names the scheme and CAIP-2 network | exact @ stellar:testnet | `exact @ stellar:testnet` |
-| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 7975ms` |
+| ✓ an unmodified @x402/fetch client completes 402 -> sign -> settle -> 200 | HTTP 200 | `HTTP 200 in 7293ms` |
 | ✓ the receipt rides in the PAYMENT-RESPONSE header and decodes with @x402/fetch | decodes via decodePaymentResponseHeader | `decoded` |
 | ✓ settlement reports success | success=true | `success=true` |
-| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882` |
+| ✓ the receipt carries a settled transaction hash | 64-hex transaction hash | `7feaea4d526040f8f70b92425fede8665d8e3ef656caaf1f0bee6a01929424a3` |
 
-Settled: [`fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882`](https://stellar.expert/explorer/testnet/tx/fcd0334669142d6e9fd1e16849d129e1ba51ce64ca26a571a38b120e1f250882) · 0.01 SXT · 7975ms end to end.
+Settled: [`7feaea4d526040f8f70b92425fede8665d8e3ef656caaf1f0bee6a01929424a3`](https://stellar.expert/explorer/testnet/tx/7feaea4d526040f8f70b92425fede8665d8e3ef656caaf1f0bee6a01929424a3) · 0.01 SXT · 7293ms end to end.
 
 Artifact: [`docs/status/conformance.json`](./status/conformance.json)
 
@@ -86,7 +86,7 @@ The negative-path counterpart: every documented error path, driven for real, wit
 code and reason the caller actually received. A rejection that arrives without a
 non-empty reason fails this run even when its status code is right.
 
-`node scripts/verify-rejections.mjs` · 10/10 applicable path(s) behaved as documented
+`node scripts/verify-rejections.mjs` · 11/11 applicable path(s) behaved as documented
 
 | Path | Expected | Observed | Reason returned |
 |---|---|---|---|
@@ -96,9 +96,9 @@ non-empty reason fails this run even when its status code is right.
 | ✓ `verify-empty-body` | 4xx, isValid=false, non-null invalidReason | 400, isValid=false | `Request body must include both `paymentPayload` and `paymentRequirements`.` |
 | ✓ `settle-empty-body` | 4xx, success=false, non-null errorReason | 400, success=false | `Request body must include both `paymentPayload` and `paymentRequirements`.` |
 | ✓ `supported-shape` | 200, kinds[].extra.areFeesSponsored === true | 200, exact@stellar:testnet, areFeesSponsored=true | — |
-| ✓ `discovery-unknown-endpoint` | 404 JSON listing the real endpoints | 404, 3 endpoint(s) named | `no such discovery endpoint: /discovery/nope. This facilitator serves /discovery/resources,` |
+| ✓ `discovery-unknown-endpoint` | 404 JSON listing the real endpoints | 404, 4 endpoint(s) named | `no such discovery endpoint: /discovery/nope. This facilitator serves /discovery/resources,` |
 | ✓ `search-missing-query` | 400, machine-readable reason | 400 | `the "query" parameter is required on /discovery/search` |
-| `write-without-token` | 401 or 503, reason explains which precondition is missing | _n/a on this surface_ | the local index is deliberately unauthenticated and bound to 127.0.0.1; the write token guards the public deployment — audit it with --index https://stellarsight.xyz |
+| ✓ `write-without-token` | 401 or 503, reason explains which precondition is missing | 401, ok=false | `a valid `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` header is required` |
 | ✓ `search-wrong-method` | 405 + Allow | 405, Allow: GET, HEAD, OPTIONS | `allowed methods: GET, HEAD, OPTIONS` |
 | ✓ `integrity-replay-labeled` | 200, source="replay" | 200, source=replay, 5 row(s) | — |
 

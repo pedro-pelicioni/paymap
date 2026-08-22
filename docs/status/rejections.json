@@ -1,19 +1,19 @@
 {
   "kind": "rejections",
-  "generatedAt": "2026-08-21T06:23:13.919Z",
-  "commit": "66d88e2",
-  "node": "v22.22.3",
+  "generatedAt": "2026-08-22T07:11:31.177Z",
+  "commit": "b3edda6",
+  "node": "v22.23.2",
   "network": "stellar:testnet",
   "ok": true,
   "stack": {
-    "seller": "http://localhost:4023",
-    "facilitator": "http://localhost:4021",
-    "index": "http://localhost:4022"
+    "seller": "https://stellarsight.xyz",
+    "facilitator": "https://stellarsight.xyz",
+    "index": "https://stellarsight.xyz"
   },
   "total": 11,
-  "applicable": 10,
-  "passed": 10,
-  "skipped": 1,
+  "applicable": 11,
+  "passed": 11,
+  "skipped": 0,
   "cases": [
     {
       "id": "unpaid-402",
@@ -73,9 +73,9 @@
       "id": "discovery-unknown-endpoint",
       "name": "an unknown /discovery path 404s in JSON, naming what is served",
       "expected": "404 JSON listing the real endpoints",
-      "observed": "404, 3 endpoint(s) named",
+      "observed": "404, 4 endpoint(s) named",
       "status": 404,
-      "reason": "no such discovery endpoint: /discovery/nope. This facilitator serves /discovery/resources, /discovery/search, /discovery/integrity.",
+      "reason": "no such discovery endpoint: /discovery/nope. This facilitator serves /discovery/resources, /discovery/search, /discovery/health, /discovery/integrity.",
       "pass": true
     },
     {
@@ -91,9 +91,10 @@
       "id": "write-without-token",
       "name": "POST /discovery/resources without a bearer token is refused",
       "expected": "401 or 503, reason explains which precondition is missing",
-      "observed": "not applicable to this surface",
-      "skipped": true,
-      "why": "the local index is deliberately unauthenticated and bound to 127.0.0.1; the write token guards the public deployment — audit it with --index https://stellarsight.xyz"
+      "observed": "401, ok=false",
+      "status": 401,
+      "reason": "a valid `Authorization: Bearer <STELLARSIGHT_WRITE_TOKEN>` header is required",
+      "pass": true
     },
     {
       "id": "search-wrong-method",
